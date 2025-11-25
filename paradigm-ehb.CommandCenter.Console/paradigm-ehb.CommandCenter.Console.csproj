@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>paradigm_ehb.CommandCenter.Console</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<!-- Import the CommandCenter Library Namespace & make it Globally available -->
+	<ItemGroup>
+		<ProjectReference Include="..\paradigm-ehb.CommandCenter.Lib\paradigm-ehb.CommandCenter.Lib.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Using Include="paradigm_ehb.CommandCenter.Lib" />
+	</ItemGroup>
+
+</Project>

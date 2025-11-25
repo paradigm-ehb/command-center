@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "paradigm-ehb.CommandCenter.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "paradigm-ehb.CommandCenter.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

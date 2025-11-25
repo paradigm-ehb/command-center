@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="paradigm-ehb.CommandCenter.Console/paradigm-ehb.CommandCenter.Console.csproj" Id="83fd5718-6c91-4dda-b160-c1f6968af844" />
+  <Project Path="paradigm-ehb.CommandCenter.Lib/paradigm-ehb.CommandCenter.Lib.csproj" Id="ae0ba8df-3d17-4af8-809b-68f6745f5f24" />
+  <Project Path="paradigm-ehb.CommandCenter.WinUI/paradigm-ehb.CommandCenter.WinUI.csproj">
+    <Platform Project="x64" />
+    <Deploy />
+  </Project>
+</Solution>
