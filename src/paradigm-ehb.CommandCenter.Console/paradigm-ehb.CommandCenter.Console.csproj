@@ -10,10 +10,10 @@
 
 	<!-- Import the CommandCenter Library Namespace & make it Globally available -->
 	<ItemGroup>
-		<ProjectReference Include="..\paradigm-ehb.CommandCenter.Lib\paradigm-ehb.CommandCenter.Lib.csproj" />
+		<ProjectReference Include="..\paradigm-ehb.CommandCenter.Core\paradigm-ehb.CommandCenter.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<Using Include="paradigm_ehb.CommandCenter.Lib" />
+		<Using Include="paradigm_ehb.CommandCenter.Core" />
 	</ItemGroup>
 
 </Project>

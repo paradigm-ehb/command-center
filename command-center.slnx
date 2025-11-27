@@ -1,14 +1,14 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/paradigm-ehb.CommandCenter.Console/paradigm-ehb.CommandCenter.Console.csproj" Id="83fd5718-6c91-4dda-b160-c1f6968af844" />
-    <Project Path="src/paradigm-ehb.CommandCenter.Lib/paradigm-ehb.CommandCenter.Lib.csproj" Id="ae0ba8df-3d17-4af8-809b-68f6745f5f24" />
+    <Project Path="src/paradigm-ehb.CommandCenter.Core/paradigm-ehb.CommandCenter.Core.csproj" Id="ae0ba8df-3d17-4af8-809b-68f6745f5f24" />
     <Project Path="src/paradigm-ehb.CommandCenter.WinUI/paradigm-ehb.CommandCenter.WinUI.csproj">
       <Platform Project="x64" />
       <Deploy />
     </Project>
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/paradigm-ehb.CommandCenter.Lib.Tests/paradigm-ehb.CommandCenter.Lib.Tests.csproj" Id="1ca358cd-e6b2-4d25-abf8-c06eb940aed9" />
-    <Project Path="tests/pardigm-ehb.CommandCenter.WinUI.Tests/pardigm-ehb.CommandCenter.WinUI.Tests.csproj" Id="06e6d767-6574-46dc-94ce-64bd4a6084af" />
+    <Project Path="tests/paradigm-ehb.CommandCenter.Core.Tests/paradigm-ehb.CommandCenter.Core.Tests.csproj" Id="1ca358cd-e6b2-4d25-abf8-c06eb940aed9" />
+    <Project Path="tests/paradigm-ehb.CommandCenter.WinUI.Tests/paradigm-ehb.CommandCenter.WinUI.Tests.csproj" Id="06e6d767-6574-46dc-94ce-64bd4a6084af" />
   </Folder>
 </Solution>
