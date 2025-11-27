@@ -1,4 +1,4 @@
-﻿namespace pardigm_ehb.CommandCenter.WinUI.Tests
+﻿namespace paradigm_ehb.CommandCenter.WinUI.Tests
 {
     public class UnitTest1
     {

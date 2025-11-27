@@ -1,4 +1,4 @@
-﻿namespace paradigm_ehb.CommandCenter.Lib
+﻿namespace paradigm_ehb.CommandCenter.Core
 {
     public class Client
     {
