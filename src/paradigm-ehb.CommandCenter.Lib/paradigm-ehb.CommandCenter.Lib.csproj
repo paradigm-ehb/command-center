@@ -18,7 +18,7 @@
 
 	<!-- Include .proto files to project -->
 	<ItemGroup>
-		<Protobuf Include="Protos\greet.proto" />
+		<Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
