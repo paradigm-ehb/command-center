@@ -2,3 +2,5 @@
 Console.WriteLine("Hello, World!");
 
 Console.WriteLine(Client.DependencyMethod());
+
+Console.WriteLine(await Client.GrpcGreetAsync("http://localhost:50051"));

@@ -14,7 +14,7 @@ namespace paradigm_ehb.CommandCenter.Lib
             GrpcChannel channel = GrpcChannel.ForAddress(address);
             Greeter.GreeterClient client = new Greeter.GreeterClient(channel);
 
-            HelloReply response = await client.SayHelloAsync(
+            HelloReply response = client.SayHello(
                 new HelloRequest { Name = "World" });
 
             return response.Message;
