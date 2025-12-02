@@ -1,3 +1,4 @@
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -5,6 +6,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using paradigm_ehb.CommandCenter.WinUI.Components;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,6 +29,14 @@ namespace paradigm_ehb.CommandCenter.WinUI
         public MainWindow()
         {
             InitializeComponent();
+
+
+            var appWindow = this.AppWindow;
+            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+            this.SetTitleBar(SimpleTitleBar);
         }
 
         public async void Button_Click(object sender, RoutedEventArgs e)
@@ -40,6 +50,11 @@ namespace paradigm_ehb.CommandCenter.WinUI
             };
 
             ContentDialogResult result = await dialog.ShowAsync();
+        }
+
+        private void windowSizeChanged(object sender, WindowSizeChangedEventArgs args)
+        {
+            rootSidebar.Height = args.Size.Height - 50;
         }
     }
 }

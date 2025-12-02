@@ -13,6 +13,9 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Components\Sidebar.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
@@ -65,5 +68,10 @@
 	<!-- Import the CommandCenter Core Namespace & make it Globally available -->
 	<ItemGroup>
 	  <Using Include="paradigm_ehb.CommandCenter.Core" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="Components\Sidebar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 </Project>
