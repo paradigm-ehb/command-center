@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="paradigm_ehb.CommandCenter.WinUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -20,49 +19,52 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- TitleBar -->
             <RowDefinition Height="*"/>
-            <!-- Main content -->
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="SimpleTitleBar" Title="Paradigm" Subtitle="Reboot" IsBackButtonVisible="False" IsPaneToggleButtonVisible="True" Grid.Row="0" />
+        <TitleBar x:Name="SimpleTitleBar"
+                  Title="Paradigm"
+                  Subtitle="v1.0"
+                  IsBackButtonVisible="False"
+                  Grid.Row="0" />
 
-        <ScrollViewer
-            Grid.Row="1"
-            HorizontalScrollMode="Enabled"
-            VerticalScrollMode="Disabled"
-            HorizontalScrollBarVisibility="Visible"
-            VerticalScrollBarVisibility="Disabled"
-            ManipulationMode="System"
-        >
-            <StackPanel Orientation="Horizontal" Spacing="50" Padding="10">
-                <Rectangle Width="100" Height="100" Fill="Blue" Margin="300,0,0,0"  />
-                <Rectangle Width="100" Height="100" Fill="Green" />
-                <Rectangle Width="100" Height="100" Fill="Red" />
-                <Rectangle Width="100" Height="100" Fill="Yellow" />
-                <Rectangle Width="100" Height="100" Fill="Pink" />
-                <Rectangle Width="100" Height="100" Fill="Purple" />
-                <Rectangle Width="100" Height="100" Fill="LightBlue" />
-                <Rectangle Width="100" Height="100" Fill="Cyan" />
-                <Rectangle Width="100" Height="100" Fill="Gray" />
-                <Rectangle Width="100" Height="100" Fill="Black" />
-                <Rectangle Width="100" Height="100" Fill="Blue" />
-                <Rectangle Width="100" Height="100" Fill="Green" />
-                <Rectangle Width="100" Height="100" Fill="Red" />
-                <Rectangle Width="100" Height="100" Fill="Yellow" />
-                <Rectangle Width="100" Height="100" Fill="Pink" />
-                <Rectangle Width="100" Height="100" Fill="Purple" />
-                <Rectangle Width="100" Height="100" Fill="LightBlue" />
-                <Rectangle Width="100" Height="100" Fill="Cyan" />
-                <Rectangle Width="100" Height="100" Fill="Gray" />
-                <Rectangle Width="100" Height="100" Fill="Black" />
+        <NavigationView x:Name="nvSample"
+                Grid.Row="1"
+                PaneDisplayMode="Left"
+                IsPaneOpen="True"
+                IsPaneToggleButtonVisible="False"
+                ExpandedModeThresholdWidth="500"
+                SelectionFollowsFocus="Enabled"
+                IsTabStop="False"
+                IsBackButtonVisible="Collapsed"
+                IsSettingsVisible="False"
+                ItemInvoked="NvSample_ItemInvoked">
 
-            </StackPanel>
-        </ScrollViewer>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Home" Tag="HomePage" Icon="Home" />
+                <NavigationViewItem Content="Settings" Tag="SettingsPage" Icon="Setting" />
 
+                <NavigationViewItemHeader Content="Your Servers"/>
 
-        <components:Sidebar Margin="10,0,0,0" x:Name="rootSidebar" HorizontalAlignment="Left" Grid.Row="1" />
+                <!-- Make parent nodes non-selectable (don't become Selected when clicked) -->
+                <NavigationViewItem Content="EU Servers" Icon="Folder" SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem Content="Server 1" Tag="EU1" Icon="Bullets" SelectsOnInvoked="True" />
+                        <NavigationViewItem Content="Server 2" Tag="EU2" Icon="World" SelectsOnInvoked="True" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="US Servers" Icon="Folder" SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem Content="Server A" Tag="US_A" Icon="World" SelectsOnInvoked="True" />
+                        <NavigationViewItem Content="Server B" Tag="US_B" Icon="World" SelectsOnInvoked="True" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <NavigationView.Content>
+                <Frame x:Name="contentFrame" />
+            </NavigationView.Content>
+        </NavigationView>
     </Grid>
-
-
 </Window>

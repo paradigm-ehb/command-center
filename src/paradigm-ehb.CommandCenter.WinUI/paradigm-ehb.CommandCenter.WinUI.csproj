@@ -15,6 +15,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Components\Sidebar.xaml" />
+	  <None Remove="HomePage.xaml" />
+	  <None Remove="SettingsPage.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -68,6 +70,16 @@
 	<!-- Import the CommandCenter Core Namespace & make it Globally available -->
 	<ItemGroup>
 	  <Using Include="paradigm_ehb.CommandCenter.Core" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="HomePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="Components\Sidebar.xaml">
