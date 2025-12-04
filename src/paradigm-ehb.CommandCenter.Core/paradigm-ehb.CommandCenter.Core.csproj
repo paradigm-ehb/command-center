@@ -5,6 +5,7 @@
     <RootNamespace>paradigm_ehb.CommandCenter.Core</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
 	<ItemGroup>
