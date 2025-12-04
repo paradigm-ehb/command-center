@@ -27,4 +27,20 @@ public sealed partial class HomePage : Page
     {
         InitializeComponent();
     }
+
+    private async void CtrlN_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+
+        var dialog = new ContentDialog
+        {
+            Title = "Shortcut Activated",
+            Content = "You pressed CTRL + N!",
+            CloseButtonText = "OK",
+            XamlRoot = this.Content.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
+
 }

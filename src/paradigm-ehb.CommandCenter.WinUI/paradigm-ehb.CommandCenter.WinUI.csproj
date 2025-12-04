@@ -14,7 +14,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Remove="Components\Sidebar.xaml" />
+	  <None Remove="Components\Reusable\Home_ServerOverview.xaml" />
 	  <None Remove="HomePage.xaml" />
 	  <None Remove="SettingsPage.xaml" />
 	</ItemGroup>
@@ -82,7 +82,7 @@
 	  </Page>
 	</ItemGroup>
 	<ItemGroup>
-	  <Page Update="Components\Sidebar.xaml">
+	  <Page Update="Components\Reusable\Home_ServerOverview.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
 	</ItemGroup>
