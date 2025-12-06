@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Grpc.Net.Client;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace paradigm_ehb.CommandCenter.Core.Services
 {
@@ -22,9 +23,10 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         private readonly IGrpcChannelFactory? _channelFactory;
         private readonly ILogger<AgentRegistryService> _logger;
 
-        public AgentRegistryService(IGrpcChannelFactory? channelFactory = null)
+        public AgentRegistryService(IGrpcChannelFactory? channelFactory = null, ILogger<AgentRegistryService>? logger = null)
         {
             _channelFactory = channelFactory;
+            _logger = logger ?? NullLogger<AgentRegistryService>.Instance;
         }
         /// <summary>
         /// Registers the specified agent endpoint for communication and management.
@@ -61,7 +63,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
                 catch (Exception exception)
                 {
                     // Swallow exceptions, but log them
-                    _logger?.LogWarning(exception, "Pre-warming gRPC channel for agent {AgentId} at {AgentAddress} failed during registration.", endpoint.Id, endpoint.Address);
+                    _logger.LogWarning(exception, "Pre-warming gRPC channel for agent {AgentId} at {AgentAddress} failed during registration.", endpoint.Id, endpoint.IpAddress);
                 }
             }
 
