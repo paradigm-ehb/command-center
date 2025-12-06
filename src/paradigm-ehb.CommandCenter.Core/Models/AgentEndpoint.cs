@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using paradigm_ehb.CommandCenter.Core.Enums;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
@@ -40,6 +41,6 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// <summary>
         /// Latest health flag maintained by health-checker.
         /// </summary>
-        // public AgentHealthStatus HealthStatus { get; set; } // TODO: implement health checking
+        public AgentHealthStatus HealthStatus { get; set; } // TODO: implement health checking
     }
 }
