@@ -15,6 +15,8 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Microsoft.Extensions.DependencyInjection;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -27,6 +29,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
     public partial class App : Application
     {
         private Window? _window;
+        private ServiceProvider _serviceProvider;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -35,6 +38,18 @@ namespace paradigm_ehb.CommandCenter.WinUI
         public App()
         {
             InitializeComponent();
+
+            // Setup Dependency Injection
+            IServiceCollection services = new ServiceCollection();
+
+            // TODO: Register Logging services
+
+            // Register CommandCenter Core services
+            services.AddCommandCenterCore();
+
+            // TODO: Use MVVM pattern - register ViewModels and other services here
+
+            _serviceProvider = services.BuildServiceProvider();
         }
 
         /// <summary>
@@ -43,6 +58,10 @@ namespace paradigm_ehb.CommandCenter.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            // TODO: Use MVVVM pattern
+            IAgentRegistry agentRegistry = _serviceProvider.GetRequiredService<IAgentRegistry>();
+            IAgentEndpointFactory agentEndpointFactory = _serviceProvider.GetRequiredService<IAgentEndpointFactory>();
+
             _window = new MainWindow();
             _window.Activate();
         }
