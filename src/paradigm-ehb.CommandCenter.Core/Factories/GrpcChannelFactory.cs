@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace paradigm_ehb.CommandCenter.Core.Services
+namespace paradigm_ehb.CommandCenter.Core.Factories
 {
     internal class GrpcChannelFactory : GrpcClientFactory, IGrpcChannelFactory
     {

@@ -5,7 +5,7 @@ using System.Text;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace paradigm_ehb.CommandCenter.Core.Services
+namespace paradigm_ehb.CommandCenter.Core.Factories
 {
     internal class GrpcClientFactory : Grpc.Net.ClientFactory.GrpcClientFactory
     {
