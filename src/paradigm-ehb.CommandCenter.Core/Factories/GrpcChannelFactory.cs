@@ -9,17 +9,12 @@ using System.Text;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
-    internal class GrpcChannelFactory : GrpcClientFactory, IGrpcChannelFactory
+    internal class GrpcChannelFactory : IGrpcChannelFactory
     {
         public GrpcChannel CreateChannel(AgentEndpoint endpoint)
         {
             // TODO: Add support for Health Checks, Interceptors, etc.
             return GrpcChannel.ForAddress($"http{(endpoint.UseTls ? 's' : null)}:{endpoint.IpAddress}:{endpoint.Port}");
-        }
-
-        public override TClient CreateClient<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(string name)
-        {
-            throw new NotImplementedException();
         }
     }
 }
