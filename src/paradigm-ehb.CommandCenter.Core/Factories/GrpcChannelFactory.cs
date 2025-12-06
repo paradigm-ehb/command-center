@@ -13,7 +13,8 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
     {
         public GrpcChannel CreateChannel(AgentEndpoint endpoint)
         {
-            // TODO: add Channel Creation
+            // TODO: Add support for Health Checks, Interceptors, etc.
+            return GrpcChannel.ForAddress($"http{(endpoint.UseTls ? 's' : null)}:{endpoint.IpAddress}:{endpoint.Port}");
         }
 
         public override TClient CreateClient<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(string name)
