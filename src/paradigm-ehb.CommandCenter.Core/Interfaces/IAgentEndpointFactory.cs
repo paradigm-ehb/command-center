@@ -7,6 +7,6 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
 {
     public interface IAgentEndpointFactory
     {
-        public AgentEndpoint Create(string ipAddress = "localhost", int port = 50051, bool secureConnection = true, string? displayName = null, IDictionary<string, string>? metadata = null);
+        public AgentEndpoint Create(string ipAddress = "localhost", int port = 50051, bool useTls = true, string? displayName = null, IDictionary<string, string>? metadata = null);
     }
 }

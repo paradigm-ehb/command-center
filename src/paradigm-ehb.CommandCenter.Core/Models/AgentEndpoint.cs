@@ -24,6 +24,14 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         public int Port { get; init; } = 50051;
 
         /// <summary>
+        /// Gets a value indicating whether Transport Layer Security (TLS) is enabled for the connection.
+        /// </summary>
+        /// <remarks>When <see langword="true"/>, all communication will be encrypted using TLS. If <see
+        /// langword="false"/>, data will be transmitted without encryption. Enabling TLS is recommended for secure
+        /// environments.</remarks>
+        public bool UseTls { get; init; } = true;
+
+        /// <summary>
         /// User-friendly name for display in the UI.
         /// </summary>
         public string DisplayName { get; init; } = string.Empty;
