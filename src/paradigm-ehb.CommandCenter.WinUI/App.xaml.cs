@@ -17,6 +17,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.Extensions.DependencyInjection;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Factories;
+using paradigm_ehb.CommandCenter.Core.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -47,6 +49,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
             // Register CommandCenter Core services
             services.AddCommandCenterCore();
 
+
             // TODO: Use MVVM pattern - register ViewModels and other services here
 
             _serviceProvider = services.BuildServiceProvider();
@@ -59,8 +62,11 @@ namespace paradigm_ehb.CommandCenter.WinUI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // TODO: Use MVVVM pattern
-            IAgentRegistry agentRegistry = _serviceProvider.GetRequiredService<IAgentRegistry>();
+            IAgentEndpointRegistry agentEndpointRegistry = _serviceProvider.GetRequiredService<IAgentEndpointRegistry>();
             IAgentEndpointFactory agentEndpointFactory = _serviceProvider.GetRequiredService<IAgentEndpointFactory>();
+
+            IAgentClientRegistry agentClientRegistry = _serviceProvider.GetRequiredService<IAgentClientRegistry>();
+            IAgentClientFactory grpcClientFactory = _serviceProvider.GetRequiredService<IAgentClientFactory>();
 
             _window = new MainWindow();
             _window.Activate();
