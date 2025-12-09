@@ -28,6 +28,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             _channelFactory = channelFactory;
             _logger = logger ?? NullLogger<AgentEndpointRegistry>.Instance;
         }
+
         /// <summary>
         /// Registers the specified agent endpoint for communication and management.
         /// </summary>
