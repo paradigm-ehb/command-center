@@ -23,7 +23,7 @@
 
 	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
-		<Folder Include="Protos\" GrpcServices="Client" />
+		<Protobuf Include="Protos\*.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
