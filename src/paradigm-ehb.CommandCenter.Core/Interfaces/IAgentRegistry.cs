@@ -12,7 +12,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
     /// </summary>
     public interface IAgentRegistry
     {
-        Task RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
+        Task<RegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
         Task<bool> DeregisterAsync(Guid id, CancellationToken cancellationToken = default);
         Task<IReadOnlyCollection<AgentEndpoint>> ListAsync(CancellationToken cancellationToken = default);
         Task<AgentEndpoint?> GetAsync(Guid id, CancellationToken cancellationToken = default);

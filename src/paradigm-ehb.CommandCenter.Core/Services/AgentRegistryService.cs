@@ -39,7 +39,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         /// <returns>A task that represents the asynchronous registration operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="endpoint"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="endpoint"/> does not contain a valid IP address.</exception>
-        public Task RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
+        public async Task<RegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
             if (endpoint is null) throw new ArgumentNullException(nameof(endpoint));
             cancellationToken.ThrowIfCancellationRequested();
@@ -52,13 +52,20 @@ namespace paradigm_ehb.CommandCenter.Core.Services
 
             _agentEndpoints.AddOrUpdate(endpoint.Id, endpoint, (_, __) => endpoint);    // Add endpoint to memory or update current key-value in memory
 
+            // Define result variables
+            bool preWarmAttempted = false;
+            bool preWarmSucceeded = false;
+            List<string> warnings = new();
+
             // Optionally pre-warm / validate channel creation. Do not fail registration on channel errors.
             if (_channelFactory is not null)
             {
+                preWarmAttempted = true;
                 try
                 {
                     // Creating the channel may throw for invalid address or network config.
                     using GrpcChannel channel = _channelFactory.CreateChannel(endpoint);
+                    preWarmSucceeded = true;
                 }
                 catch (Exception exception)
                 {
@@ -67,7 +74,14 @@ namespace paradigm_ehb.CommandCenter.Core.Services
                 }
             }
 
-            return Task.CompletedTask;
+            RegistrationResult result = new(
+                Registered: true,
+                PreWarmAttempted: preWarmAttempted,
+                PreWarmSucceeded: preWarmSucceeded,
+                Warnings: warnings.AsReadOnly()
+                );
+
+            return result;
         }
 
         /// <summary>
