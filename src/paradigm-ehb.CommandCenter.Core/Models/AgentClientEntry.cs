@@ -27,12 +27,5 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// sending greeting requests. The property is initialized during object construction and cannot be modified
         /// afterwards.</remarks>
         public Greeter.GreeterClient Greeter { get; init; }
-
-        /// <summary>
-        /// Gets the gRPC client for interacting with the Tester service.
-        /// </summary>
-        /// <remarks>Use this client to invoke remote procedures defined by the Tester service. The
-        /// property is initialized during object construction and is immutable thereafter.</remarks>
-        public Tester.TesterClient Tester { get; init; }
     }
 }

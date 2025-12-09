@@ -64,7 +64,6 @@ namespace paradigm_ehb.CommandCenter.Core.Services
                     EndpointId = endpoint.Id,
                     Channel = channel,
                     Greeter = new Greeter.GreeterClient(channel),
-                    Tester = new Tester.TesterClient(channel)
                 };
 
                 // record initial usage timestamp

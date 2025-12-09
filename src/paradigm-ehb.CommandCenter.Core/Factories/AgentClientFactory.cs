@@ -38,7 +38,6 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 {
                     Channel = channel,
                     Greeter = new Greeter.GreeterClient(channel),
-                    Tester = new Tester.TesterClient(channel)
                 };
 
                 _clients[endpoint.Id] = entry;
