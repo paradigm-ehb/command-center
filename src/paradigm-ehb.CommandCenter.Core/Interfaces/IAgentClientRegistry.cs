@@ -5,7 +5,15 @@ using System.Text;
 
 namespace paradigm_ehb.CommandCenter.Core.Interfaces
 {
-    internal interface IAgentClientRegistry : IDisposable
+    /// <summary>
+    /// Defines a contract for managing agent client entries, including creation, retrieval, listing, removal, and
+    /// selection of agent endpoints.
+    /// </summary>
+    /// <remarks>Implementations of this interface are responsible for tracking agent client entries and
+    /// providing thread-safe access to their lifecycle. The registry supports asynchronous operations for scalability
+    /// and responsiveness. Disposing the registry releases any resources associated with the managed agent
+    /// clients.</remarks>
+    public interface IAgentClientRegistry : IDisposable
     {
         /// <summary>
         /// Retrieves an existing client entry for the specified agent endpoint, or creates a new entry if none exists.
