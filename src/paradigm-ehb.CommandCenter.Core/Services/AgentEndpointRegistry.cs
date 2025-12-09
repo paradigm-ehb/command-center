@@ -17,16 +17,16 @@ namespace paradigm_ehb.CommandCenter.Core.Services
     /// Thread-safe, in-memory registry of agent endpoints.
     /// Lightweight and transport-agnostic. Optionally pre-warms a channel for a newly registered endpoint.
     /// </summary>
-    public sealed class AgentRegistryService : IAgentRegistry
+    public sealed class AgentEndpointRegistry : IAgentEndpointRegistry
     {
         private readonly ConcurrentDictionary<Guid, AgentEndpoint> _agentEndpoints = new();  // <summary>In-memory store of agent endpoints</summary>
         private readonly IGrpcChannelFactory? _channelFactory;
-        private readonly ILogger<AgentRegistryService> _logger;
+        private readonly ILogger<AgentEndpointRegistry> _logger;
 
-        public AgentRegistryService(IGrpcChannelFactory? channelFactory = null, ILogger<AgentRegistryService>? logger = null)
+        public AgentEndpointRegistry(IGrpcChannelFactory? channelFactory = null, ILogger<AgentEndpointRegistry>? logger = null)
         {
             _channelFactory = channelFactory;
-            _logger = logger ?? NullLogger<AgentRegistryService>.Instance;
+            _logger = logger ?? NullLogger<AgentEndpointRegistry>.Instance;
         }
         /// <summary>
         /// Registers the specified agent endpoint for communication and management.
