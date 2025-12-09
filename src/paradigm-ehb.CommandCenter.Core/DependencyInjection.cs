@@ -12,7 +12,7 @@ namespace paradigm_ehb.CommandCenter.Core
             services.AddSingleton<IAgentEndpointFactory, AgentEndpointFactory>();
             services.AddSingleton<IAgentEndpointRegistry, AgentEndpointRegistry>();
             services.AddSingleton<IGrpcChannelFactory, GrpcChannelFactory>();
-            services.AddSingleton<IGrpcClientFactory, GrpcClientFactory>();
+            services.AddSingleton<IAgentClientFactory, AgentClientFactory>();
             services.AddSingleton<IAgentClientRegistry, AgentClientRegistry>();
             return services;
         }

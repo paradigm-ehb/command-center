@@ -6,14 +6,14 @@ using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
-    internal class GrpcClientFactory : IGrpcClientFactory
+    public class AgentClientFactory : IAgentClientFactory
     {
         private readonly IGrpcChannelFactory _channelFactory;
         private readonly Dictionary<Guid, AgentClientEntry> _clients = new();
         private readonly object _sync = new();
         private bool _disposed;
 
-        public GrpcClientFactory(IGrpcChannelFactory channelFactory)
+        public AgentClientFactory(IGrpcChannelFactory channelFactory)
         {
             _channelFactory = channelFactory ?? throw new ArgumentNullException(nameof(channelFactory));
         }
@@ -24,7 +24,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
 
             lock (_sync)
             {
-                if (_disposed) throw new ObjectDisposedException(nameof(GrpcClientFactory));
+                if (_disposed) throw new ObjectDisposedException(nameof(AgentClientFactory));
 
                 if (_clients.TryGetValue(endpoint.Id, out var existing))
                 {

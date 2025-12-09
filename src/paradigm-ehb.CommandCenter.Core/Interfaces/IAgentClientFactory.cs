@@ -7,7 +7,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
     /// <summary>
     /// Creates and manages gRPC client entries for agent endpoints.
     /// </summary>
-    internal interface IGrpcClientFactory : IDisposable
+    public interface IAgentClientFactory : IDisposable
     {
         /// <summary>
         /// Creates a new client entry for the specified agent endpoint.
