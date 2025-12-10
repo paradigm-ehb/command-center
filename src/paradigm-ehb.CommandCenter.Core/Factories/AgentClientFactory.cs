@@ -26,7 +26,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             {
                 if (_disposed) throw new ObjectDisposedException(nameof(AgentClientFactory));
 
-                if (_clients.TryGetValue(endpoint.Id, out var existing))
+                if (_clients.TryGetValue(endpoint.Id, out AgentClientEntry? existing))
                 {
                     return existing;
                 }
@@ -34,7 +34,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 // Create channel and strongly-typed gRPC clients
                 GrpcChannel channel = _channelFactory.CreateChannel(endpoint);
 
-                var entry = new AgentClientEntry
+                AgentClientEntry entry = new AgentClientEntry
                 {
                     Channel = channel,
                     Greeter = new Greeter.GreeterClient(channel),
@@ -45,11 +45,12 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             }
         }
 
+
         public AgentClientEntry? GetClient(Guid endpointId)
         {
             lock (_sync)
             {
-                _clients.TryGetValue(endpointId, out var entry);
+                _clients.TryGetValue(endpointId, out AgentClientEntry? entry);
                 return entry;
             }
         }
@@ -58,7 +59,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         {
             lock (_sync)
             {
-                return new List<AgentClientEntry>(_clients.Values);
+                return new List<AgentClientEntry>(_clients.Values).AsReadOnly();
             }
         }
 
