@@ -47,6 +47,23 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         }
 
         [Fact]
+        public async Task Create_ClientWithNullEndpoint_ThrowsArgumentNullException()
+        {
+            Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
+            Mock<IGrpcChannelFactory> mockGrpcChannelFactory = CreateDefaultMock<IGrpcChannelFactory>();
+
+            IAgentClientFactory agentClientFactory = CreateDefaultAgentClientFactory(mockAgentClientRegistry.Object, mockGrpcChannelFactory.Object);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await agentClientFactory.CreateClientAsync(null!);
+            });
+
+            mockAgentClientRegistry.VerifyAll();
+            mockGrpcChannelFactory.VerifyAll();
+        }
+
+        [Fact]
         public async Task CreateAndRegister_ClientWithAllParams_ReturnsPopulatedClient()
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
