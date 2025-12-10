@@ -53,13 +53,14 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
         }
 
-        [Fact]
-        public void Create_EndpointWithNoIpAddress_ThrowsArgumentException()
+        [Theory]
+        [InlineData(null)]
+        [InlineData(" ")]
+        public void Create_EndpointWithNoIpAddress_ThrowsArgumentException(string? ipAddress)
         {
             AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
 
-            Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(null!));
-            Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(" "));
+            Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(ipAddress!));
         }
 
         private AgentEndpointFactory CreateDefaultAgentEndpointFactory()
