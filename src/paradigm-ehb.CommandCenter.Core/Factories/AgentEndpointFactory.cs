@@ -37,6 +37,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 Id = Guid.NewGuid(),
                 IpAddress = ipAddress,
                 Port = port,
+                UseTls = useTls,
                 DisplayName = finalDisplayName,
                 Metadata = metadata,
                 LastSeen = null,
