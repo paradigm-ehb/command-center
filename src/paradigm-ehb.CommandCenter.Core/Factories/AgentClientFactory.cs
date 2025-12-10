@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using System;
+using System.Collections.Generic;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
@@ -10,12 +12,14 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
     {
         private readonly IGrpcChannelFactory _channelFactory;
         private readonly Dictionary<Guid, AgentClientEntry> _clients = new();
+        private readonly ILogger<AgentClientFactory> _logger;
         private readonly object _sync = new();
         private bool _disposed;
 
-        public AgentClientFactory(IGrpcChannelFactory channelFactory)
+        public AgentClientFactory(IGrpcChannelFactory channelFactory, ILogger<AgentClientFactory>? logger)
         {
             _channelFactory = channelFactory ?? throw new ArgumentNullException(nameof(channelFactory));
+            _logger = logger ?? NullLogger<AgentClientFactory>.Instance;
         }
 
         public AgentClientEntry CreateClient(AgentEndpoint endpoint)
@@ -70,11 +74,11 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 if (_disposed) return;
                 _disposed = true;
 
-                foreach (var entry in _clients.Values)
+                foreach (AgentClientEntry entry in _clients.Values)
                 {
                     try
                     {
-                        entry.Channel?.Dispose();
+                        entry.Channel.Dispose();
                     }
                     catch
                     {
