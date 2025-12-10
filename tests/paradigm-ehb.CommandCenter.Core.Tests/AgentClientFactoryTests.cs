@@ -23,19 +23,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             IAgentClientFactory agentClientFactory = CreateDefaultAgentClientFactory(mockAgentClientRegistry.Object, mockGrpcChannelFactory.Object);
 
-            AgentEndpoint agentEndpoint = new AgentEndpoint
-            {
-                Id = Guid.NewGuid(),
-                IpAddress = "localhost",
-                Port = 50051,
-                UseTls = false,
-                DisplayName = "Local Agent",
-                Metadata = new Dictionary<string, string>
-                {
-                    ["os"] = "linux",
-                    ["version"] = "1.0.0"
-                }
-            };
+            AgentEndpoint agentEndpoint = CreateDefaultAgentEndpoint();
 
             AgentClientEntry agentClientEntry = await agentClientFactory.CreateClientAsync(agentEndpoint);
 
@@ -78,19 +66,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             IAgentClientFactory agentClientFactory = CreateDefaultAgentClientFactory(mockAgentClientRegistry.Object, mockGrpcChannelFactory.Object);
 
-            AgentEndpoint agentEndpoint = new AgentEndpoint
-            {
-                Id = Guid.NewGuid(),
-                IpAddress = "localhost",
-                Port = 50051,
-                UseTls = false,
-                DisplayName = "Local Agent",
-                Metadata = new Dictionary<string, string>
-                {
-                    ["os"] = "linux",
-                    ["version"] = "1.0.0"
-                }
-            };
+            AgentEndpoint agentEndpoint = CreateDefaultAgentEndpoint();
 
             AgentClientEntry agentClientEntry = await agentClientFactory.CreateAndRegisterClientAsync(agentEndpoint);
 
@@ -118,14 +94,22 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             mockGrpcChannelFactory.VerifyAll();
         }
 
-        private IAgentClientFactory CreateDefaultAgentClientFactory(IAgentClientRegistry agentClientRegistry, IGrpcChannelFactory grpcChannelFactory)
-        {
-            return new AgentClientFactory(agentClientRegistry, grpcChannelFactory);
-        }
+        private IAgentClientFactory CreateDefaultAgentClientFactory(IAgentClientRegistry agentClientRegistry, IGrpcChannelFactory grpcChannelFactory) => new AgentClientFactory(agentClientRegistry, grpcChannelFactory);
 
-        private Mock<T> CreateDefaultMock<T>() where T : class
+        private Mock<T> CreateDefaultMock<T>() where T : class => new Mock<T>();
+
+        private AgentEndpoint CreateDefaultAgentEndpoint() => new AgentEndpoint
         {
-            return new Mock<T>();
-        }
+            Id = Guid.NewGuid(),
+            IpAddress = "localhost",
+            Port = 50051,
+            UseTls = false,
+            DisplayName = "Local Agent",
+            Metadata = new Dictionary<string, string>
+            {
+                ["os"] = "linux",
+                ["version"] = "1.0.0"
+            }
+        };
     }
 }
