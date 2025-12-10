@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Title="Paradigm"
     x:Name="RootPage"
-    SizeChanged="windowSizeChanged"
+    SizeChanged="WindowSizeChanged"
     >
 
     <Window.SystemBackdrop>
