@@ -14,7 +14,7 @@
             <PivotItem Header="Recent">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" Margin="0,10,0,0">
-                        <components:Home_ServerOverview ServerName="Bruh" />
+                        <components:Home_ServerOverview ServerName="Bruh" ServerStatus="0" />
                     </StackPanel>
                 </Grid>
             </PivotItem>
@@ -22,9 +22,6 @@
                 <TextBlock Text="Overview on resource utilization" />
             </PivotItem>
             <PivotItem Header="Errors">
-                <TextBlock Text="All server errors go here." />
-            </PivotItem>
-            <PivotItem Header="Add New">
                 <TextBlock Text="All server errors go here." />
             </PivotItem>
 

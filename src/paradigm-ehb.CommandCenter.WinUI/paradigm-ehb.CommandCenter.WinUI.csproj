@@ -16,6 +16,7 @@
 	<ItemGroup>
 	  <None Remove="Components\Reusable\Home_ServerOverview.xaml" />
 	  <None Remove="HomePage.xaml" />
+	  <None Remove="ServerCreation.xaml" />
 	  <None Remove="SettingsPage.xaml" />
 	</ItemGroup>
 
@@ -70,6 +71,11 @@
 	<!-- Import the CommandCenter Core Namespace & make it Globally available -->
 	<ItemGroup>
 	  <Using Include="paradigm_ehb.CommandCenter.Core" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="ServerCreation.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="SettingsPage.xaml">

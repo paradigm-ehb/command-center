@@ -16,8 +16,8 @@
                 <Image Source="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/UbuntuCoF.svg/1200px-UbuntuCoF.svg.png" Height="70" />
                 <TextBlock Text="{x:Bind ServerName, Mode=OneWay}" HorizontalAlignment="Center" />
                 <StackPanel Spacing="7" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Ellipse Fill="Lime" Height="15" Width="15" />
-                    <TextBlock Text="Online"></TextBlock>
+                    <Ellipse x:Name="StatusColor" Fill="Lime" Height="15" Width="15" />
+                    <TextBlock x:Name="StatusText" Text="Online"></TextBlock>
                 </StackPanel>
             </StackPanel>
         </Grid>
