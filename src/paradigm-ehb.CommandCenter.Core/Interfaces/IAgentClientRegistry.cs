@@ -1,68 +1,55 @@
-﻿using paradigm_ehb.CommandCenter.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Interfaces
 {
     /// <summary>
-    /// Defines a contract for managing agent client entries, including creation, retrieval, listing, removal, and
-    /// selection of agent endpoints.
+    /// Defines a contract for managing the registration, deregistration, and retrieval of agent client entries within
+    /// the system.
     /// </summary>
-    /// <remarks>Implementations of this interface are responsible for tracking agent client entries and
-    /// providing thread-safe access to their lifecycle. The registry supports asynchronous operations for scalability
-    /// and responsiveness. Disposing the registry releases any resources associated with the managed agent
-    /// clients.</remarks>
+    /// <remarks>Implementations of this interface are responsible for tracking agent client endpoints and
+    /// their associated metadata. All operations are asynchronous and support cancellation via a provided token. The
+    /// interface extends <see cref="IDisposable"/>, indicating that implementations may hold resources that should be
+    /// released when no longer needed.</remarks>
     public interface IAgentClientRegistry : IDisposable
     {
         /// <summary>
-        /// Retrieves an existing client entry for the specified agent endpoint, or creates a new entry if none exists.
+        /// Registers a new agent client asynchronously using the specified entry information.
         /// </summary>
-        /// <param name="endpoint">The agent endpoint for which to retrieve or create the client entry. Cannot be null.</param>
-        /// <returns>An instance of <see cref="AgentClientEntry"/> associated with the specified endpoint. If an entry already
-        /// exists, it is returned; otherwise, a new entry is created and returned.</returns>
-        AgentClientEntry CreateOrGet(AgentEndpoint endpoint);
+        /// <param name="entry">The agent client entry containing registration details. Cannot be null.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the registration operation.</param>
+        /// <returns>A task that represents the asynchronous registration operation. The task result contains the outcome of the
+        /// agent client registration.</returns>
+        Task<AgentClientRegistrationResult> RegisterAsync(AgentClientEntry entry, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Retrieves the agent client entry associated with the specified endpoint identifier.
+        /// Asynchronously deregisters the specified endpoint from the system.
         /// </summary>
-        /// <param name="endpointId">The unique identifier of the endpoint for which to retrieve the agent client entry.</param>
-        /// <returns>An <see cref="AgentClientEntry"/> instance if an entry exists for the specified endpoint; otherwise, <see
-        /// langword="null"/>.</returns>
-        AgentClientEntry? Get(Guid endpointId);
+        /// <param name="endpointId">The unique identifier of the endpoint to deregister.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the endpoint
+        /// was successfully deregistered; otherwise, <see langword="false"/>.</returns>
+        Task<bool> DeregisterAsync(Guid endpointId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Asynchronously retrieves a read-only collection of agent client entries.
+        /// Asynchronously retrieves a read-only collection of all registered agent client entries.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a read-only collection of <see
-        /// cref="AgentClientEntry"/> objects representing the agent clients. The collection will be empty if no agent
-        /// clients are available.</returns>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a read-only collection of agent
+        /// client entries. The collection is empty if no agent clients are registered.</returns>
         Task<IReadOnlyCollection<AgentClientEntry>> ListAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Asynchronously removes the endpoint identified by the specified ID.
+        /// Asynchronously retrieves the agent client entry associated with the specified endpoint identifier.
         /// </summary>
-        /// <param name="endpointId">The unique identifier of the endpoint to remove.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the remove operation.</param>
-        /// <returns>A task that represents the asynchronous remove operation. The task result is <see langword="true"/> if the
-        /// endpoint was successfully removed; otherwise, <see langword="false"/>.</returns>
-        Task<bool> RemoveAsync(Guid endpointId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Marks the specified endpoint as used, updating its usage status asynchronously.
-        /// </summary>
-        /// <param name="endpointId">The unique identifier of the endpoint to mark as used.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        Task MarkUsed(Guid endpointId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Selects the specified endpoint for subsequent operations.
-        /// </summary>
-        /// <param name="endpointId">The unique identifier of the endpoint to select. If <paramref name="endpointId"/> is <see langword="null"/>,
-        /// no endpoint will be selected.</param>
-        /// <returns>A task that represents the asynchronous select operation.</returns>
-        Task Select(Guid? endpointId);
+        /// <param name="endpointId">The unique identifier of the endpoint for which to retrieve the agent client entry.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see
+        /// cref="AgentClientEntry"/> associated with the specified endpoint if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        Task<AgentClientEntry?> GetAsync(Guid endpointId, CancellationToken cancellationToken = default);
     }
 }

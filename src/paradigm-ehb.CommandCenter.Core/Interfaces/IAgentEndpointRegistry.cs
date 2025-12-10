@@ -18,8 +18,8 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="endpoint">The agent endpoint to register. Cannot be null.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the registration operation.</param>
         /// <returns>A task that represents the asynchronous registration operation. The task result contains a
-        /// RegistrationResult indicating the outcome of the registration.</returns>
-        Task<RegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
+        /// AgentEndpointRegistrationResult indicating the outcome of the registration.</returns>
+        Task<AgentEndpointRegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously deregisters the entity identified by the specified unique identifier.

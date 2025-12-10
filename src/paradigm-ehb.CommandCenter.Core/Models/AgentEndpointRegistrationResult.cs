@@ -10,7 +10,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
     /// <remarks>Use this type to inspect the outcome of a registration process, such as whether registration
     /// succeeded, whether a pre-warm step was attempted and succeeded, and to review any warnings generated during the
     /// operation. All properties are immutable and set during initialization.</remarks>
-    public sealed record RegistrationResult
+    public sealed record AgentEndpointRegistrationResult
     (
         bool Registered,
         bool PreWarmAttempted,

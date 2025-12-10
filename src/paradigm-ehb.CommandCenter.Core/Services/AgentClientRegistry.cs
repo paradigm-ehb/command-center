@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
@@ -13,191 +12,143 @@ using paradigm_ehb.CommandCenter.Core.Models;
 namespace paradigm_ehb.CommandCenter.Core.Services
 {
     /// <summary>
-    /// Thread-safe in-memory registry of active agent clients (gRPC channels + generated clients).
-    /// Responsible for creating channels (via optional factory), returning existing entries,
-    /// recording usage timestamps and disposing channels when removed or when the registry is disposed.
+    /// Thread-safe in-memory registry of active agent client entries.
+    /// Responsibility: store, lookup, usage tracking and disposal.
+    /// Creation of AgentClientEntry is performed by factories; callers register created entries here.
     /// </summary>
-    internal sealed class AgentClientRegistry : IAgentClientRegistry
+    internal sealed class AgentClientRegistry : IAgentClientRegistry, IDisposable
     {
         private readonly ConcurrentDictionary<Guid, AgentClientEntry> _clients = new();
         private readonly ConcurrentDictionary<Guid, DateTimeOffset> _lastUsed = new();
-        private readonly IGrpcChannelFactory? _channelFactory;
         private readonly ILogger<AgentClientRegistry> _logger;
-        private readonly object _selectionLock = new();
-        private Guid? _selectedEndpointId;
-        private bool _disposed;
+        // Use an int for atomic disposal operations (0 = not disposed, 1 = disposed).
+        private int _disposed;
 
-        public AgentClientRegistry(IGrpcChannelFactory? channelFactory = null, ILogger<AgentClientRegistry>? logger = null)
+        public AgentClientRegistry(ILogger<AgentClientRegistry>? logger = null)
         {
-            _channelFactory = channelFactory;
             _logger = logger ?? NullLogger<AgentClientRegistry>.Instance;
         }
 
-        public AgentClientEntry CreateOrGet(AgentEndpoint endpoint)
+        public Task<AgentClientRegistrationResult> RegisterAsync(AgentClientEntry entry, CancellationToken cancellationToken = default)
         {
-            if (endpoint is null) throw new ArgumentNullException(nameof(endpoint));
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+            cancellationToken.ThrowIfCancellationRequested();
             EnsureNotDisposed();
 
-            return _clients.GetOrAdd(endpoint.Id, id =>
+            AgentClientEntry stored = _clients.GetOrAdd(entry.EndpointId, entry);
+            bool created = ReferenceEquals(stored, entry);
+            List<string> warnings = new();
+
+            if (created)
             {
-                GrpcChannel channel;
+                _lastUsed[entry.EndpointId] = DateTimeOffset.UtcNow;
+                _logger.LogInformation("Registered client entry for endpoint {EndpointId}.", entry.EndpointId);
+                return Task.FromResult(new AgentClientRegistrationResult(
+                    Registered: true,
+                    Entry: entry,
+                    Warnings: warnings.AsReadOnly(),
+                    Message: null
+                    ));
+            }
 
-                if (_channelFactory is not null)
-                {
-                    try
-                    {
-                        channel = _channelFactory.CreateChannel(endpoint);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Channel factory failed for agent {AgentId} at {AgentAddress}. Falling back to direct channel creation.", endpoint.Id, endpoint.IpAddress);
-                        channel = CreateFallbackChannel(endpoint);
-                    }
-                }
-                else
-                {
-                    channel = CreateFallbackChannel(endpoint);
-                }
+            // Existing entry: update last-used timestamp for the stored entry, dispose the caller-created one.
+            _lastUsed[stored.EndpointId] = DateTimeOffset.UtcNow;
 
-                AgentClientEntry entry = new AgentClientEntry
-                {
-                    EndpointId = endpoint.Id,
-                    Channel = channel,
-                    Greeter = new Greeter.GreeterClient(channel),
-                };
+            try
+            {
+                (entry.Channel as IDisposable)?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed disposing duplicate channel for endpoint {EndpointId}.", entry.EndpointId);
+            }
 
-                // record initial usage timestamp
-                _lastUsed[endpoint.Id] = DateTimeOffset.UtcNow;
+            _logger.LogDebug("Registration skipped for endpoint {EndpointId} because an entry already exists.", entry.EndpointId);
 
-                return entry;
-            });
+            return Task.FromResult(new AgentClientRegistrationResult(
+                Registered: false,
+                Entry: stored,
+                Warnings: warnings.AsReadOnly(),
+                Message: "An entry for the specified endpoint ID already exists."
+                ));
         }
 
-        public AgentClientEntry? Get(Guid endpointId)
+        public Task<bool> DeregisterAsync(Guid endpointId, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             EnsureNotDisposed();
-            _clients.TryGetValue(endpointId, out AgentClientEntry? entry);
-            return entry;
+
+            if (_clients.TryRemove(endpointId, out var entry))
+            {
+                try
+                {
+                    (entry.Channel as IDisposable)?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Disposing channel for endpoint {EndpointId} threw an exception.", endpointId);
+                }
+
+                _lastUsed.TryRemove(endpointId, out _);
+                _logger.LogInformation("Deregistered client entry for endpoint {EndpointId}.", endpointId);
+                return Task.FromResult(true);
+            }
+
+            _logger.LogDebug("Attempt to deregister unknown endpoint {EndpointId}.", endpointId);
+            return Task.FromResult(false);
         }
 
         public Task<IReadOnlyCollection<AgentClientEntry>> ListAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNotDisposed();
+
             IReadOnlyCollection<AgentClientEntry> snapshot = _clients.Values.ToList().AsReadOnly();
             return Task.FromResult(snapshot);
         }
 
-        public Task<bool> RemoveAsync(Guid endpointId, CancellationToken cancellationToken = default)
+        public Task<AgentClientEntry?> GetAsync(Guid endpointId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNotDisposed();
 
-            if (_clients.TryRemove(endpointId, out AgentClientEntry? entry))
+            if (_clients.TryGetValue(endpointId, out var entry))
             {
-                try
-                {
-                    // Dispose channel if possible
-                    (entry.Channel as IDisposable)?.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Disposing channel for agent {AgentId} threw an exception.", endpointId);
-                }
-
-                _lastUsed.TryRemove(endpointId, out _);
-
-                lock (_selectionLock)
-                {
-                    if (_selectedEndpointId == endpointId)
-                    {
-                        _selectedEndpointId = null;
-                    }
-                }
-
-                return Task.FromResult(true);
-            }
-
-            return Task.FromResult(false);
-        }
-
-        public Task MarkUsed(Guid endpointId, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureNotDisposed();
-
-            if (_clients.ContainsKey(endpointId))
-            {
+                // Update last-used timestamp on successful lookup.
                 _lastUsed[endpointId] = DateTimeOffset.UtcNow;
+                return Task.FromResult<AgentClientEntry?>(entry);
             }
 
-            return Task.CompletedTask;
-        }
-
-        public Task Select(Guid? endpointId)
-        {
-            EnsureNotDisposed();
-
-            if (endpointId is null)
-            {
-                lock (_selectionLock)
-                {
-                    _selectedEndpointId = null;
-                }
-
-                return Task.CompletedTask;
-            }
-
-            // If selecting a specific endpoint ensure it exists.
-            if (!_clients.ContainsKey(endpointId.Value))
-            {
-                throw new InvalidOperationException($"Cannot select endpoint {endpointId}. Endpoint not found in registry.");
-            }
-
-            lock (_selectionLock)
-            {
-                _selectedEndpointId = endpointId;
-            }
-
-            return Task.CompletedTask;
+            return Task.FromResult<AgentClientEntry?>(null);
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
-            _disposed = true;
+            // Ensure disposal only happens once (atomic).
+            if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
-            foreach (KeyValuePair<Guid, AgentClientEntry> kvp in _clients)
+            // Take a snapshot to avoid enumeration issues while disposing.
+            var snapshot = _clients.ToArray();
+            foreach (var kv in snapshot)
             {
                 try
                 {
-                    (kvp.Value.Channel as IDisposable)?.Dispose();
+                    (kv.Value.Channel as IDisposable)?.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Error while disposing channel for agent {AgentId}.", kvp.Key);
+                    _logger.LogWarning(ex, "Error while disposing channel for endpoint {EndpointId}.", kv.Key);
                 }
             }
 
             _clients.Clear();
             _lastUsed.Clear();
-
-            lock (_selectionLock)
-            {
-                _selectedEndpointId = null;
-            }
-        }
-
-        private static GrpcChannel CreateFallbackChannel(AgentEndpoint endpoint)
-        {
-            string scheme = endpoint.UseTls ? "https" : "http";
-            string address = $"{scheme}://{endpoint.IpAddress}:{endpoint.Port}";
-            return GrpcChannel.ForAddress(address);
+            _logger.LogInformation("AgentClientRegistry disposed.");
         }
 
         private void EnsureNotDisposed()
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(AgentClientRegistry));
+            if (Volatile.Read(ref _disposed) != 0) throw new ObjectDisposedException(nameof(AgentClientRegistry));
         }
     }
 }

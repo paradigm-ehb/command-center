@@ -40,7 +40,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         /// <returns>A task that represents the asynchronous registration operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="endpoint"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="endpoint"/> does not contain a valid IP address.</exception>
-        public async Task<RegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
+        public async Task<AgentEndpointRegistrationResult> RegisterAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
             if (endpoint is null) throw new ArgumentNullException(nameof(endpoint));
             cancellationToken.ThrowIfCancellationRequested();
@@ -75,7 +75,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
                 }
             }
 
-            RegistrationResult result = new(
+            AgentEndpointRegistrationResult result = new(
                 Registered: true,
                 PreWarmAttempted: preWarmAttempted,
                 PreWarmSucceeded: preWarmSucceeded,
