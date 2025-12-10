@@ -45,7 +45,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
             ContentDialogResult result = await dialog.ShowAsync();
         }
 
-        private void windowSizeChanged(object sender, WindowSizeChangedEventArgs args)
+        private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
 
         }
