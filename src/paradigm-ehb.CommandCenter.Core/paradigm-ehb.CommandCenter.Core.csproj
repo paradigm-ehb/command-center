@@ -8,9 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Protobuf" Version="3.33.1" />
+		<PackageReference Include="Google.Protobuf" Version="3.33.2" />
 		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
 		<PackageReference Include="Grpc.Tools" Version="2.76.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,6 +23,9 @@
 	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
 		<Protobuf Include="Protos\*.proto" GrpcServices="Client" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
 	</ItemGroup>
 
 </Project>

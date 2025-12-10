@@ -1,5 +1,4 @@
 ﻿using Grpc.Net.Client;
-using Grpc.Net.ClientFactory;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using System;
