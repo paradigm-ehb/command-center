@@ -11,7 +11,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
     public class AgentClientFactoryTests
     {
 
-        [Fact]
+        [Fact(DisplayName = "Create Client - Client with all params returns populated client")]
         public async Task Create_ClientWithAllParams_ReturnsPopulatedClient()
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
@@ -34,7 +34,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             mockGrpcChannelFactory.VerifyAll();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Create Client - Client with null endpoint throws ArgumentNullException")]
         public async Task Create_ClientWithNullEndpoint_ThrowsArgumentNullException()
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
@@ -51,7 +51,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             mockGrpcChannelFactory.VerifyAll();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Create and Register Client - Client with all params returns populated client")]
         public async Task CreateAndRegister_ClientWithAllParams_ReturnsPopulatedClient()
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
@@ -77,7 +77,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             mockGrpcChannelFactory.VerifyAll();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Create and Register Client - Client with null endpoint throws ArgumentNullException")]
         public async Task CreateAndRegister_ClientWithNullEndpoint_ThrowsArgumentNullException()
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
