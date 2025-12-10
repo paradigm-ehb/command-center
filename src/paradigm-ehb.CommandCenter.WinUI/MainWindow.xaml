@@ -7,8 +7,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="paradigm-ehb.CommandCenter.WinUI"
+    Title="Paradigm"
     x:Name="RootPage"
+    SizeChanged="WindowSizeChanged"
     >
 
     <Window.SystemBackdrop>
@@ -16,9 +17,54 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <StackPanel>
-            <TextBlock Text="Hello, WinUI 3!" FontSize="24" Margin="10"/>
-            <Button Content="Click Me" Click="Button_Click" Margin="10"/>
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TitleBar x:Name="SimpleTitleBar"
+                  Title="Paradigm"
+                  Subtitle="v1.0"
+                  IsBackButtonVisible="False"
+                  Grid.Row="0" />
+
+        <NavigationView x:Name="nvSample"
+                Grid.Row="1"
+                PaneDisplayMode="Left"
+                IsPaneOpen="True"
+                IsPaneToggleButtonVisible="False"
+                ExpandedModeThresholdWidth="500"
+                SelectionFollowsFocus="Enabled"
+                IsTabStop="False"
+                IsBackButtonVisible="Collapsed"
+                IsSettingsVisible="False"
+                ItemInvoked="NvSample_ItemInvoked">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Home" Tag="HomePage" Icon="Home" />
+                <NavigationViewItem Content="Settings" Tag="SettingsPage" Icon="Setting" />
+
+                <NavigationViewItemHeader Content="Your Servers"/>
+
+                <!-- Make parent nodes non-selectable (don't become Selected when clicked) -->
+                <NavigationViewItem Content="EU Servers" Icon="Folder" SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem Content="Server 1" Tag="EU1" Icon="Bullets" SelectsOnInvoked="True" />
+                        <NavigationViewItem Content="Server 2" Tag="EU2" Icon="World" SelectsOnInvoked="True" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="US Servers" Icon="Folder" SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem Content="Server A" Tag="US_A" Icon="World" SelectsOnInvoked="True" />
+                        <NavigationViewItem Content="Server B" Tag="US_B" Icon="World" SelectsOnInvoked="True" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <NavigationView.Content>
+                <Frame x:Name="contentFrame" />
+            </NavigationView.Content>
+        </NavigationView>
     </Grid>
 </Window>
