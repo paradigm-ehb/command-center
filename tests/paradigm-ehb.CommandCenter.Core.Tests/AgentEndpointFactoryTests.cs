@@ -4,13 +4,13 @@ using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Tests
 {
-    public class AgentEndpointFactoryTest
+    public class AgentEndpointFactoryTests
     {
-        AgentEndpointFactory _agentEndpointFactory = new AgentEndpointFactory();
-
         [Fact]
         public void Create_EndpointWithAllParams_ReturnsPopulatedEndpoint()
         {
+            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+
             string ipAddress = "192.168.1.1";
             int port = 4242;
             bool useTls = false;
@@ -22,7 +22,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
                 ["foo"] = "bar"
             };
 
-            AgentEndpoint agentEndpoint = _agentEndpointFactory.Create(ipAddress, port, useTls, displayName, metadata);
+            AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ipAddress, port, useTls, displayName, metadata);
 
             Assert.NotNull(agentEndpoint);
             Assert.Equal(ipAddress, agentEndpoint.IpAddress);
@@ -37,9 +37,11 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         [Fact]
         public void Create_EndpointWithIpOnly_ReturnsDefaultEndpoint()
         {
+            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+
             string ipAddress = "localhost";
 
-            AgentEndpoint agentEndpoint = _agentEndpointFactory.Create(ipAddress);
+            AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ipAddress);
 
             Assert.NotNull(agentEndpoint);
             Assert.Equal(ipAddress, agentEndpoint.IpAddress);
@@ -54,8 +56,15 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         [Fact]
         public void Create_EndpointWithNoIpAddress_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(null!));
-            Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(" "));
+            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+
+            Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(null!));
+            Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(" "));
+        }
+
+        private AgentEndpointFactory CreateDefaultAgentEndpointFactory()
+        {
+            return new AgentEndpointFactory();
         }
     }
 }
