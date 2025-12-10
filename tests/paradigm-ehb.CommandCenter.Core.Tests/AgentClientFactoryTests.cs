@@ -42,8 +42,8 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
-            mockAgentClientRegistry.Verify();
-            mockGrpcChannelFactory.Verify();
+            mockAgentClientRegistry.VerifyAll();
+            mockGrpcChannelFactory.VerifyAll();
         }
 
         [Fact]
@@ -97,8 +97,8 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
-            mockAgentClientRegistry.Verify();
-            mockGrpcChannelFactory.Verify();
+            mockAgentClientRegistry.VerifyAll();
+            mockGrpcChannelFactory.VerifyAll();
         }
 
         private IAgentClientFactory CreateDefaultAgentClientFactory(IAgentClientRegistry agentClientRegistry, IGrpcChannelFactory grpcChannelFactory)
