@@ -1,4 +1,5 @@
-﻿using paradigm_ehb.CommandCenter.Core.Factories;
+﻿using paradigm_ehb.CommandCenter.Core.Enums;
+using paradigm_ehb.CommandCenter.Core.Factories;
 using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Tests
@@ -31,6 +32,30 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(metadata, agentEndpoint.Metadata);
             Assert.Null(agentEndpoint.LastSeen);
             Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
+        }
+
+        [Fact]
+        public void CreateEndpointDefault()
+        {
+            string ipAddress = "localhost";
+
+            AgentEndpoint agentEndpoint = _agentEndpointFactory.Create(ipAddress);
+
+            Assert.NotNull(agentEndpoint);
+            Assert.Equal(ipAddress, agentEndpoint.IpAddress);
+            Assert.Equal(50051, agentEndpoint.Port);
+            Assert.True(agentEndpoint.UseTls);
+            Assert.Equal($"{ipAddress}:50051", agentEndpoint.DisplayName);
+            Assert.Null(agentEndpoint.Metadata);
+            Assert.Null(agentEndpoint.LastSeen);
+            Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
+        }
+
+        [Fact]
+        public void CreateEndpointNoIpAddressThrow()
+        {
+            Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(null!));
+            Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(" "));
         }
     }
 }
