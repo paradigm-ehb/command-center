@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="paradigm_ehb.CommandCenter.WinUI.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:paradigm_ehb.CommandCenter.WinUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:components="using:paradigm_ehb.CommandCenter.WinUI.Components.Reusable"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Pivot Title="Home" Margin="10,0">
+            <PivotItem Header="Recent">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Left" Margin="0,10,0,0">
+                        <components:Home_ServerOverview ServerName="Bruh" ServerStatus="0" />
+                    </StackPanel>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Overview">
+                <TextBlock Text="Overview on resource utilization" />
+            </PivotItem>
+            <PivotItem Header="Errors">
+                <TextBlock Text="All server errors go here." />
+            </PivotItem>
+
+        </Pivot>
+    </Grid>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="CtrlN_Invoked"/>
+    </Page.KeyboardAccelerators>
+</Page>

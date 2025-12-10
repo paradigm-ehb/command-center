@@ -13,6 +13,12 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Components\Reusable\Home_ServerOverview.xaml" />
+	  <None Remove="HomePage.xaml" />
+	  <None Remove="ServerCreation.xaml" />
+	  <None Remove="SettingsPage.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
@@ -65,5 +71,25 @@
 	<!-- Import the CommandCenter Core Namespace & make it Globally available -->
 	<ItemGroup>
 	  <Using Include="paradigm_ehb.CommandCenter.Core" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="ServerCreation.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="HomePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="Components\Reusable\Home_ServerOverview.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 </Project>
