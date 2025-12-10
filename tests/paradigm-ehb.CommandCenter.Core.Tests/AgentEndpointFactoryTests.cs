@@ -6,7 +6,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 {
     public class AgentEndpointFactoryTests
     {
-        [Fact]
+        [Fact(DisplayName = "Create Endpoint With All Parameters Returns Populated Endpoint")]
         public void Create_EndpointWithAllParams_ReturnsPopulatedEndpoint()
         {
             AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
@@ -34,7 +34,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Create Endpoint With Only IP Address Returns Default Endpoint")]
         public void Create_EndpointWithIpOnly_ReturnsDefaultEndpoint()
         {
             AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
@@ -53,7 +53,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
         }
 
-        [Theory]
+        [Theory(DisplayName = "Create Endpoint With No IP Address Throws Argument Exception")]
         [InlineData(null)]
         [InlineData(" ")]
         public void Create_EndpointWithNoIpAddress_ThrowsArgumentException(string? ipAddress)
