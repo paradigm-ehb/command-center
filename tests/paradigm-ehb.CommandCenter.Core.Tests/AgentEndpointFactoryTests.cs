@@ -1,5 +1,6 @@
 ﻿using paradigm_ehb.CommandCenter.Core.Enums;
 using paradigm_ehb.CommandCenter.Core.Factories;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Tests
@@ -9,7 +10,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         [Fact(DisplayName = "Create Endpoint With All Parameters Returns Populated Endpoint")]
         public void Create_EndpointWithAllParams_ReturnsPopulatedEndpoint()
         {
-            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+            IAgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
 
             string ipAddress = "192.168.1.1";
             int port = 4242;
@@ -37,7 +38,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         [Fact(DisplayName = "Create Endpoint With Only IP Address Returns Default Endpoint")]
         public void Create_EndpointWithIpOnly_ReturnsDefaultEndpoint()
         {
-            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+            IAgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
 
             string ipAddress = "localhost";
 
@@ -58,12 +59,12 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         [InlineData(" ")]
         public void Create_EndpointWithNoIpAddress_ThrowsArgumentException(string? ipAddress)
         {
-            AgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
+            IAgentEndpointFactory agentEndpointFactory = CreateDefaultAgentEndpointFactory();
 
             Assert.Throws<ArgumentException>(() => agentEndpointFactory.Create(ipAddress!));
         }
 
-        private AgentEndpointFactory CreateDefaultAgentEndpointFactory()
+        private IAgentEndpointFactory CreateDefaultAgentEndpointFactory()
         {
             return new AgentEndpointFactory();
         }
