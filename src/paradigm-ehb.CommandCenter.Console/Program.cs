@@ -3,4 +3,3 @@ Console.WriteLine("Hello, World!");
 
 Console.WriteLine(Client.DependencyMethod());
 
-Console.WriteLine(await Client.GrpcGreetAsync(""));
