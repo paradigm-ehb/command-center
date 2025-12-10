@@ -9,7 +9,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         AgentEndpointFactory _agentEndpointFactory = new AgentEndpointFactory();
 
         [Fact]
-        public void CreateEndpointWithAllParams()
+        public void Create_EndpointWithAllParams_ReturnsPopulatedEndpoint()
         {
             string ipAddress = "192.168.1.1";
             int port = 4242;
@@ -35,7 +35,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         }
 
         [Fact]
-        public void CreateEndpointDefault()
+        public void Create_EndpointWithIpOnly_ReturnsDefaultEndpoint()
         {
             string ipAddress = "localhost";
 
@@ -52,7 +52,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         }
 
         [Fact]
-        public void CreateEndpointNoIpAddressThrow()
+        public void Create_EndpointWithNoIpAddress_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(null!));
             Assert.Throws<ArgumentException>(() => _agentEndpointFactory.Create(" "));
