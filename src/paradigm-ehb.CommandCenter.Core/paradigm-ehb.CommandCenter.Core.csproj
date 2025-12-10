@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+		
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>paradigm_ehb.CommandCenter.Core</RootNamespace>
@@ -9,7 +9,8 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Protobuf" Version="3.33.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+		<PackageReference Include="Google.Protobuf" Version="3.33.2" />
 		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
 		<PackageReference Include="Grpc.Tools" Version="2.76.0">
 			<PrivateAssets>all</PrivateAssets>
@@ -17,13 +18,13 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<!-- Global Includes -->
 	<ItemGroup>
-		<Using Include="Grpc.Net.Client"/>
 	</ItemGroup>
 
-	<!-- Include .proto files to project -->
+	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
-		<Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\*.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
