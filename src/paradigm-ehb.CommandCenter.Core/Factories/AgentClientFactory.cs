@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Health.V1;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -50,6 +51,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             {
                 EndpointId = endpoint.Id,
                 Channel = channel,
+                Health = new Health.HealthClient(channel),
                 Greeter = new Greeter.GreeterClient(channel)
             };
 
