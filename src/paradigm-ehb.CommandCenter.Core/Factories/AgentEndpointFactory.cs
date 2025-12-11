@@ -7,7 +7,7 @@ using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
-    internal class AgentEndpointFactory : IAgentEndpointFactory
+    public sealed class AgentEndpointFactory : IAgentEndpointFactory
     {
         /// <summary>
         /// Creates a new AgentEndpoint instance with the specified IP address, port, connection security, display name,
