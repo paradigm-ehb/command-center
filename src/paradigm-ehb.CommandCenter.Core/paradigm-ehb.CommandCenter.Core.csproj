@@ -9,7 +9,6 @@
   </PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Grpc.HealthCheck" Version="2.71.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
 		<PackageReference Include="Google.Protobuf" Version="3.33.2" />
 		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
@@ -25,7 +24,8 @@
 
 	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
-		<Protobuf Include="Protos\*.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\health.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
