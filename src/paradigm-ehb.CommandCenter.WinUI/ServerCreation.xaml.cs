@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,19 +5,203 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Xml.Linq;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.Storage;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class ServerCreation : Page
 {
     public ServerCreation()
     {
         InitializeComponent();
+        LoadFolders();
+    }
+
+    /// <summary>
+    /// Loads all existing folders into the ComboBox
+    /// </summary>
+    private void LoadFolders()
+    {
+        FolderComboBox.Items.Clear();
+        
+        string[] folders = fetchFolders();
+        foreach (string folder in folders)
+        {
+            FolderComboBox.Items.Add(folder);
+        }
+
+        // Select first folder if available
+        if (FolderComboBox.Items.Count > 0)
+        {
+            FolderComboBox.SelectedIndex = 0;
+        }
+    }
+
+    /// <summary>
+    /// Handles when user types and submits a new folder name
+    /// </summary>
+    private void FolderComboBox_TextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
+    {
+        string newFolderName = args.Text.Trim();
+
+        // Check if folder name is not empty
+        if (string.IsNullOrWhiteSpace(newFolderName))
+        {
+            return;
+        }
+
+        // Check if folder already exists in the list
+        bool exists = false;
+        foreach (var item in sender.Items)
+        {
+            if (item.ToString().Equals(newFolderName, StringComparison.OrdinalIgnoreCase))
+            {
+                exists = true;
+                sender.SelectedItem = item;
+                break;
+            }
+        }
+
+        // Create new folder if it doesn't exist
+        if (!exists)
+        {
+            bool created = createFolder(newFolderName);
+            if (created)
+            {
+                sender.Items.Add(newFolderName);
+                sender.SelectedItem = newFolderName;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets all information & validates it.
+    /// </summary>
+    public bool ValidateAndProcess()
+    {
+        // Validate folder selection
+        if (FolderComboBox.SelectedItem == null && string.IsNullOrWhiteSpace(FolderComboBox.Text))
+        {
+            // Show error: folder is required
+            return false;
+        }
+
+        // Get or create folder name
+        string folderName = FolderComboBox.SelectedItem?.ToString() ?? FolderComboBox.Text.Trim();
+        
+        // Ensure folder exists
+        createFolder(folderName);
+            
+        // Parse port from ServerPortTextBox
+        int port;
+        if (!int.TryParse(ServerPortTextBox.Text, out port))
+        {
+            return false;
+        }
+
+        // Add the server
+        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port);
+
+        SendNotification("Server added successfully!");
+
+        return true;
+    }
+
+    private void SendNotification(string message, string title = "Command Center")
+    {
+        var builder = new AppNotificationBuilder()
+            .AddText(title)
+            .AddText(message);
+
+        var notification = builder.BuildNotification();
+        AppNotificationManager.Default.Show(notification);
+    }
+
+    /// <summary>
+    /// Fetches all folder names from serverStorage
+    /// </summary>
+    public string[] fetchFolders()
+    {
+        var localSettings = ApplicationData.Current.LocalSettings;
+
+        // Try to get existing serverStorage container
+        ApplicationDataContainer serverStorage;
+        if (localSettings.Containers.ContainsKey("serverStorage"))
+        {
+            serverStorage = localSettings.Containers["serverStorage"];
+            
+            // Return all folder (container) names
+            return serverStorage.Containers.Keys.ToArray();
+        }
+
+        // Return empty array if serverStorage doesn't exist yet
+        return Array.Empty<string>();
+    }
+
+    /// <summary>
+    /// Creates a new folder in serverStorage
+    /// </summary>
+    /// <param name="folderName">Name of the folder to create</param>
+    /// <returns>True if created successfully, false if folder already exists</returns>
+    public bool createFolder(string folderName)
+    {
+        var localSettings = ApplicationData.Current.LocalSettings;
+
+        var serverStorage = localSettings.CreateContainer(
+            "serverStorage",
+            ApplicationDataCreateDisposition.Always
+        );
+
+        // Check if folder already exists
+        if (serverStorage.Containers.ContainsKey(folderName))
+        {
+            return false; // Folder already exists
+        }
+
+        // Create the new folder
+        serverStorage.CreateContainer(
+            folderName,
+            ApplicationDataCreateDisposition.Always
+        );
+
+        return true;
+    }
+
+    public void addServer(string folderName, string name, string ip, int port)
+    {
+        var localSettings = ApplicationData.Current.LocalSettings;
+
+        var serverStorage = localSettings.CreateContainer(
+            "serverStorage",
+            ApplicationDataCreateDisposition.Always
+        );
+
+        // Create or get the requested the folders
+        var folder = serverStorage.CreateContainer(
+            folderName,
+            ApplicationDataCreateDisposition.Always
+        );
+
+        // Determine next available index inside the folder
+        int nextIndex = folder.Values.Count;
+
+        // Create the server object
+        var server = new ApplicationDataCompositeValue();
+        server["name"] = name;
+        server["ip"] = ip;
+        server["port"] = port;
+
+        // Save it inside the folder
+        folder.Values[nextIndex.ToString()] = server;
     }
 }

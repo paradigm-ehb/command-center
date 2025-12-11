@@ -13,9 +13,7 @@
         <Pivot Title="Home" Margin="10,0">
             <PivotItem Header="Recent">
                 <Grid>
-                    <StackPanel HorizontalAlignment="Left" Margin="0,10,0,0">
-                        <components:Home_ServerOverview ServerName="Bruh" ServerStatus="0" />
-                    </StackPanel>
+                    <StackPanel x:Name="AllServers" HorizontalAlignment="Left" Orientation="Vertical" Margin="0,10,0,0"/>
                 </Grid>
             </PivotItem>
             <PivotItem Header="Overview">
