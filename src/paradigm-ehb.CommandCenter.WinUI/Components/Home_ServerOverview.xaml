@@ -6,9 +6,27 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <MenuFlyout x:Key="colorMenuFlyout">
+            <MenuFlyoutItem Text="Red" Tag="red"/>
+            <MenuFlyoutItem Text="Green" Tag="green"/>
+        </MenuFlyout>
+    </UserControl.Resources>
+
 
     <Border Height="140" Width="200" CornerRadius="10" BorderBrush="White" BorderThickness="1"
             x:Name="rootBorder">
+        <Border.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem Text="Open in CS" Icon="Play"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Start" Icon="Play"/>
+                <MenuFlyoutItem Text="Stop" Icon="Stop"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+        
         <Grid>
             <Rectangle x:Name="serverBackground" Fill="White" Opacity="0"/>
 
