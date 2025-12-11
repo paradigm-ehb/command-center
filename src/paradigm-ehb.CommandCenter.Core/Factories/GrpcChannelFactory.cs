@@ -13,7 +13,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         public GrpcChannel CreateChannel(AgentEndpoint endpoint)
         {
             // TODO: Add support for Health Checks, Interceptors, etc.
-            return GrpcChannel.ForAddress($"http{(endpoint.UseTls ? 's' : null)}:{endpoint.IpAddress}:{endpoint.Port}");
+            return GrpcChannel.ForAddress($"http{(endpoint.UseTls ? 's' : null)}://{endpoint.IpAddress}:{endpoint.Port}");
         }
     }
 }
