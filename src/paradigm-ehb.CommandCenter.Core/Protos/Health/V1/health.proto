@@ -19,6 +19,8 @@ syntax = "proto3";
 
 option csharp_namespace = "Grpc.Health.V1";
 
+package health.v1;
+
 message HealthCheckRequest {
   string service = 1;
 }
