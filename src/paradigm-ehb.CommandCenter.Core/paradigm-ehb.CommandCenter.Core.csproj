@@ -25,7 +25,7 @@
 	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
 		<Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
-		<Protobuf Include="Protos\health.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\Health\V1\health.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
