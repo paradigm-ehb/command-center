@@ -10,6 +10,13 @@
 
     <Grid Width="400">
         <StackPanel Orientation="Vertical" Spacing="16">
+            <ComboBox x:Name="FolderComboBox"
+                      Header="Server Folder"
+                      PlaceholderText="Select or create a folder"
+                      IsEditable="True"
+                      HorizontalAlignment="Stretch"
+                      TextSubmitted="FolderComboBox_TextSubmitted"/>
+            
             <TextBox x:Name="ServerNameTextBox"
                      Header="Server Name"
                      PlaceholderText="iMad's Server"/>

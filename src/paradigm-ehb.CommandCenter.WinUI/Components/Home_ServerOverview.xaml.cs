@@ -15,6 +15,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using static System.Net.WebRequestMethods;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -94,7 +96,4 @@ public sealed partial class Home_ServerOverview : UserControl
         var control = (Home_ServerOverview)d;
         control.setupStatus((int)e.NewValue);
     }
-
-
-
 }
