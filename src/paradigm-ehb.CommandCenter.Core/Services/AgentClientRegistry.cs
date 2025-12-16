@@ -35,14 +35,14 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNotDisposed();
 
-            AgentClient stored = _clients.GetOrAdd(entry.EndpointId, entry);
+            AgentClient stored = _clients.GetOrAdd(entry.Endpoint.Id, entry);
             bool created = ReferenceEquals(stored, entry);
             List<string> warnings = new();
 
             if (created)
             {
-                _lastUsed[entry.EndpointId] = DateTimeOffset.UtcNow;
-                _logger.LogInformation("Registered client entry for endpoint {EndpointId}.", entry.EndpointId);
+                _lastUsed[entry.Endpoint.Id] = DateTimeOffset.UtcNow;
+                _logger.LogInformation($"Registered client entry for endpoint {entry.Endpoint.DisplayName}({entry.Endpoint.Id}).");
                 return Task.FromResult(new AgentClientRegistrationResult(
                     Registered: true,
                     Entry: entry,
@@ -52,7 +52,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             }
 
             // Existing entry: update last-used timestamp for the stored entry, dispose the caller-created one.
-            _lastUsed[stored.EndpointId] = DateTimeOffset.UtcNow;
+            _lastUsed[stored.Endpoint.Id] = DateTimeOffset.UtcNow;
 
             try
             {
@@ -60,10 +60,10 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed disposing duplicate channel for endpoint {EndpointId}.", entry.EndpointId);
+                _logger.LogWarning(ex, $"Failed disposing duplicate channel for endpoint {entry.Endpoint.DisplayName}({entry.Endpoint.Id}).");
             }
 
-            _logger.LogDebug("Registration skipped for endpoint {EndpointId} because an entry already exists.", entry.EndpointId);
+            _logger.LogDebug($"Registration skipped for endpoint {entry.Endpoint.DisplayName}({entry.Endpoint.Id}) because an entry already exists.");
 
             return Task.FromResult(new AgentClientRegistrationResult(
                 Registered: false,
