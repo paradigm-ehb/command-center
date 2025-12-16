@@ -20,9 +20,9 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         /// </summary>
         /// <param name="interval">The time interval between each monitoring cycle.</param>
         /// <param name="maxConcurrency">The maximum number of monitoring operations that can run concurrently. The default is 10.</param>
-        public AgentMonitor(TimeSpan interval, int maxConcurrency = 10)
+        public AgentMonitor(TimeSpan? interval = null, int maxConcurrency = 10)
         {
-            _timer = new PeriodicTimer(interval);
+            _timer = new PeriodicTimer(interval ?? new TimeSpan(0, 1, 0));
             _maxConcurrency = maxConcurrency;
         }
 
@@ -33,10 +33,13 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         /// method is typically intended to be run as a long-lived background operation.</remarks>
         /// <param name="agentClients">A read-only collection of agent clients to use for probing servers. Cannot be null or empty.</param>
         /// <returns>A task that represents the asynchronous operation. The task completes when the probing loop is stopped.</returns>
-        public async Task StartAsync(IReadOnlyCollection<AgentEndpoint> agentEndpoints)
+        public async Task StartAsync(IAgentEndpointRegistry agentEndpointRegistry, TimeSpan? interval = null)
         {
+            _timer.Period = interval ?? _timer.Period; // Modify the timer period if a new interval is provided
+
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
+                IReadOnlyCollection<AgentEndpoint> agentEndpoints = await agentEndpointRegistry.ListAsync(_cts.Token);
                 await ProbeServersAsync(agentEndpoints, _cts.Token);
             }
         }

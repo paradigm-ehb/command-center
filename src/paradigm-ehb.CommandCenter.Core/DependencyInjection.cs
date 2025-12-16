@@ -14,6 +14,7 @@ namespace paradigm_ehb.CommandCenter.Core
             services.AddSingleton<IGrpcChannelFactory, GrpcChannelFactory>();
             services.AddSingleton<IAgentClientFactory, AgentClientFactory>();
             services.AddSingleton<IAgentClientRegistry, AgentClientRegistry>();
+            services.AddSingleton<IAgentMonitor, AgentMonitor>();
             return services;
         }
     }

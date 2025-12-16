@@ -5,13 +5,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using paradigm_ehb.CommandCenter.Core.Enums;
+using Grpc.Core;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
     public sealed class AgentClient : IDisposable
     {
         private bool disposedValue;
-        private readonly object _endpointSync = new();
+
+        private readonly ConcurrentDictionary<string, bool> _degradedServices = new();
+        private readonly List<Task> _healthWatchTasks = new();
+        private CancellationTokenSource? _healthWatchCts;
 
         /// <summary>
         /// Gets or sets the network endpoint information for the agent connection.
@@ -20,77 +26,163 @@ namespace paradigm_ehb.CommandCenter.Core.Models
 
         public GrpcChannel Channel { get; init; }
 
+        public Dictionary<string, bool> DegradedServices
+        {
+            get
+            {
+                // expose a snapshot to callers
+                return _degradedServices.ToDictionary(kv => kv.Key, kv => kv.Value);
+            }
+            init { } // keep compatibility with existing init-only usage
+        }
+
         public Health.HealthClient Health { get; init; }
 
         public Greeter.GreeterClient Greeter { get; init; }
 
         /// <summary>
-        /// Performs a health check against the remote agent and updates the local endpoint health.
-        /// Returns the resolved <see cref="AgentHealthStatus"/>.
+        /// Starts background health watch tasks for common services. This method is fire-and-forget
+        /// from the caller perspective: the client will keep the child tasks and stop them when disposed
+        /// or when <paramref name="cancellationToken"/> is signaled.
         /// </summary>
-        public async Task<AgentHealthStatus> CheckHealthAsync(CancellationToken cancellationToken = default)
+        public Task StartHealthWatch(CancellationToken cancellationToken = default)
         {
+            // Ensure we only start once
+            if (_healthWatchCts != null && !_healthWatchCts.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            _healthWatchCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            // list services to watch - adapt as needed
+            string[] services = new[] { "health", "greeter", "services", "" };
+
+            foreach (string service in services)
+            {
+                CancellationToken linkedToken = _healthWatchCts.Token;
+
+                Task task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await StartServiceHealthWatch(service, linkedToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (linkedToken.IsCancellationRequested)
+                    {
+                        // expected on cancellation - swallow
+                    }
+                    catch
+                    {
+                        // swallow to prevent unobserved exceptions; consider logging
+                    }
+                }, linkedToken);
+
+                // keep references so we can cancel and await them on dispose
+                _healthWatchTasks.Add(task);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task StartServiceHealthWatch(string service, CancellationToken cancellationToken)
+        {
+            // Create the streaming call. We will dispose the call in finally so cancellation cleans up resources.
+            AsyncServerStreamingCall<HealthCheckResponse>? call = null;
+
             try
             {
-                // Use the async Response task so exceptions propagate and can be handled.
-                HealthListResponse response = await Health.ListAsync(new HealthListRequest(), cancellationToken: cancellationToken).ResponseAsync.ConfigureAwait(false);
+                call = Health.Watch(new HealthCheckRequest() { Service = service });
 
-                bool anyUnhealthy = response?.Statuses == null || response.Statuses.Values.Any(service => service.Status != HealthCheckResponse.Types.ServingStatus.Serving);
+                await foreach (HealthCheckResponse healthCheckResponse in call.ResponseStream.ReadAllAsync(cancellationToken))
+                {
+                    bool degraded = healthCheckResponse.Status != HealthCheckResponse.Types.ServingStatus.Serving;
 
-                AgentHealthStatus resolved = anyUnhealthy ? AgentHealthStatus.Degraded : AgentHealthStatus.Healthy;
+                    // update concurrent dictionary
+                    _degradedServices.AddOrUpdate(service, degraded, (_, __) => degraded);
 
-                return resolved;
+                    // update aggregate endpoint health
+                    if (_degradedServices.Values.Any(v => v))
+                    {
+                        Endpoint.HealthStatus = AgentHealthStatus.Degraded;
+                    }
+                    else
+                    {
+                        Endpoint.HealthStatus = AgentHealthStatus.Healthy;
+                    }
+                }
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            finally
             {
-                // Bubble cancellation to caller.
-                throw;
+                try
+                {
+                    call?.Dispose();
+                }
+                catch
+                {
+                    // best-effort dispose
+                }
+            }
+        }
+
+        /// <summary>
+        /// Requests health watch tasks to stop and waits a short time for graceful shutdown.
+        /// </summary>
+        public void StopHealthWatch()
+        {
+            if (_healthWatchCts == null) return;
+
+            try
+            {
+                _healthWatchCts.Cancel();
+
+                // wait for background tasks to complete (bounded wait)
+                Task[] tasks = _healthWatchTasks.ToArray();
+                if (tasks.Length > 0)
+                {
+                    Task all = Task.WhenAll(tasks);
+                    all.Wait(TimeSpan.FromSeconds(5));
+                }
             }
             catch
             {
-                return AgentHealthStatus.Unknown;
+                // swallow - stop is best effort
+            }
+            finally
+            {
+                _healthWatchCts.Dispose();
+                _healthWatchCts = null;
+                _healthWatchTasks.Clear();
+                _degradedServices.Clear();
             }
         }
 
         /// <summary>
         /// Disposes the resources used by the current instance of the <see cref="AgentClient"/> class.
+        /// Cancels any running health watches.
         /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
                     try
                     {
+                        StopHealthWatch();
                         Channel?.Dispose();
-                    } catch
+                    }
+                    catch
                     {
-
+                        // ignore
                     }
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~AgentClient()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        /// <summary>
-        /// Disposes the resources used by the current instance of the <see cref="AgentClient"/> class.
-        /// </summary>
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }

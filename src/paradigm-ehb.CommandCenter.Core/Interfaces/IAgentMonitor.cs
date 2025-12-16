@@ -12,6 +12,6 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// The implementation should run until cancelled (typically via <see cref="IAsyncDisposable.DisposeAsync"/>).
         /// </summary>
         /// <param name="agentEndpoints">Read-only collection of endpoints to probe.</param>
-        Task StartAsync(IReadOnlyCollection<AgentEndpoint> agentEndpoints);
+        Task StartAsync(IAgentEndpointRegistry agentEndpointRegistry, TimeSpan? interval = null);
     }
 }
