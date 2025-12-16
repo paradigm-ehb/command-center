@@ -25,9 +25,9 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             AgentEndpoint agentEndpoint = CreateDefaultAgentEndpoint();
 
-            AgentClientEntry agentClientEntry = await agentClientFactory.CreateClientAsync(agentEndpoint);
+            AgentClient agentClientEntry = await agentClientFactory.CreateClientAsync(agentEndpoint);
 
-            Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
+            Assert.Equal(agentEndpoint.Id, agentClientEntry.Endpoint.Id);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
             mockAgentClientRegistry.VerifyAll();
@@ -56,8 +56,8 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
         {
             Mock<IAgentClientRegistry> mockAgentClientRegistry = CreateDefaultMock<IAgentClientRegistry>();
 
-            mockAgentClientRegistry.Setup(registry => registry.RegisterAsync(It.IsAny<AgentClientEntry>()))
-                .ReturnsAsync((AgentClientEntry entry, CancellationToken _) => new AgentClientRegistrationResult(true, entry, new List<string>().AsReadOnly()));
+            mockAgentClientRegistry.Setup(registry => registry.RegisterAsync(It.IsAny<AgentClient>()))
+                .ReturnsAsync((AgentClient entry, CancellationToken _) => new AgentClientRegistrationResult(true, entry, new List<string>().AsReadOnly()));
 
             Mock<IGrpcChannelFactory> mockGrpcChannelFactory = CreateDefaultMock<IGrpcChannelFactory>();
 
@@ -68,9 +68,9 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             AgentEndpoint agentEndpoint = CreateDefaultAgentEndpoint();
 
-            AgentClientEntry agentClientEntry = await agentClientFactory.CreateAndRegisterClientAsync(agentEndpoint);
+            AgentClient agentClientEntry = await agentClientFactory.CreateAndRegisterClientAsync(agentEndpoint);
 
-            Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
+            Assert.Equal(agentEndpoint.Id, agentClientEntry.Endpoint.Id);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
             mockAgentClientRegistry.VerifyAll();

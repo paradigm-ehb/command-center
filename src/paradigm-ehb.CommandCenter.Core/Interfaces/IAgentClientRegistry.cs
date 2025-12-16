@@ -23,7 +23,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the registration operation.</param>
         /// <returns>A task that represents the asynchronous registration operation. The task result contains the outcome of the
         /// agent client registration.</returns>
-        Task<AgentClientRegistrationResult> RegisterAsync(AgentClientEntry entry, CancellationToken cancellationToken = default);
+        Task<AgentClientRegistrationResult> RegisterAsync(AgentClient entry, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously deregisters the specified endpoint from the system.
@@ -40,7 +40,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a read-only collection of agent
         /// client entries. The collection is empty if no agent clients are registered.</returns>
-        Task<IReadOnlyCollection<AgentClientEntry>> ListAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyCollection<AgentClient>> ListAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously retrieves the agent client entry associated with the specified endpoint identifier.
@@ -48,8 +48,8 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="endpointId">The unique identifier of the endpoint for which to retrieve the agent client entry.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see
-        /// cref="AgentClientEntry"/> associated with the specified endpoint if found; otherwise, <see
+        /// cref="AgentClient"/> associated with the specified endpoint if found; otherwise, <see
         /// langword="null"/>.</returns>
-        Task<AgentClientEntry?> GetAsync(Guid endpointId, CancellationToken cancellationToken = default);
+        Task<AgentClient?> GetAsync(Guid endpointId, CancellationToken cancellationToken = default);
     }
 }
