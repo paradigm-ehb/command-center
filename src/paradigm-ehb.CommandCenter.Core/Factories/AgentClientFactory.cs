@@ -38,7 +38,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         /// <returns>A task that represents the asynchronous operation. The task result contains the created client entry for the
         /// specified endpoint.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="endpoint"/> is null.</exception>
-        public Task<AgentClientEntry> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
+        public Task<AgentClient> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
             if (endpoint is null) throw new ArgumentNullException(nameof(endpoint));
             ThrowIfDisposed();
@@ -46,7 +46,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
 
             GrpcChannel channel = _channelFactory.CreateChannel(endpoint);
 
-            var createdEntry = new AgentClientEntry
+            var createdEntry = new AgentClient
             {
                 EndpointId = endpoint.Id,
                 Channel = channel,
@@ -66,9 +66,9 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         /// client is disposed and the existing entry is returned.</remarks>
         /// <param name="endpoint">The endpoint information used to create and register the agent client. Cannot be null.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="AgentClientEntry"/> representing the registered agent client. If the client was already
+        /// <returns>An <see cref="AgentClient"/> representing the registered agent client. If the client was already
         /// registered, returns the existing entry.</returns>
-        public async Task<AgentClientEntry> CreateAndRegisterClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
+        public async Task<AgentClient> CreateAndRegisterClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
             var created = await CreateClientAsync(endpoint, cancellationToken).ConfigureAwait(false);
 
@@ -98,14 +98,14 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             return result.Entry;
         }
 
-        public Task<AgentClientEntry?> GetClientAsync(Guid endpointId, CancellationToken cancellationToken = default)
+        public Task<AgentClient?> GetClientAsync(Guid endpointId, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             cancellationToken.ThrowIfCancellationRequested();
             return _registry.GetAsync(endpointId, cancellationToken);
         }
 
-        public Task<IReadOnlyCollection<AgentClientEntry>> GetAllClientsAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyCollection<AgentClient>> GetAllClientsAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             cancellationToken.ThrowIfCancellationRequested();
