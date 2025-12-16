@@ -1,43 +1,61 @@
 ﻿using Grpc.Health.V1;
 using Grpc.Net.Client;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Channels;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using paradigm_ehb.CommandCenter.Core.Enums;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
     public sealed class AgentClient : IDisposable
     {
         private bool disposedValue;
+        private readonly object _endpointSync = new();
 
         /// <summary>
         /// Gets or sets the network endpoint information for the agent connection.
         /// </summary>
         public AgentEndpoint Endpoint { get; set; }
 
-        /// <summary>
-        /// Gets the gRPC channel used for remote procedure calls.
-        /// </summary>
-        /// <remarks>The channel provides the underlying transport for gRPC client operations. This
-        /// property is initialized during object construction and cannot be modified after initialization.</remarks>
         public GrpcChannel Channel { get; init; }
 
-        /// <summary>
-        /// Gets the gRPC client for performing health checks against the service.
-        /// </summary>
-        /// <remarks>Use this client to query the health status of the service or its components using
-        /// standard gRPC health check methods.</remarks>
         public Health.HealthClient Health { get; init; }
 
-        /// <summary>
-        /// Gets the gRPC client used to communicate with the Greeter service.
-        /// </summary>
-        /// <remarks>Use this client to invoke remote procedures defined by the Greeter service, such as
-        /// sending greeting requests. The property is initialized during object construction and cannot be modified
-        /// afterwards.</remarks>
         public Greeter.GreeterClient Greeter { get; init; }
 
+        /// <summary>
+        /// Performs a health check against the remote agent and updates the local endpoint health.
+        /// Returns the resolved <see cref="AgentHealthStatus"/>.
+        /// </summary>
+        public async Task<AgentHealthStatus> CheckHealthAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Use the async Response task so exceptions propagate and can be handled.
+                HealthListResponse response = await Health.ListAsync(new HealthListRequest(), cancellationToken: cancellationToken).ResponseAsync.ConfigureAwait(false);
+
+                bool anyUnhealthy = response?.Statuses == null || response.Statuses.Values.Any(service => service.Status != HealthCheckResponse.Types.ServingStatus.Serving);
+
+                AgentHealthStatus resolved = anyUnhealthy ? AgentHealthStatus.Degraded : AgentHealthStatus.Healthy;
+
+                return resolved;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Bubble cancellation to caller.
+                throw;
+            }
+            catch
+            {
+                return AgentHealthStatus.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Disposes the resources used by the current instance of the <see cref="AgentClient"/> class.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -67,6 +85,9 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         //     Dispose(disposing: false);
         // }
 
+        /// <summary>
+        /// Disposes the resources used by the current instance of the <see cref="AgentClient"/> class.
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

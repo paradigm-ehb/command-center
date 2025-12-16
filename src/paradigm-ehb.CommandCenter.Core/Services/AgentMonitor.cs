@@ -1,4 +1,5 @@
 ﻿using paradigm_ehb.CommandCenter.Core.Enums;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace paradigm_ehb.CommandCenter.Core.Services
 {
-    public sealed class AgentMonitor : IAsyncDisposable
+    public sealed class AgentMonitor : IAgentMonitor, IAsyncDisposable
     {
         private readonly PeriodicTimer _timer;
         private readonly CancellationTokenSource _cts = new();
