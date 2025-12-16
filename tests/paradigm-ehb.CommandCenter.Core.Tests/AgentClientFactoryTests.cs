@@ -27,7 +27,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             AgentClient agentClientEntry = await agentClientFactory.CreateClientAsync(agentEndpoint);
 
-            Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
+            Assert.Equal(agentEndpoint.Id, agentClientEntry.Endpoint.Id);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
             mockAgentClientRegistry.VerifyAll();
@@ -70,7 +70,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
 
             AgentClient agentClientEntry = await agentClientFactory.CreateAndRegisterClientAsync(agentEndpoint);
 
-            Assert.Equal(agentEndpoint.Id, agentClientEntry.EndpointId);
+            Assert.Equal(agentEndpoint.Id, agentClientEntry.Endpoint.Id);
             Assert.IsType<Grpc.Net.Client.GrpcChannel>(agentClientEntry.Channel);
 
             mockAgentClientRegistry.VerifyAll();
