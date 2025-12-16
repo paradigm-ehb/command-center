@@ -46,9 +46,9 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
 
             GrpcChannel channel = _channelFactory.CreateChannel(endpoint);
 
-            var createdEntry = new AgentClient
+            AgentClient createdEntry = new AgentClient
             {
-                EndpointId = endpoint.Id,
+                Endpoint = endpoint,
                 Channel = channel,
                 Greeter = new Greeter.GreeterClient(channel)
             };
@@ -70,12 +70,12 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         /// registered, returns the existing entry.</returns>
         public async Task<AgentClient> CreateAndRegisterClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
-            var created = await CreateClientAsync(endpoint, cancellationToken).ConfigureAwait(false);
+            AgentClient created = await CreateClientAsync(endpoint, cancellationToken);
 
             AgentClientRegistrationResult result;
             try
             {
-                result = await _registry.RegisterAsync(created, cancellationToken).ConfigureAwait(false);
+                result = await _registry.RegisterAsync(created, cancellationToken);
             }
             catch
             {
