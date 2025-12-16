@@ -7,8 +7,10 @@ using System.Threading.Channels;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
-    public sealed class AgentClient
+    public sealed class AgentClient : IDisposable
     {
+        private bool disposedValue;
+
         /// <summary>
         /// Gets or sets the network endpoint information for the agent connection.
         /// </summary>
@@ -35,5 +37,41 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// sending greeting requests. The property is initialized during object construction and cannot be modified
         /// afterwards.</remarks>
         public Greeter.GreeterClient Greeter { get; init; }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                    try
+                    {
+                        Channel?.Dispose();
+                    } catch
+                    {
+
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~AgentClient()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

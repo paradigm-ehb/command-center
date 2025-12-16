@@ -14,9 +14,10 @@ namespace paradigm_ehb.CommandCenter.Core.Enums
     /// available or reachable. - Unknown: The agent's health status cannot be determined.</remarks>
     public enum AgentHealthStatus
     {
-        Healthy = 0,
-        Degraded = 1,
-        Offline = 2,
-        Unknown = 3
+        Online = 0,
+        Offline = 1,
+        Healthy = 2,
+        Degraded = 3,
+        Unknown = 4
     }
 }
