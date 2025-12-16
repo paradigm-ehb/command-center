@@ -34,7 +34,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="paradigm-ehb.CommandCenter.WinUI"
+        DisplayName="Paradigm"
         Description="paradigm-ehb.CommandCenter.WinUI"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

@@ -10,9 +10,9 @@ namespace paradigm_ehb.CommandCenter.Core
         public static IServiceCollection AddCommandCenterCore(this IServiceCollection services)
         {
             services.AddSingleton<IAgentEndpointFactory, AgentEndpointFactory>();
-            services.AddSingleton<IAgentEndpointRegistry, AgentEndpointRegistry>();
-            services.AddSingleton<IGrpcChannelFactory, GrpcChannelFactory>();
-            services.AddSingleton<IAgentClientFactory, AgentClientFactory>();
+            services.AddSingleton<IAgentEndpointRegistry, AgentEndpointRegistry>(); //Endpoint aanmaken
+            services.AddSingleton<IGrpcChannelFactory, GrpcChannelFactory>(); //Niet nodig
+            services.AddSingleton<IAgentClientFactory, AgentClientFactory>(); //Wordt gebruikt om een connectie te make met de agent
             services.AddSingleton<IAgentClientRegistry, AgentClientRegistry>();
             return services;
         }

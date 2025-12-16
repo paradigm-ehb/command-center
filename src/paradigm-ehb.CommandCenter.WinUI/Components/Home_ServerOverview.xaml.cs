@@ -1,25 +1,11 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Models;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using static System.Net.WebRequestMethods;
-using Microsoft.Windows.AppNotifications;
-using Microsoft.Windows.AppNotifications.Builder;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Diagnostics;
 
 namespace paradigm_ehb.CommandCenter.WinUI.Components.Reusable;
 
@@ -38,6 +24,32 @@ public sealed partial class Home_ServerOverview : UserControl
         {
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
+
+        getServerStatus();
+    }
+
+    private async void getServerStatus()
+    {
+        IServiceProvider services = new ServiceCollection()
+                .AddCommandCenterCore()
+                .BuildServiceProvider();
+
+        //Dependency injection to get factories
+        IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
+        IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
+
+
+        AgentEndpoint agentEndpoint = agentEndpointFactory.Create("127.0.0.1", 50051, false);
+        var agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
+        try
+        {
+            var reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
+            Debug.WriteLine("Greeting: " + reply.Message);
+        }
+        catch (Grpc.Core.RpcException ex)
+        {
+            setupStatus(2);
+        }
     }
 
     private void setupStatus(int Status)

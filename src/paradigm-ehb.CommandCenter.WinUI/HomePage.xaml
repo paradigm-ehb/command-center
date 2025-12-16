@@ -12,15 +12,17 @@
     <Grid>
         <Pivot Title="Home" Margin="10,0">
             <PivotItem Header="Recent">
-                <Grid>
-                    <StackPanel x:Name="AllServers" HorizontalAlignment="Left" Orientation="Vertical" Margin="0,10,0,0"/>
-                </Grid>
+                <ScrollView>
+                    <Grid>
+                        <StackPanel x:Name="AllServers" HorizontalAlignment="Left" Orientation="Vertical" Margin="0,10,0,0"/>
+                    </Grid>
+                </ScrollView>
             </PivotItem>
             <PivotItem Header="Overview">
-                <TextBlock Text="Overview on resource utilization" />
+                <TextBlock Text="Waiting for Luke's core implementation..." />
             </PivotItem>
             <PivotItem Header="Errors">
-                <TextBlock Text="All server errors go here." />
+                <TextBlock Text="Waiting for Luke's core implementation..." />
             </PivotItem>
 
         </Pivot>

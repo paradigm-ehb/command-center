@@ -15,6 +15,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using paradigm_ehb.CommandCenter.WinUI.Components.Reusable;
+using System.ComponentModel;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -24,10 +25,10 @@ namespace paradigm_ehb.CommandCenter.WinUI;
 public sealed partial class HomePage : Page
 {
     public List<ServerFolder> ServerFolders { get; set; }
-
     public HomePage()
     {
         InitializeComponent();
+        this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
         LoadServers();
     }
 
@@ -109,6 +110,7 @@ public sealed partial class HomePage : Page
                 {
                     // Reload servers after adding a new one
                     LoadServers();
+                    MainWindow.Instance.LoadServerMenu();
                 }
             }
         };
