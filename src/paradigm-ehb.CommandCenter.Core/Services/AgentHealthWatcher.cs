@@ -91,7 +91,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         /// cancellation.</remarks>
         public void Stop() => _cts.Cancel();
 
-        ValueTask IAsyncDisposable.DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             _cts.Cancel();
 
