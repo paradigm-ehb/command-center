@@ -22,8 +22,8 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="endpoint">The agent endpoint to connect to. Cannot be null.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains an <see
-        /// cref="AgentClientEntry"/> representing the registered client.</returns>
-        Task<AgentClientEntry> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
+        /// cref="AgentClient"/> representing the registered client.</returns>
+        Task<AgentClient> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new client for the specified agent endpoint and registers it for use.
@@ -32,7 +32,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains an entry representing the
         /// registered agent client.</returns>
-        Task<AgentClientEntry> CreateAndRegisterClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
+        Task<AgentClient> CreateAndRegisterClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously retrieves the client entry associated with the specified endpoint identifier.
@@ -40,9 +40,9 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="endpointId">The unique identifier of the endpoint for which to retrieve the client entry.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see
-        /// cref="AgentClientEntry"/> associated with the specified endpoint if found; otherwise, <see
+        /// cref="AgentClient"/> associated with the specified endpoint if found; otherwise, <see
         /// langword="null"/>.</returns>
-        Task<AgentClientEntry?> GetClientAsync(Guid endpointId, CancellationToken cancellationToken = default);
+        Task<AgentClient?> GetClientAsync(Guid endpointId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously retrieves all registered agent client entries.
@@ -50,6 +50,6 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a read-only collection of all
         /// agent client entries. The collection is empty if no clients are registered.</returns>
-        Task<IReadOnlyCollection<AgentClientEntry>> GetAllClientsAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyCollection<AgentClient>> GetAllClientsAsync(CancellationToken cancellationToken = default);
     }
 }

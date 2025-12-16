@@ -6,12 +6,12 @@ using System.Threading.Channels;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
-    public sealed class AgentClientEntry
+    public sealed class AgentClient
     {
         /// <summary>
-        /// Gets the unique identifier for the endpoint.
+        /// Gets or sets the network endpoint information for the agent connection.
         /// </summary>
-        public Guid EndpointId { get; init; }
+        public AgentEndpoint Endpoint { get; set; }
 
         /// <summary>
         /// Gets the gRPC channel used for remote procedure calls.

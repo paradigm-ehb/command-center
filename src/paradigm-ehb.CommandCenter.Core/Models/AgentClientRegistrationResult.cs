@@ -5,7 +5,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
     /// </summary>
     public sealed record AgentClientRegistrationResult(
             bool Registered,
-            AgentClientEntry Entry,
+            AgentClient Entry,
             IReadOnlyCollection<string> Warnings,
             string? Message = null
         );
