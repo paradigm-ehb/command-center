@@ -2,9 +2,11 @@
 using Grpc.Core;
 using Grpc.Health.V1;
 using Microsoft.Extensions.DependencyInjection;
+using paradigm_ehb.CommandCenter.Core.Enums;
 using paradigm_ehb.CommandCenter.Core.Factories;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.Core.Services;
 
 Console.WriteLine("Hello, World!");
 
@@ -21,23 +23,37 @@ IAgentClientFactory agentClientFactory = provider.GetRequiredService<IAgentClien
 
 IAgentClientRegistry agentClientRegistry = provider.GetRequiredService<IAgentClientRegistry>();
 
+IAgentEndpointRegistry agentEndpointRegistry = provider.GetRequiredService<IAgentEndpointRegistry>();
+
 AgentEndpoint agentEndpoint = agentEndpointFactory.Create("localhost", 50051, false);
 
 AgentEndpoint agentEndpoint2 = agentEndpointFactory.Create("localhost", 50051, false);
+
+await agentEndpointRegistry.RegisterAsync(agentEndpoint);
+await agentEndpointRegistry.RegisterAsync(agentEndpoint2);
 
 AgentClient agentClient = await agentClientFactory.CreateClientAsync(agentEndpoint);
 
 AgentClient agentClient2 = await agentClientFactory.CreateClientAsync(agentEndpoint2);
 
+AgentMonitor agentMonitor = new AgentMonitor(TimeSpan.FromSeconds(10), 5);
+
+agentMonitor.StartAsync(agentEndpointRegistry);
 
 await agentClientRegistry.RegisterAsync(agentClient);
 await agentClientRegistry.RegisterAsync(agentClient2);
 
-Console.WriteLine(agentClient.Health.GetType().Name);
+agentEndpoint.HealthStatusChanged += ChangedHealthStatus;
+agentEndpoint.ReachabilityChanged += ChangedReachabilityStatus;
 
-while (true)
+static void ChangedHealthStatus(AgentEndpoint sender, AgentHealth status)
 {
-    Console.WriteLine($"AgentClient: {agentClient.Endpoint.HealthStatus}");
-    Console.WriteLine($"AgentClient2: {agentClient2.Endpoint.HealthStatus}");
-    Task.Delay(5000).Wait();
+    Console.WriteLine($"Health status of {sender.DisplayName} to: {status}");
 }
+
+static void ChangedReachabilityStatus(AgentEndpoint sender, AgentReachability status)
+{
+    Console.WriteLine($"Reachability status of {sender.DisplayName} to: {status}");
+}
+
+Console.ReadKey();
