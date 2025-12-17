@@ -11,17 +11,17 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// Unique identifier for the endpoint (client-assigned or generated).
         /// TODO: determine client-assigned or generated.
         /// </summary>
-        public Guid Id { get; init; } = Guid.NewGuid();
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// IP address or host name of the agent.
         /// </summary>
-        public string IpAddress { get; init; } = string.Empty;
+        public string IpAddress { get; set; } = string.Empty;
 
         /// <summary>
         /// gRPC port the agent listens on. Default commonly 50051.
         /// </summary>
-        public int Port { get; init; } = 50051;
+        public int Port { get; set; } = 50051;
 
         /// <summary>
         /// Gets a value indicating whether Transport Layer Security (TLS) is enabled for the connection.
@@ -29,24 +29,24 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// <remarks>When <see langword="true"/>, all communication will be encrypted using TLS. If <see
         /// langword="false"/>, data will be transmitted without encryption. Enabling TLS is recommended for secure
         /// environments.</remarks>
-        public bool UseTls { get; init; } = true;
+        public bool UseTls { get; set; } = true;
 
         /// <summary>
         /// User-friendly name for display in the UI.
         /// </summary>
-        public string DisplayName { get; init; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Optional arbitrary metadata (os, version, tags).
         /// </summary>
-        public IDictionary<string, string>? Metadata { get; init; }
+        public IDictionary<string, string>? Metadata { get; set; }
         
         /// <summary>
         /// Gets or sets the date and time when the entity was last seen.
         /// </summary>
         public DateTimeOffset? LastSeen { get; set; }
 
-        public bool MonitoringEnabled { get; init; } = true;
+        public bool MonitoringEnabled { get; set; } = true;
 
         /// <summary>
         /// Occurs when the reachability status of an agent endpoint changes.
