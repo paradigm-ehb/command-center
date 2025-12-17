@@ -5,13 +5,12 @@ using System.Text;
 namespace paradigm_ehb.CommandCenter.Core.Enums
 {
     /// <summary>
-    /// Specifies the health status of an AgentEndpoint, indicating its current operational condition.
+    /// Specifies the health status of an agent.
+    /// Separated from <see cref="AgentReachability"/> which represents connectivity status.
     /// </summary>
-    /// <remarks>Use this enumeration to represent and evaluate the state of an agent in monitoring or
-    /// management scenarios. The values provide standardized status indicators for health checks, diagnostics, or
-    /// reporting. The meaning of each value is as follows: - Healthy: The agent is operating normally. - Degraded: The
-    /// agent is experiencing reduced performance or partial functionality. - Offline: The agent is not currently
-    /// available or reachable. - Unknown: The agent's health status cannot be determined.</remarks>
+    /// <remarks>Use this enumeration to represent the current operational state of an agent, such as a
+    /// service or process. The values indicate whether the agent is functioning normally, experiencing issues, or if
+    /// its status is unknown.</remarks>
     public enum AgentHealth
     {
         Unknown = 0,
