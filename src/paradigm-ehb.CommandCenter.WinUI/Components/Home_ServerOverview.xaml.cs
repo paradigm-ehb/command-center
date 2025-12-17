@@ -1,25 +1,12 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.WinUI.srvMgnt;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using static System.Net.WebRequestMethods;
-using Microsoft.Windows.AppNotifications;
-using Microsoft.Windows.AppNotifications.Builder;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Diagnostics;
 
 namespace paradigm_ehb.CommandCenter.WinUI.Components.Reusable;
 
@@ -38,6 +25,33 @@ public sealed partial class Home_ServerOverview : UserControl
         {
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
+
+        
+    }
+
+    private async void getServerStatus()
+    {
+        IServiceProvider services = new ServiceCollection()
+                .AddCommandCenterCore()
+                .BuildServiceProvider();
+
+        //Dependency injection to get factories
+        IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
+        IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
+
+        ServerNameText.Text = ServerObject.Name;
+
+        AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ServerObject.Ip, ServerObject.Port, false);
+        var agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
+        try
+        {
+            var reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
+            Debug.WriteLine("Greeting: " + reply.Message);
+        }
+        catch (Grpc.Core.RpcException ex)
+        {
+            setupStatus(2);
+        }
     }
 
     private void setupStatus(int Status)
@@ -65,35 +79,34 @@ public sealed partial class Home_ServerOverview : UserControl
         StatusText.Text = text;
     }
 
-    public string ServerName
+    public ServerInfo ServerObject
     {
-        get => (string)GetValue(ServerNameProperty);
-        set => SetValue(ServerNameProperty, value);
+        get => (ServerInfo)GetValue(ServerObjProperty);
+        set => SetValue(ServerObjProperty, value);
     }
 
-    public int ServerStatus
-    {
-        get => (int)GetValue(ServerStatusProperty);
-        set => SetValue(ServerStatusProperty, value);
-    }
 
-    public static readonly DependencyProperty ServerNameProperty = 
-        DependencyProperty.Register(
-            nameof(ServerName),          // Property name
-            typeof(string),              // Property Datatype
-            typeof(Home_ServerOverview), // Coming from...
-            new PropertyMetadata(null)); // Default Value
-
-    public static readonly DependencyProperty ServerStatusProperty =
+    public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(
-        nameof(ServerStatus),
-        typeof(int),
+        nameof(ServerObject),
+        typeof(ServerInfo),
         typeof(Home_ServerOverview),
-        new PropertyMetadata(0, OnServerStatusChanged));
+        new PropertyMetadata(null, OnServerStatusChanged));
 
     private static void OnServerStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (Home_ServerOverview)d;
-        control.setupStatus((int)e.NewValue);
+        var serverInfo = e.NewValue as ServerInfo;
+
+        if (serverInfo != null)
+        {
+            control.ServerNameText.Text = serverInfo.Name;
+            control.getServerStatus();
+        }
+    }
+
+    private void Grid_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        MainWindow.Instance.NavigateToServerPage(typeof(ServerMainPage), ServerObject);
     }
 }

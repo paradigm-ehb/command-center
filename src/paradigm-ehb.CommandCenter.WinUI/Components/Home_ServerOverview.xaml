@@ -18,21 +18,20 @@
             x:Name="rootBorder">
         <Border.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Text="Open in CS" Icon="Play"/>
+                <MenuFlyoutItem Text="Open in CS" Icon="Go"/>
                 <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Start" Icon="Play"/>
-                <MenuFlyoutItem Text="Stop" Icon="Stop"/>
+                <MenuFlyoutItem Text="Shut Down" Icon="Stop"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Delete" Icon="Delete"/>
             </MenuFlyout>
         </Border.ContextFlyout>
         
-        <Grid>
+        <Grid Tapped="Grid_Tapped">
             <Rectangle x:Name="serverBackground" Fill="White" Opacity="0"/>
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="7">
                 <Image Source="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/UbuntuCoF.svg/1200px-UbuntuCoF.svg.png" Height="70" />
-                <TextBlock Text="{x:Bind ServerName, Mode=OneWay}" HorizontalAlignment="Center" />
+                <TextBlock x:Name="ServerNameText" HorizontalAlignment="Center" />
                 <StackPanel Spacing="7" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Ellipse x:Name="StatusColor" Fill="Lime" Height="15" Width="15" />
                     <TextBlock x:Name="StatusText" Text="Online"></TextBlock>
