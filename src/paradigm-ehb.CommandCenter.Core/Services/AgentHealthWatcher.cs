@@ -109,12 +109,6 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             }
         }
 
-        private void UpdateHealthStatus(AgentEndpoint endpoint)
-        {
-            AgentHealth newStatus = _degradedCount > 0 ? AgentHealth.Degraded : AgentHealth.Healthy;
-            endpoint.HealthStatus = newStatus; // AgentEndpoint raises its own event on change
-        }
-
         /// <summary>
         /// Requests health watch to stop and waits a short time for graceful shutdown.
         /// </summary>
