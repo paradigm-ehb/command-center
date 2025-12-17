@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Health.V1;
 using Grpc.Net.Client;
+using Journal.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
@@ -54,6 +55,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 Channel = channel,
                 Health = new Health.HealthClient(channel),
                 Greeter = new Greeter.GreeterClient(channel),
+                Journal = new JournalService.JournalServiceClient(channel)
             };
 
             // Start background health monitoring as part of client creation

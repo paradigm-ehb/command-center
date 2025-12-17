@@ -2,6 +2,7 @@
 using Grpc.Net.Client;
 using System;
 using paradigm_ehb.CommandCenter.Core.Services;
+using Journal.V1;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
@@ -20,6 +21,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         public Health.HealthClient Health { get; init; }
 
         public Greeter.GreeterClient Greeter { get; init; }
+
+        public JournalService.JournalServiceClient Journal { get; init; }
 
         public bool HealthWatchEnabled { get; set; } = true;
 
