@@ -108,7 +108,6 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 {
                     _logger.LogWarning(ex, "Failed to dispose AgentClient after registry returned existing entry.");
                 }
-                TryDisposeChannel(created.Channel);
                 _logger.LogDebug("Registry returned existing entry for {EndpointId}; disposed newly created channel.", endpoint.Id);
             }
             else
@@ -138,18 +137,6 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             if (_disposed) return;
             _disposed = true;
             _logger.LogInformation("AgentClientFactory disposed.");
-        }
-
-        private void TryDisposeChannel(GrpcChannel? channel)
-        {
-            try
-            {
-                (channel as IDisposable)?.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed disposing temporary gRPC channel.");
-            }
         }
 
         private void ThrowIfDisposed()
