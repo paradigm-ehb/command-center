@@ -23,7 +23,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         /// null if no metadata is required.</param>
         /// <returns>An AgentEndpoint instance initialized with the provided parameters.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="ipAddress"/> is null, empty, or consists only of whitespace.</exception>
-        public AgentEndpoint Create(string ipAddress, int port = 50051, bool useTls = true, string? displayName = null, IDictionary<string, string>? metadata = null)
+        public AgentEndpoint Create(string ipAddress, int port = 50051, bool useTls = true, string? displayName = null, IDictionary<string, string>? metadata = null, bool monitoringEnabled = true)
         {
             if (string.IsNullOrWhiteSpace(ipAddress))
             {
@@ -40,8 +40,10 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 UseTls = useTls,
                 DisplayName = finalDisplayName,
                 Metadata = metadata,
+                MonitoringEnabled = monitoringEnabled,
                 LastSeen = null,
-                HealthStatus = AgentHealthStatus.Unknown
+                Reachability = AgentReachability.Unknown,
+                HealthStatus = AgentHealth.Unknown
             };
         }
     }

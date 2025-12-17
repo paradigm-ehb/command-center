@@ -91,6 +91,13 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             return Task.FromResult(snapshot);
         }
 
+        public Task<IReadOnlyCollection<AgentEndpoint>> ListMonitoringEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            IReadOnlyCollection<AgentEndpoint> snapshot = _agentEndpoints.Values.Where(_agentEndpoints => _agentEndpoints.MonitoringEnabled).ToList().AsReadOnly();
+            return Task.FromResult(snapshot);
+        }
+
         /// <summary>
         /// Asynchronously retrieves the agent endpoint associated with the specified identifier.
         /// </summary>
