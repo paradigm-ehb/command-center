@@ -75,49 +75,10 @@ public sealed partial class HomePage : Page
         {
             var serverView = new Home_ServerOverview
             {
-                ServerName = server.Name,
-                ServerStatus = 0
+                ServerObject = server
             };
 
             newStack.Children.Add(serverView);
         }
     }
-
-    private async void CtrlN_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-    {
-        args.Handled = true;
-
-        var serverCreation = new ServerCreation();
-
-        ContentDialog serverCreationDialog = new ContentDialog
-        {
-            Title = "Add a new server",
-            Content = serverCreation,
-            CloseButtonText = "OK",
-            PrimaryButtonText = "Cancel",
-            XamlRoot = this.XamlRoot
-        };
-
-        serverCreationDialog.Closing += (dialog, closingArgs) => {
-            if (closingArgs.Result == ContentDialogResult.None)
-            {
-                bool isValid = serverCreation.ValidateAndProcess();
-
-                // Cancel the close if validation fails
-                if (!isValid)
-                {
-                    closingArgs.Cancel = true;
-                }
-                else
-                {
-                    // Reload servers after adding a new one
-                    LoadServers();
-                    MainWindow.Instance.LoadServerMenu();
-                }
-            }
-        };
-
-        ContentDialogResult result = await serverCreationDialog.ShowAsync();
-    }
-
 }

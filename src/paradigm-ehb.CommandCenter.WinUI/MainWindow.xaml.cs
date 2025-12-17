@@ -39,6 +39,46 @@ namespace paradigm_ehb.CommandCenter.WinUI
             LoadServerMenu();
         }
 
+        public void NavigateToServerPage(Type pageType, object parameter)
+        {
+            contentFrame.Navigate(pageType, parameter);
+
+            if (parameter is ServerInfo server)
+            {
+                var (serverItem, folderItem) = FindNavigationViewItemByServer(server);
+                if (serverItem != null)
+                {
+                    if (folderItem != null)
+                    {
+                        folderItem.IsExpanded = true;
+                    }
+                    
+                    nvSample.SelectedItem = serverItem;
+                }
+            }
+        }
+
+        private (NavigationViewItem serverItem, NavigationViewItem folderItem) FindNavigationViewItemByServer(ServerInfo server)
+        {
+            foreach (var item in nvSample.MenuItems.Skip(3)) //Skipt de eerste 3 items ("Home", "Settings" en "Your Servers")
+            {
+                if (item is NavigationViewItem folderItem)
+                {
+                    foreach (var child in folderItem.MenuItems)
+                    {
+                        if (child is NavigationViewItem serverItem && serverItem.Tag is ServerInfo existingServer)
+                        {
+                            if (existingServer.Name == server.Name && existingServer.Ip == server.Ip)
+                            {
+                                return (serverItem, folderItem);
+                            }
+                        }
+                    }
+                }
+            }
+            return (null, null);
+        }
+
         public void LoadServerMenu()
         {
             // Clear existing server items (keep Home and Settings, remove everything after)

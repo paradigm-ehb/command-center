@@ -17,10 +17,6 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <Grid.KeyboardAccelerators>
-            <KeyboardAccelerator Key="N" Modifiers="None" Invoked="CtrlN_Invoked"/>
-        </Grid.KeyboardAccelerators>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -53,6 +49,10 @@
             <NavigationView.Content>
                 <Frame x:Name="contentFrame" />
             </NavigationView.Content>
+
+            <NavigationView.KeyboardAccelerators>
+                <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="CtrlN_Invoked"/>
+            </NavigationView.KeyboardAccelerators>
         </NavigationView>
     </Grid>
 </Window>

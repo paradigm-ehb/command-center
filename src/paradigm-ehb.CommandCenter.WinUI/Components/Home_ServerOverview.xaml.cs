@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.WinUI.srvMgnt;
 using System;
 using System.Diagnostics;
 
@@ -25,7 +26,7 @@ public sealed partial class Home_ServerOverview : UserControl
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
 
-        getServerStatus();
+        
     }
 
     private async void getServerStatus()
@@ -38,8 +39,9 @@ public sealed partial class Home_ServerOverview : UserControl
         IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
         IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
 
+        ServerNameText.Text = ServerObject.Name;
 
-        AgentEndpoint agentEndpoint = agentEndpointFactory.Create("127.0.0.1", 50051, false);
+        AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ServerObject.Ip, ServerObject.Port, false);
         var agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
         try
         {
@@ -77,35 +79,34 @@ public sealed partial class Home_ServerOverview : UserControl
         StatusText.Text = text;
     }
 
-    public string ServerName
+    public ServerInfo ServerObject
     {
-        get => (string)GetValue(ServerNameProperty);
-        set => SetValue(ServerNameProperty, value);
+        get => (ServerInfo)GetValue(ServerObjProperty);
+        set => SetValue(ServerObjProperty, value);
     }
 
-    public int ServerStatus
-    {
-        get => (int)GetValue(ServerStatusProperty);
-        set => SetValue(ServerStatusProperty, value);
-    }
 
-    public static readonly DependencyProperty ServerNameProperty = 
+    public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(
-        nameof(ServerName),          // Property name
-        typeof(string),              // Property Datatype
-        typeof(Home_ServerOverview), // Coming from...
-        new PropertyMetadata(null)); // Default Value
-
-    public static readonly DependencyProperty ServerStatusProperty =
-    DependencyProperty.Register(
-        nameof(ServerStatus),
-        typeof(int),
+        nameof(ServerObject),
+        typeof(ServerInfo),
         typeof(Home_ServerOverview),
-        new PropertyMetadata(0, OnServerStatusChanged));
+        new PropertyMetadata(null, OnServerStatusChanged));
 
     private static void OnServerStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (Home_ServerOverview)d;
-        control.setupStatus((int)e.NewValue);
+        var serverInfo = e.NewValue as ServerInfo;
+
+        if (serverInfo != null)
+        {
+            control.ServerNameText.Text = serverInfo.Name;
+            control.getServerStatus();
+        }
+    }
+
+    private void Grid_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        MainWindow.Instance.NavigateToServerPage(typeof(ServerMainPage), ServerObject);
     }
 }
