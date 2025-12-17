@@ -53,23 +53,22 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         /// <remarks>Subscribe to this event to be notified when the specified agent endpoint becomes
         /// reachable or unreachable. The event provides the affected endpoint and its new reachability state.</remarks>
-        public event EventHandler<AgentEndpoint, AgentReachability>? ReachabilityChanged;
-
-        private AgentReachability _reachability;
+        public event EventHandler<AgentEndpoint, ReachabilityChangedEventArgs>? ReachabilityChanged;
 
         /// <summary>
         /// Latest transport-level reachability (Online/Offline). Independent from <see cref="HealthStatus"/>.
         /// </summary>
         public AgentReachability Reachability
         {
-            get => _reachability;
+            get;
             set
             {
-                if (_reachability == value) return;
-                _reachability = value;
+                if (field == value) return;
+                field = value;
                 try
                 {
-                    ReachabilityChanged?.Invoke(this, value);
+                    ReachabilityChangedEventArgs args = new() { AgentReachability = value };
+                    ReachabilityChanged?.Invoke(this, args);
                 }
                 catch
                 {
@@ -85,18 +84,16 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// provides the new health status as an argument.</remarks>
         public event EventHandler<AgentEndpoint, AgentHealth>? HealthStatusChanged;
 
-        private AgentHealth _healthStatus;
-
         /// <summary>
         /// Latest health flag maintained by health-checker.
         /// </summary>
         public AgentHealth HealthStatus
         {
-            get => _healthStatus;
+            get;
             set
             {
-                if (_healthStatus == value) return;
-                _healthStatus = value;
+                if (field == value) return;
+                field = value;
                 try
                 {
                     HealthStatusChanged?.Invoke(this, value);
