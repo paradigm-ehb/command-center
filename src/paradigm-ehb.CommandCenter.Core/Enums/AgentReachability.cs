@@ -6,8 +6,8 @@ namespace paradigm_ehb.CommandCenter.Core.Enums
     /// </summary>
     public enum AgentReachability
     {
-        Online = 0,
-        Offline = 1,
-        Unknown = 2
+        Unknown = 0,
+        Online = 1,
+        Offline = 2
     }
 }
