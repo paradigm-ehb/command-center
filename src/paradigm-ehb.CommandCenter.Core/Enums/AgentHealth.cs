@@ -12,12 +12,10 @@ namespace paradigm_ehb.CommandCenter.Core.Enums
     /// reporting. The meaning of each value is as follows: - Healthy: The agent is operating normally. - Degraded: The
     /// agent is experiencing reduced performance or partial functionality. - Offline: The agent is not currently
     /// available or reachable. - Unknown: The agent's health status cannot be determined.</remarks>
-    public enum AgentHealthStatus
+    public enum AgentHealth
     {
-        Online = 0,
-        Offline = 1,
-        Healthy = 2,
-        Degraded = 3,
-        Unknown = 4
+        Healthy = 1,
+        Degraded = 2,
+        Unknown = 3
     }
 }
