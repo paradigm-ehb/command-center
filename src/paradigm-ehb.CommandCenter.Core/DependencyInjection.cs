@@ -14,6 +14,7 @@ namespace paradigm_ehb.CommandCenter.Core
             services.AddSingleton<IGrpcChannelFactory, GrpcChannelFactory>(); //Niet nodig
             services.AddSingleton<IAgentClientFactory, AgentClientFactory>(); //Wordt gebruikt om een connectie te make met de agent
             services.AddSingleton<IAgentClientRegistry, AgentClientRegistry>();
+            services.AddSingleton<IAgentMonitor, AgentMonitor>();
             return services;
         }
     }

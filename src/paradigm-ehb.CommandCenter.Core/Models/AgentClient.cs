@@ -1,31 +1,74 @@
-﻿using Grpc.Net.Client;
+﻿using Grpc.Health.V1;
+using Grpc.Net.Client;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Channels;
+using paradigm_ehb.CommandCenter.Core.Services;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
-    public sealed class AgentClient
+    public sealed class AgentClient : IDisposable
     {
+        private bool disposedValue;
+        private AgentHealthWatcher? _healthWatcher;
+
         /// <summary>
         /// Gets or sets the network endpoint information for the agent connection.
         /// </summary>
         public AgentEndpoint Endpoint { get; set; }
 
-        /// <summary>
-        /// Gets the gRPC channel used for remote procedure calls.
-        /// </summary>
-        /// <remarks>The channel provides the underlying transport for gRPC client operations. This
-        /// property is initialized during object construction and cannot be modified after initialization.</remarks>
         public GrpcChannel Channel { get; init; }
 
-        /// <summary>
-        /// Gets the gRPC client used to communicate with the Greeter service.
-        /// </summary>
-        /// <remarks>Use this client to invoke remote procedures defined by the Greeter service, such as
-        /// sending greeting requests. The property is initialized during object construction and cannot be modified
-        /// afterwards.</remarks>
+        public Health.HealthClient Health { get; init; }
+
         public Greeter.GreeterClient Greeter { get; init; }
+
+        public bool HealthWatchEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Starts background health watch for common services using AgentHealthWatcher.
+        /// </summary>
+        public void StartHealthWatch(System.Threading.CancellationToken cancellationToken = default)
+        {
+            _healthWatcher ??= new AgentHealthWatcher();
+            _healthWatcher.StartAsync(this, cancellationToken);
+        }
+
+        /// <summary>
+        /// Requests health watch to stop and waits a short time for graceful shutdown.
+        /// </summary>
+        public void StopHealthWatch()
+        {
+            _healthWatcher?.Stop();
+        }
+
+        /// <summary>
+        /// Disposes the resources used by the current instance of the <see cref="AgentClient"/> class.
+        /// Cancels any running health watches.
+        /// </summary>
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        StopHealthWatch();
+                        _healthWatcher?.Dispose();
+                        Channel?.Dispose();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

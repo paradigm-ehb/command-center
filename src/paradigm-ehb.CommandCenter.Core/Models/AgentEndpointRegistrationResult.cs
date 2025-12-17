@@ -13,8 +13,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
     public sealed record AgentEndpointRegistrationResult
     (
         bool Registered,
-        bool PreWarmAttempted,
-        bool PreWarmSucceeded,
-        IReadOnlyCollection<string> Warnings
+        AgentEndpoint Entry,
+        IReadOnlyCollection<string> Warnings,
+        string? Message = null
     );
 }

@@ -39,6 +39,14 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         Task<IReadOnlyCollection<AgentEndpoint>> ListAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Asynchronously retrieves a read-only collection of agent endpoints that have monitoring enabled.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a read-only collection of agent
+        /// endpoints with monitoring enabled. The collection is empty if no endpoints have monitoring enabled.</returns>
+        Task<IReadOnlyCollection<AgentEndpoint>> ListMonitoringEnabledAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Asynchronously retrieves the agent endpoint associated with the specified identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the agent endpoint to retrieve.</param>

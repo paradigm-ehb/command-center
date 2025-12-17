@@ -32,7 +32,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal(displayName, agentEndpoint.DisplayName);
             Assert.Equal(metadata, agentEndpoint.Metadata);
             Assert.Null(agentEndpoint.LastSeen);
-            Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
+            Assert.Equal(AgentHealth.Unknown, agentEndpoint.HealthStatus);
         }
 
         [Fact(DisplayName = "Create Endpoint With Only IP Address Returns Default Endpoint")]
@@ -51,7 +51,7 @@ namespace paradigm_ehb.CommandCenter.Core.Tests
             Assert.Equal($"{ipAddress}:50051", agentEndpoint.DisplayName);
             Assert.Null(agentEndpoint.Metadata);
             Assert.Null(agentEndpoint.LastSeen);
-            Assert.Equal(AgentHealthStatus.Unknown, agentEndpoint.HealthStatus);
+            Assert.Equal(AgentHealth.Unknown, agentEndpoint.HealthStatus);
         }
 
         [Theory(DisplayName = "Create Endpoint With No IP Address Throws Argument Exception")]

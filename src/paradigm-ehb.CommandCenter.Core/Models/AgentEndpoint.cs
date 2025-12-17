@@ -40,15 +40,72 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// Optional arbitrary metadata (os, version, tags).
         /// </summary>
         public IDictionary<string, string>? Metadata { get; init; }
-
+        
         /// <summary>
-        /// Last time the agent responded to a health check or RPC.
+        /// Gets or sets the date and time when the entity was last seen.
         /// </summary>
         public DateTimeOffset? LastSeen { get; set; }
+
+        public bool MonitoringEnabled { get; init; } = true;
+
+        /// <summary>
+        /// Occurs when the reachability status of an agent endpoint changes.
+        /// </summary>
+        /// <remarks>Subscribe to this event to be notified when the specified agent endpoint becomes
+        /// reachable or unreachable. The event provides the affected endpoint and its new reachability state.</remarks>
+        public event EventHandler<AgentEndpoint, ReachabilityChangedEventArgs>? ReachabilityChanged;
+
+        /// <summary>
+        /// Latest transport-level reachability (Online/Offline). Independent from <see cref="HealthStatus"/>.
+        /// </summary>
+        public AgentReachability Reachability
+        {
+            get;
+            set
+            {
+                if (field == value) return;
+                field = value;
+                try
+                {
+                    ReachabilityChangedEventArgs args = new() { AgentReachability = value };
+                    ReachabilityChanged?.Invoke(this, args);
+                }
+                catch
+                {
+                    // ignore handler exceptions
+                }
+            }
+        }
+
+        /// <summary>
+        /// Occurs when the health status of the agent changes.
+        /// </summary>
+        /// <remarks>Subscribers are notified whenever the agent's health status is updated. The event
+        /// provides the new health status as an argument.</remarks>
+        public event EventHandler<AgentEndpoint, HealthStatusChangedEventArgs>? HealthStatusChanged;
 
         /// <summary>
         /// Latest health flag maintained by health-checker.
         /// </summary>
-        public AgentHealthStatus HealthStatus { get; set; } // TODO: implement health checking
+        public AgentHealth HealthStatus
+        {
+            get;
+            set
+            {
+                if (field == value) return;
+                field = value;
+                try
+                {
+                    HealthStatusChangedEventArgs args = new() { HealthStatus = value };
+                    HealthStatusChanged?.Invoke(this, args);
+                }
+                catch
+                {
+                    // ignore handler exceptions to avoid breaking callers
+                }
+            }
+        }
+
+        
     }
 }

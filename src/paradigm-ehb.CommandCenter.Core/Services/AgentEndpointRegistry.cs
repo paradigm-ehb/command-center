@@ -20,12 +20,10 @@ namespace paradigm_ehb.CommandCenter.Core.Services
     public sealed class AgentEndpointRegistry : IAgentEndpointRegistry
     {
         private readonly ConcurrentDictionary<Guid, AgentEndpoint> _agentEndpoints = new();  // <summary>In-memory store of agent endpoints</summary>
-        private readonly IGrpcChannelFactory? _channelFactory;
         private readonly ILogger<AgentEndpointRegistry> _logger;
 
-        public AgentEndpointRegistry(IGrpcChannelFactory? channelFactory = null, ILogger<AgentEndpointRegistry>? logger = null)
+        public AgentEndpointRegistry(ILogger<AgentEndpointRegistry>? logger = null)
         {
-            _channelFactory = channelFactory;
             _logger = logger ?? NullLogger<AgentEndpointRegistry>.Instance;
         }
 
@@ -54,32 +52,13 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             _agentEndpoints.AddOrUpdate(endpoint.Id, endpoint, (_, __) => endpoint);    // Add endpoint to memory or update current key-value in memory
 
             // Define result variables
-            bool preWarmAttempted = false;
-            bool preWarmSucceeded = false;
             List<string> warnings = new();
-
-            // Optionally pre-warm / validate channel creation. Do not fail registration on channel errors.
-            if (_channelFactory is not null)
-            {
-                preWarmAttempted = true;
-                try
-                {
-                    // Creating the channel may throw for invalid address or network config.
-                    using GrpcChannel channel = _channelFactory.CreateChannel(endpoint);
-                    preWarmSucceeded = true;
-                }
-                catch (Exception exception)
-                {
-                    // Swallow exceptions, but log them
-                    _logger.LogWarning(exception, "Pre-warming gRPC channel for agent {AgentId} at {AgentAddress} failed during registration.", endpoint.Id, endpoint.IpAddress);
-                }
-            }
 
             AgentEndpointRegistrationResult result = new(
                 Registered: true,
-                PreWarmAttempted: preWarmAttempted,
-                PreWarmSucceeded: preWarmSucceeded,
-                Warnings: warnings.AsReadOnly()
+                Entry: endpoint,
+                Warnings: warnings.AsReadOnly(),
+                Message: "Agent endpoint registered successfully."
                 );
 
             return result;
@@ -109,6 +88,13 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         {
             cancellationToken.ThrowIfCancellationRequested();
             IReadOnlyCollection<AgentEndpoint> snapshot = _agentEndpoints.Values.ToList().AsReadOnly();
+            return Task.FromResult(snapshot);
+        }
+
+        public Task<IReadOnlyCollection<AgentEndpoint>> ListMonitoringEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            IReadOnlyCollection<AgentEndpoint> snapshot = _agentEndpoints.Values.Where(_agentEndpoints => _agentEndpoints.MonitoringEnabled).ToList().AsReadOnly();
             return Task.FromResult(snapshot);
         }
 
