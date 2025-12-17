@@ -53,6 +53,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
                     try
                     {
                         StopHealthWatch();
+                        _healthWatcher?.Dispose();
                         Channel?.Dispose();
                     }
                     catch
