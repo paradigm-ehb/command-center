@@ -82,7 +82,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         /// <remarks>Subscribers are notified whenever the agent's health status is updated. The event
         /// provides the new health status as an argument.</remarks>
-        public event EventHandler<AgentEndpoint, AgentHealth>? HealthStatusChanged;
+        public event EventHandler<AgentEndpoint, HealthStatusChangedEventArgs>? HealthStatusChanged;
 
         /// <summary>
         /// Latest health flag maintained by health-checker.
@@ -96,7 +96,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
                 field = value;
                 try
                 {
-                    HealthStatusChanged?.Invoke(this, value);
+                    HealthStatusChangedEventArgs args = new() { HealthStatus = value };
+                    HealthStatusChanged?.Invoke(this, args);
                 }
                 catch
                 {

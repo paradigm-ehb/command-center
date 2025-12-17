@@ -46,14 +46,14 @@ await agentClientRegistry.RegisterAsync(agentClient2);
 agentEndpoint.HealthStatusChanged += ChangedHealthStatus;
 agentEndpoint.ReachabilityChanged += ChangedReachabilityStatus;
 
-static void ChangedHealthStatus(AgentEndpoint sender, AgentHealth status)
+static void ChangedHealthStatus(AgentEndpoint sender, HealthStatusChangedEventArgs eventArgs)
 {
-    Console.WriteLine($"Health status of {sender.DisplayName} to: {status}");
+    Console.WriteLine($"Health status of {sender.DisplayName} to: {eventArgs.HealthStatus}");
 }
 
-static void ChangedReachabilityStatus(AgentEndpoint sender, AgentReachability status)
+static void ChangedReachabilityStatus(AgentEndpoint sender, ReachabilityChangedEventArgs eventArgs)
 {
-    Console.WriteLine($"Reachability status of {sender.DisplayName} to: {status}");
+    Console.WriteLine($"Reachability status of {sender.DisplayName} to: {eventArgs.AgentReachability}");
 }
 
 Console.ReadKey();
