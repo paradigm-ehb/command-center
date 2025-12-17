@@ -86,14 +86,28 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             catch
             {
                 // registration failed — clean up created resources
-                try { created.Dispose(); } catch { }
+                try
+                {
+                    created.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to dispose AgentClient after failed registration.");
+                }
                 throw;
             }
 
             if (!result.Registered)
             {
                 // registry returned an existing entry; dispose what we created
-                try { created.Dispose(); } catch { }
+                try
+                {
+                    created.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to dispose AgentClient after registry returned existing entry.");
+                }
                 TryDisposeChannel(created.Channel);
                 _logger.LogDebug("Registry returned existing entry for {EndpointId}; disposed newly created channel.", endpoint.Id);
             }

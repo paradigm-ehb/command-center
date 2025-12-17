@@ -83,40 +83,25 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             Health.HealthClient healthClient = _client!.Health;
             AgentEndpoint endpoint = _client.Endpoint;
 
-            AsyncServerStreamingCall<HealthCheckResponse>? call = null;
+            using AsyncServerStreamingCall<HealthCheckResponse> call =
+                healthClient.Watch(new HealthCheckRequest { Service = service });
 
-            try
+            await foreach (HealthCheckResponse response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false))
             {
-                call = healthClient.Watch(new HealthCheckRequest { Service = service });
+                HealthCheckResponse.Types.ServingStatus responseStatus = response.Status;
 
-                await foreach (HealthCheckResponse response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+                switch (responseStatus)
                 {
-                    HealthCheckResponse.Types.ServingStatus responseStatus = response.Status;
-
-                    switch (responseStatus)
-                    {
-                        case HealthCheckResponse.Types.ServingStatus.Serving:
-                            endpoint.HealthStatus = AgentHealth.Healthy;
-                            break;
-                        case HealthCheckResponse.Types.ServingStatus.NotServing:
-                            endpoint.HealthStatus = AgentHealth.Degraded;
-                            break;
-                        case HealthCheckResponse.Types.ServingStatus.Unknown:
-                        default:
-                            endpoint.HealthStatus = AgentHealth.Unknown;
-                            break;
-                    }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    call?.Dispose();
-                }
-                catch
-                {
-                    // best-effort dispose
+                    case HealthCheckResponse.Types.ServingStatus.Serving:
+                        endpoint.HealthStatus = AgentHealth.Healthy;
+                        break;
+                    case HealthCheckResponse.Types.ServingStatus.NotServing:
+                        endpoint.HealthStatus = AgentHealth.Degraded;
+                        break;
+                    case HealthCheckResponse.Types.ServingStatus.Unknown:
+                    default:
+                        endpoint.HealthStatus = AgentHealth.Unknown;
+                        break;
                 }
             }
         }
