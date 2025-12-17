@@ -2,61 +2,95 @@
 using System.Collections.Generic;
 using System.Text;
 using Windows.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.WinUI;
 
 namespace paradigm_ehb.CommandCenter.WinUI.Components
 {
-    internal class CoreMethods
+    internal interface ICoreMethods
     {
-        public static List<ServerFolder> getAllServers()
+        List<ServerFolder> GetAllServers();
+    }
+
+    internal class CoreMethods : ICoreMethods
+    {
+        private readonly IAgentEndpointFactory _endpointFactory;
+
+        public CoreMethods(IAgentEndpointFactory endpointFactory)
         {
-            var localSettings = ApplicationData.Current.LocalSettings;
-            var folderList = new List<ServerFolder>();
+            _endpointFactory = endpointFactory ?? throw new ArgumentNullException(nameof(endpointFactory));
+        }
+
+        // Instance implementation using injected factory
+        public List<ServerFolder> GetAllServers()
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            List<ServerFolder> folderList = new List<ServerFolder>();
 
             if (localSettings.Containers.ContainsKey("serverStorage"))
             {
-                var serverStorage = localSettings.Containers["serverStorage"];
-                
+                ApplicationDataContainer serverStorage = localSettings.Containers["serverStorage"];
+
                 // Gets all the folders
-                foreach (var folderName in serverStorage.Containers.Keys)
+                foreach (string? folderName in serverStorage.Containers.Keys)
                 {
-                    var folder = serverStorage.Containers[folderName];
-                    var serverFolder = new ServerFolder
+                    ApplicationDataContainer folder = serverStorage.Containers[folderName];
+                    ServerFolder serverFolder = new ServerFolder
                     {
                         FolderName = folderName,
-                        Servers = new List<ServerInfo>()
+                        Servers = new List<AgentEndpoint>()
                     };
-                    
+
                     // Gets all the servers in a given folder
-                    foreach (var serverKey in folder.Values.Keys)
+                    foreach (string? serverKey in folder.Values.Keys)
                     {
-                        var server = (ApplicationDataCompositeValue)folder.Values[serverKey];
-                        
-                        serverFolder.Servers.Add(new ServerInfo
+                        ApplicationDataCompositeValue server = (ApplicationDataCompositeValue)folder.Values[serverKey];
+
+                        string ip = server["ip"]?.ToString() ?? "localhost";
+                        string name = server["name"]?.ToString();
+                        int port = 0;
+
+                        if (server["port"] != null)
                         {
-                            Name = server["name"]?.ToString() ?? "",
-                            Ip = server["ip"]?.ToString() ?? "",
-                            Port = server["port"] != null ? (int)server["port"] : 0
-                        });
+                            // ApplicationDataCompositeValue stores boxed values - be defensive
+                            try
+                            {
+                                port = Convert.ToInt32(server["port"]);
+                            }
+                            catch
+                            {
+                                port = 0;
+                            }
+                        }
+
+                        int portToUse = port > 0 ? port : 50051;
+
+                        // Use the injected factory to create a properly-initialized AgentEndpoint
+                        AgentEndpoint endpoint = _endpointFactory.Create(ipAddress: ip, port: portToUse, useTls: true, displayName: string.IsNullOrWhiteSpace(name) ? null : name);
+
+                        serverFolder.Servers.Add(endpoint);
                     }
-                    
+
                     folderList.Add(serverFolder);
                 }
             }
 
             return folderList;
         }
+
+        // Backwards-compatible static wrapper that resolves the service from the global App service provider.
+        public static List<ServerFolder> getAllServers()
+        {
+            var coreMethods = App.Services.GetRequiredService<ICoreMethods>();
+            return coreMethods.GetAllServers();
+        }
     }
 
     public class ServerFolder
     {
         public string FolderName { get; set; }
-        public List<ServerInfo> Servers { get; set; }
-    }
-
-    public class ServerInfo
-    {
-        public string Name { get; set; }
-        public string Ip { get; set; }
-        public int Port { get; set; }
+        public List<AgentEndpoint> Servers { get; set; }
     }
 }

@@ -31,21 +31,19 @@ public sealed partial class Home_ServerOverview : UserControl
 
     private async void getServerStatus()
     {
-        IServiceProvider services = new ServiceCollection()
-                .AddCommandCenterCore()
-                .BuildServiceProvider();
+        IServiceProvider services = App.Services;
 
         //Dependency injection to get factories
         IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
         IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
 
-        ServerNameText.Text = ServerObject.Name;
+        ServerNameText.Text = ServerObject.DisplayName;
 
-        AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ServerObject.Ip, ServerObject.Port, false);
-        var agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
+        AgentEndpoint agentEndpoint = ServerObject;
+        AgentClient agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
         try
         {
-            var reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
+            HelloReply reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
             Debug.WriteLine("Greeting: " + reply.Message);
         }
         catch (Grpc.Core.RpcException ex)
@@ -79,9 +77,9 @@ public sealed partial class Home_ServerOverview : UserControl
         StatusText.Text = text;
     }
 
-    public ServerInfo ServerObject
+    public AgentEndpoint ServerObject
     {
-        get => (ServerInfo)GetValue(ServerObjProperty);
+        get => (AgentEndpoint)GetValue(ServerObjProperty);
         set => SetValue(ServerObjProperty, value);
     }
 
@@ -89,18 +87,18 @@ public sealed partial class Home_ServerOverview : UserControl
     public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(
         nameof(ServerObject),
-        typeof(ServerInfo),
+        typeof(AgentEndpoint),
         typeof(Home_ServerOverview),
         new PropertyMetadata(null, OnServerStatusChanged));
 
     private static void OnServerStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (Home_ServerOverview)d;
-        var serverInfo = e.NewValue as ServerInfo;
+        var serverInfo = e.NewValue as AgentEndpoint;
 
         if (serverInfo != null)
         {
-            control.ServerNameText.Text = serverInfo.Name;
+            control.ServerNameText.Text = serverInfo.DisplayName;
             control.getServerStatus();
         }
     }
