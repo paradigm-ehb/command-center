@@ -25,7 +25,6 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         private readonly ConcurrentDictionary<string, AgentHealth> _degradedServices = new();
         private readonly List<Task> _watchTasks = new();
         private CancellationTokenSource? _cts;
-        private int _degradedCount;
         private bool _disposed;
 
         public AgentHealthWatcher()
@@ -137,7 +136,6 @@ namespace paradigm_ehb.CommandCenter.Core.Services
                 _cts = null;
                 _watchTasks.Clear();
                 _degradedServices.Clear();
-                Interlocked.Exchange(ref _degradedCount, 0);
             }
         }
 
