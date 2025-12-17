@@ -90,11 +90,11 @@ public sealed partial class Home_ServerOverview : UserControl
     }
 
     public static readonly DependencyProperty ServerNameProperty = 
-        DependencyProperty.Register(
-            nameof(ServerName),          // Property name
-            typeof(string),              // Property Datatype
-            typeof(Home_ServerOverview), // Coming from...
-            new PropertyMetadata(null)); // Default Value
+    DependencyProperty.Register(
+        nameof(ServerName),          // Property name
+        typeof(string),              // Property Datatype
+        typeof(Home_ServerOverview), // Coming from...
+        new PropertyMetadata(null)); // Default Value
 
     public static readonly DependencyProperty ServerStatusProperty =
     DependencyProperty.Register(

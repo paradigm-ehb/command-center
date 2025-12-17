@@ -26,9 +26,5 @@
             </PivotItem>
 
         </Pivot>
-    </Grid>
-
-    <Page.KeyboardAccelerators>
-        <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="CtrlN_Invoked"/>
-    </Page.KeyboardAccelerators>
+    </Grid> 
 </Page>

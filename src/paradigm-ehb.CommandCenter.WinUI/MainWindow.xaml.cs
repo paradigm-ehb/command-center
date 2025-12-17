@@ -126,7 +126,6 @@ namespace paradigm_ehb.CommandCenter.WinUI
             {
                 "HomePage" => typeof(HomePage),
                 "SettingsPage" => typeof(SettingsPage),
-                "EU1" => typeof(SettingsPage),
                 _ => null
             };
         }
@@ -141,6 +140,42 @@ namespace paradigm_ehb.CommandCenter.WinUI
 
             contentFrame.Navigate(typeof(HomePage));
 
+        }
+
+        private async void CtrlN_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+
+            var serverCreation = new ServerCreation();
+
+            ContentDialog serverCreationDialog = new ContentDialog
+            {
+                Title = "Add a new server",
+                Content = serverCreation,
+                CloseButtonText = "OK",
+                PrimaryButtonText = "Cancel",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            serverCreationDialog.Closing += (dialog, closingArgs) => {
+                if (closingArgs.Result == ContentDialogResult.None)
+                {
+                    bool isValid = serverCreation.ValidateAndProcess();
+
+                    // Cancel the close if validation fails
+                    if (!isValid)
+                    {
+                        closingArgs.Cancel = true;
+                    }
+                    else
+                    {
+                        HomePage.Instance.LoadServers();
+                        LoadServerMenu();
+                    }
+                }
+            };
+
+            ContentDialogResult result = await serverCreationDialog.ShowAsync();
         }
     }
 }

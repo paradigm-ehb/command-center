@@ -110,4 +110,7 @@
 	<ItemGroup>
 	  <PRIResource Remove="Components\NewFolder\**" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Components\Extensions\" />
+	</ItemGroup>
 </Project>

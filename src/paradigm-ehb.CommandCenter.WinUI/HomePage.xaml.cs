@@ -25,14 +25,16 @@ namespace paradigm_ehb.CommandCenter.WinUI;
 public sealed partial class HomePage : Page
 {
     public List<ServerFolder> ServerFolders { get; set; }
+    public static HomePage Instance;
     public HomePage()
     {
         InitializeComponent();
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
+        Instance = this;
         LoadServers();
     }
 
-    private void LoadServers()
+    public void LoadServers()
     {
         ServerFolders = CoreMethods.getAllServers();
         BuildHomescreen();

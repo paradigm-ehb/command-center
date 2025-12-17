@@ -17,6 +17,10 @@
     </Window.SystemBackdrop>
 
     <Grid>
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="N" Modifiers="None" Invoked="CtrlN_Invoked"/>
+        </Grid.KeyboardAccelerators>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -43,7 +47,7 @@
 
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Home" Tag="HomePage" Icon="Home" />
-                <NavigationViewItem Content="Settings" Tag="SettingsPage" Icon="Setting" />                
+                <NavigationViewItem Content="Settings" Tag="SettingsPage" Icon="Setting" />
             </NavigationView.MenuItems>
 
             <NavigationView.Content>
