@@ -19,6 +19,6 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// <param name="metadata">An optional collection of key-value pairs to associate with the agent endpoint. If null, no metadata is
         /// attached.</param>
         /// <returns>An AgentEndpoint instance configured with the specified connection parameters.</returns>
-        public AgentEndpoint Create(string ipAddress = "localhost", int port = 50051, bool useTls = true, string? displayName = null, IDictionary<string, string>? metadata = null);
+        public AgentEndpoint Create(string ipAddress = "localhost", int port = 50051, bool useTls = true, string? displayName = null, IDictionary<string, string>? metadata = null, bool monitoringEnabled = true);
     }
 }

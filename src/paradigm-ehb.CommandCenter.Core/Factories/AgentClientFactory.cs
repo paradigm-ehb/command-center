@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.Core.Services;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
@@ -52,8 +53,11 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 Endpoint = endpoint,
                 Channel = channel,
                 Health = new Health.HealthClient(channel),
-                Greeter = new Greeter.GreeterClient(channel)
+                Greeter = new Greeter.GreeterClient(channel),
             };
+
+            // Start background health monitoring as part of client creation
+            if (endpoint.MonitoringEnabled) createdEntry.StartHealthWatch(cancellationToken);
 
             _logger.LogDebug("Created temporary client entry for endpoint {EndpointId}", endpoint.Id);
             return Task.FromResult(createdEntry);
@@ -82,13 +86,14 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             catch
             {
                 // registration failed — clean up created resources
-                TryDisposeChannel(created.Channel);
+                try { created.Dispose(); } catch { }
                 throw;
             }
 
             if (!result.Registered)
             {
                 // registry returned an existing entry; dispose what we created
+                try { created.Dispose(); } catch { }
                 TryDisposeChannel(created.Channel);
                 _logger.LogDebug("Registry returned existing entry for {EndpointId}; disposed newly created channel.", endpoint.Id);
             }
