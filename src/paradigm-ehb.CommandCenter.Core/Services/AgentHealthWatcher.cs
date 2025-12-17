@@ -46,7 +46,10 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         public Task StartAsync(AgentClient client, CancellationToken cancellationToken = default)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            if (_cts != null && !_cts.IsCancellationRequested) return Task.CompletedTask;
+            if (_cts != null && !_cts.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("AgentHealthWatcher is already running. Stop it before calling StartAsync again.");
+            }
 
             _client = client;   // lazy init
 
