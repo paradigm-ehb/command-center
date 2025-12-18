@@ -1,6 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views;
@@ -9,8 +11,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
     public sealed partial class ServerMainPage : Page
     {
+        private readonly IAgentClientFactory _agentClientFactory;
+        private readonly IAgentClientRegistry _agentClientRegistry;
+
         public ServerMainPage()
         {
+            // Dependency Injection
+            _agentClientFactory = App.Services.GetRequiredService<IAgentClientFactory>();
+            _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
+
             InitializeComponent();
         }
 
@@ -18,8 +27,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
         {
             base.OnNavigatedTo(e);
 
+
             if (e.Parameter is AgentEndpoint ip)
             {
+                // Ensure the agent client is created and registered
+                if (!_agentClientRegistry.IsRegisteredAsync(ip.Id).Result)
+                    _agentClientFactory.CreateAndRegisterClientAsync(ip);
+
                 serverObj = ip;
                 serverName.Text = ip.DisplayName;
                 serverIP.Text = ip.IpAddress + ":" + ip.Port.ToString();
