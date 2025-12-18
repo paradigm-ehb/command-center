@@ -62,6 +62,11 @@ namespace paradigm_ehb.CommandCenter.WinUI
             IAgentClientRegistry agentClientRegistry = _serviceProvider.GetRequiredService<IAgentClientRegistry>();
             IAgentClientFactory grpcClientFactory = _serviceProvider.GetRequiredService<IAgentClientFactory>();
 
+            ICoreMethods coreMethods = _serviceProvider.GetRequiredService<ICoreMethods>();
+
+            // Load the saved server registry
+            coreMethods.LoadRegistryAsync();
+
             _window = new MainWindow();
             _window.Activate();
         }

@@ -31,25 +31,38 @@ public sealed partial class Home_ServerOverview : UserControl
 
     private async void getServerStatus()
     {
-        IServiceProvider services = App.Services;
-
-        //Dependency injection to get factories
-        IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
-        IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
-
         ServerNameText.Text = ServerObject.DisplayName;
 
         AgentEndpoint agentEndpoint = ServerObject;
-        AgentClient agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
-        try
+
+        int status = 2; // Default to Unknown
+
+        switch (agentEndpoint.Reachability)
         {
-            HelloReply reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
-            Debug.WriteLine("Greeting: " + reply.Message);
+            case Core.Enums.AgentReachability.Offline:
+                status = 0; // Offline
+                break;
+            case Core.Enums.AgentReachability.Online:
+                switch (agentEndpoint.HealthStatus)
+                {
+                    case Core.Enums.AgentHealth.Healthy:
+                        status = 4; // Healthy
+                        break;
+                    case Core.Enums.AgentHealth.Degraded:
+                        status = 1; // Degraded
+                        break;
+                    case Core.Enums.AgentHealth.Unknown:
+                        status = 3; // Online (but health unknown)
+                        break;
+                }
+                break;
+            case Core.Enums.AgentReachability.Unknown:
+            default:
+                status = 2; // Unknown
+                break;
         }
-        catch (Grpc.Core.RpcException ex)
-        {
-            setupStatus(2);
-        }
+
+        setupStatus(status);
     }
 
     private void setupStatus(int Status)
@@ -67,6 +80,9 @@ public sealed partial class Home_ServerOverview : UserControl
                 break;
             case 3:
                 SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Online");
+                break;
+            case 4:
+                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Healthy");
                 break;
         }
     }
