@@ -68,26 +68,26 @@ public sealed partial class Home_ServerOverview : UserControl
         switch(Status)
         {
             case 0:
-                SetText(Windows.UI.Color.FromArgb(255, 184, 6, 6), "Offline");
+                SetText(Windows.UI.Color.FromArgb(255, 255, 153, 164), "Offline");
                 break;
             case 1:
-                SetText(Windows.UI.Color.FromArgb(255, 255, 111, 0), "Degraded");
+                SetText(Windows.UI.Color.FromArgb(255, 252, 225, 0), "Degraded");
                 break;
             case 2:
-                SetText(Windows.UI.Color.FromArgb(255, 138, 138, 138), "Unknown");
+                SetText(Windows.UI.Color.FromArgb(255, 154, 154, 154), "Unknown");
                 break;
             case 3:
-                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Online");
+                SetText(Windows.UI.Color.FromArgb(255, 76, 194, 255), "Online");
                 break;
             case 4:
-                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Healthy");
+                SetText(Windows.UI.Color.FromArgb(255, 108, 203, 95), "Healthy");
                 break;
         }
     }
 
     private void SetText(Windows.UI.Color kleur, String text)
     {
-        StatusColor.Fill = new SolidColorBrush(kleur);
+        StatusColor.Fill = new SolidColorBrush(kleur);  // TODO: use ThemeResource!
         StatusText.Text = text;
     }
 
