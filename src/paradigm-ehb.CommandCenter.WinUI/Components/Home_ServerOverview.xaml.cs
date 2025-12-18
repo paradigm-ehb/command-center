@@ -26,32 +26,51 @@ public sealed partial class Home_ServerOverview : UserControl
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
 
-        
+        // Ensure we unsubscribe when the control is unloaded to avoid leaks
+        this.Unloaded += (s, e) =>
+        {
+            if (ServerObject != null)
+            {
+                ServerObject.ReachabilityChanged -= OnAgentReachabilityChanged;
+                ServerObject.HealthStatusChanged -= OnAgentHealthStatusChanged;
+            }
+        };
     }
 
     private async void getServerStatus()
     {
-        IServiceProvider services = new ServiceCollection()
-                .AddCommandCenterCore()
-                .BuildServiceProvider();
+        ServerNameText.Text = ServerObject.DisplayName;
 
-        //Dependency injection to get factories
-        IAgentEndpointFactory agentEndpointFactory = services.GetRequiredService<IAgentEndpointFactory>();
-        IAgentClientFactory agentClientFactory = services.GetRequiredService<IAgentClientFactory>();
+        AgentEndpoint agentEndpoint = ServerObject;
 
-        ServerNameText.Text = ServerObject.Name;
+        int status = 2; // Default to Unknown
 
-        AgentEndpoint agentEndpoint = agentEndpointFactory.Create(ServerObject.Ip, ServerObject.Port, false);
-        var agent = await agentClientFactory.CreateClientAsync(agentEndpoint);
-        try
+        switch (agentEndpoint.Reachability)
         {
-            var reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
-            Debug.WriteLine("Greeting: " + reply.Message);
+            case Core.Enums.AgentReachability.Offline:
+                status = 0; // Offline
+                break;
+            case Core.Enums.AgentReachability.Online:
+                switch (agentEndpoint.HealthStatus)
+                {
+                    case Core.Enums.AgentHealth.Healthy:
+                        status = 4; // Healthy
+                        break;
+                    case Core.Enums.AgentHealth.Degraded:
+                        status = 1; // Degraded
+                        break;
+                    case Core.Enums.AgentHealth.Unknown:
+                        status = 3; // Online (but health unknown)
+                        break;
+                }
+                break;
+            case Core.Enums.AgentReachability.Unknown:
+            default:
+                status = 2; // Unknown
+                break;
         }
-        catch (Grpc.Core.RpcException)
-        {
-            setupStatus(2);
-        }
+
+        setupStatus(status);
     }
 
     private void setupStatus(int Status)
@@ -70,6 +89,9 @@ public sealed partial class Home_ServerOverview : UserControl
             case 3:
                 SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Online");
                 break;
+            case 4:
+                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Healthy");
+                break;
         }
     }
 
@@ -79,29 +101,70 @@ public sealed partial class Home_ServerOverview : UserControl
         StatusText.Text = text;
     }
 
-    public ServerInfo ServerObject
+    public AgentEndpoint ServerObject
     {
-        get => (ServerInfo)GetValue(ServerObjProperty);
+        get => (AgentEndpoint)GetValue(ServerObjProperty);
         set => SetValue(ServerObjProperty, value);
     }
 
     public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(
         nameof(ServerObject),
-        typeof(ServerInfo),
+        typeof(AgentEndpoint),
         typeof(Home_ServerOverview),
         new PropertyMetadata(null, OnServerStatusChanged));
 
     private static void OnServerStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var control = (Home_ServerOverview)d;
-        var serverInfo = e.NewValue as ServerInfo;
+        Home_ServerOverview control = (Home_ServerOverview)d;
+        AgentEndpoint? oldServer = e.OldValue as AgentEndpoint;
+        AgentEndpoint? newServer = e.NewValue as AgentEndpoint;
 
-        if (serverInfo != null)
+        // Unsubscribe from previous server events
+        if (oldServer != null)
         {
-            control.ServerNameText.Text = serverInfo.Name;
-            control.getServerStatus();
+            try
+            {
+                oldServer.ReachabilityChanged -= control.OnAgentReachabilityChanged;
+                oldServer.HealthStatusChanged -= control.OnAgentHealthStatusChanged;
+            }
+            catch
+            {
+                // swallow - defensive
+            }
         }
+
+        // Subscribe to new server events and update UI immediately
+        if (newServer != null)
+        {
+            control.ServerNameText.Text = newServer.DisplayName;
+            control.getServerStatus();
+
+            // Subscribe so the control updates when the endpoint reports changes.
+            // The AgentEndpoint events may fire from background threads, so handlers marshal to the UI thread.
+            newServer.ReachabilityChanged += control.OnAgentReachabilityChanged;
+            newServer.HealthStatusChanged += control.OnAgentHealthStatusChanged;
+        }
+        else
+        {
+            // Clear UI when null
+            control.ServerNameText.Text = string.Empty;
+            control.setupStatus(2);
+        }
+    }
+
+    // Event handlers invoked by AgentEndpoint. Match the signatures used elsewhere in the codebase:
+    // (AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    private void OnAgentReachabilityChanged(AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    {
+        // Ensure UI updates run on UI thread
+        _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
+    }
+
+    private void OnAgentHealthStatusChanged(AgentEndpoint sender, HealthStatusChangedEventArgs args)
+    {
+        // Ensure UI updates run on UI thread
+        _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
     }
 
     private void Grid_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)

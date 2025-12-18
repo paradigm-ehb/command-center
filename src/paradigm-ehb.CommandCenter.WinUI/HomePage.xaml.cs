@@ -16,6 +16,7 @@ using Windows.Foundation.Collections;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using paradigm_ehb.CommandCenter.WinUI.Components.Reusable;
 using System.ComponentModel;
+using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -59,7 +60,7 @@ public sealed partial class HomePage : Page
         }
     }
 
-    private void InsertServersInView(List<ServerInfo> servers)
+    private void InsertServersInView(List<AgentEndpoint> servers)
     {
         var newStack = new StackPanel
         {
