@@ -26,7 +26,15 @@ public sealed partial class Home_ServerOverview : UserControl
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
 
-        
+        // Ensure we unsubscribe when the control is unloaded to avoid leaks
+        this.Unloaded += (s, e) =>
+        {
+            if (ServerObject != null)
+            {
+                ServerObject.ReachabilityChanged -= OnAgentReachabilityChanged;
+                ServerObject.HealthStatusChanged -= OnAgentHealthStatusChanged;
+            }
+        };
     }
 
     private async void getServerStatus()
@@ -109,14 +117,55 @@ public sealed partial class Home_ServerOverview : UserControl
 
     private static void OnServerStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var control = (Home_ServerOverview)d;
-        var serverInfo = e.NewValue as AgentEndpoint;
+        Home_ServerOverview control = (Home_ServerOverview)d;
+        AgentEndpoint? oldServer = e.OldValue as AgentEndpoint;
+        AgentEndpoint? newServer = e.NewValue as AgentEndpoint;
 
-        if (serverInfo != null)
+        // Unsubscribe from previous server events
+        if (oldServer != null)
         {
-            control.ServerNameText.Text = serverInfo.DisplayName;
-            control.getServerStatus();
+            try
+            {
+                oldServer.ReachabilityChanged -= control.OnAgentReachabilityChanged;
+                oldServer.HealthStatusChanged -= control.OnAgentHealthStatusChanged;
+            }
+            catch
+            {
+                // swallow - defensive
+            }
         }
+
+        // Subscribe to new server events and update UI immediately
+        if (newServer != null)
+        {
+            control.ServerNameText.Text = newServer.DisplayName;
+            control.getServerStatus();
+
+            // Subscribe so the control updates when the endpoint reports changes.
+            // The AgentEndpoint events may fire from background threads, so handlers marshal to the UI thread.
+            newServer.ReachabilityChanged += control.OnAgentReachabilityChanged;
+            newServer.HealthStatusChanged += control.OnAgentHealthStatusChanged;
+        }
+        else
+        {
+            // Clear UI when null
+            control.ServerNameText.Text = string.Empty;
+            control.setupStatus(2);
+        }
+    }
+
+    // Event handlers invoked by AgentEndpoint. Match the signatures used elsewhere in the codebase:
+    // (AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    private void OnAgentReachabilityChanged(AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    {
+        // Ensure UI updates run on UI thread
+        _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
+    }
+
+    private void OnAgentHealthStatusChanged(AgentEndpoint sender, HealthStatusChangedEventArgs args)
+    {
+        // Ensure UI updates run on UI thread
+        _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
     }
 
     private void Grid_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
