@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.WinUI.Components;
+using paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
@@ -20,7 +21,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             if (e.Parameter is AgentEndpoint ip)
             {
                 serverObj = ip;
-                ServerInfo.Text = ip.DisplayName + "\n" + ip.IpAddress + "\n" + ip.Port ;
+                serverName.Text = ip.DisplayName;
+                serverIP.Text = ip.IpAddress + ":" + ip.Port.ToString();
             }
         }
 
@@ -36,5 +38,23 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             typeof(AgentEndpoint),
             typeof(ServerMainPage),
             new PropertyMetadata(null));
+
+        private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            SelectorBarItem selectedItem = sender.SelectedItem;
+            int currentSelectedIndex = sender.Items.IndexOf(selectedItem);
+            System.Type pageType;
+
+            switch (currentSelectedIndex)
+            {
+                case 0:
+                    pageType = typeof(srvOverview);
+                    break;
+                default:
+                    pageType = typeof(srvOverview);
+                    break;
+            }
+
+        }
     }
 }

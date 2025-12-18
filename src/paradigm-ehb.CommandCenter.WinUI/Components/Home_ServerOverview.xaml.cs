@@ -107,7 +107,6 @@ public sealed partial class Home_ServerOverview : UserControl
         set => SetValue(ServerObjProperty, value);
     }
 
-
     public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(
         nameof(ServerObject),
