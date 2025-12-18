@@ -18,6 +18,7 @@ using paradigm_ehb.CommandCenter.WinUI.Components;
 using System.Diagnostics;
 using paradigm_ehb.CommandCenter.WinUI.srvMgnt;
 using System.ComponentModel;
+using paradigm_ehb.CommandCenter.Core.Models;
 
 namespace paradigm_ehb.CommandCenter.WinUI
 {
@@ -43,7 +44,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
         {
             contentFrame.Navigate(pageType, parameter);
 
-            if (parameter is ServerInfo server)
+            if (parameter is AgentEndpoint server)
             {
                 var (serverItem, folderItem) = FindNavigationViewItemByServer(server);
                 if (serverItem != null)
@@ -58,7 +59,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
             }
         }
 
-        private (NavigationViewItem serverItem, NavigationViewItem folderItem) FindNavigationViewItemByServer(ServerInfo server)
+        private (NavigationViewItem serverItem, NavigationViewItem folderItem) FindNavigationViewItemByServer(AgentEndpoint server)
         {
             foreach (var item in nvSample.MenuItems.Skip(3)) //Skipt de eerste 3 items ("Home", "Settings" en "Your Servers")
             {
@@ -66,9 +67,9 @@ namespace paradigm_ehb.CommandCenter.WinUI
                 {
                     foreach (var child in folderItem.MenuItems)
                     {
-                        if (child is NavigationViewItem serverItem && serverItem.Tag is ServerInfo existingServer)
+                        if (child is NavigationViewItem serverItem && serverItem.Tag is AgentEndpoint existingServer)
                         {
-                            if (existingServer.Name == server.Name && existingServer.Ip == server.Ip)
+                            if (existingServer.DisplayName == server.DisplayName && existingServer.IpAddress == server.IpAddress)
                             {
                                 return (serverItem, folderItem);
                             }
@@ -110,7 +111,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
                 {
                     var serverItem = new NavigationViewItem
                     {
-                        Content = server.Name,
+                        Content = server.DisplayName,
                         Icon = new SymbolIcon(Symbol.World),
                         SelectsOnInvoked = true,
                         Tag = server
@@ -125,7 +126,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
 
         private void ServerItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (sender is NavigationViewItem navItem && navItem.Tag is ServerInfo server)
+            if (sender is NavigationViewItem navItem && navItem.Tag is AgentEndpoint server)
             {
                 contentFrame.Navigate(typeof(ServerMainPage), server);
                 nvSample.SelectedItem = navItem;
