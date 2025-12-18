@@ -25,16 +25,6 @@ public sealed partial class Home_ServerOverview : UserControl
         {
             VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
         };
-
-        // Ensure we unsubscribe when the control is unloaded to avoid leaks
-        this.Unloaded += (s, e) =>
-        {
-            if (ServerObject != null)
-            {
-                ServerObject.ReachabilityChanged -= OnAgentReachabilityChanged;
-                ServerObject.HealthStatusChanged -= OnAgentHealthStatusChanged;
-            }
-        };
     }
 
     private async void getServerStatus()
@@ -155,13 +145,13 @@ public sealed partial class Home_ServerOverview : UserControl
 
     // Event handlers invoked by AgentEndpoint. Match the signatures used elsewhere in the codebase:
     // (AgentEndpoint sender, ReachabilityChangedEventArgs args)
-    private void OnAgentReachabilityChanged(AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    private void OnAgentReachabilityChanged(object? sender, ReachabilityChangedEventArgs args)
     {
         // Ensure UI updates run on UI thread
         _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
     }
 
-    private void OnAgentHealthStatusChanged(AgentEndpoint sender, HealthStatusChangedEventArgs args)
+    private void OnAgentHealthStatusChanged(object? sender, HealthStatusChangedEventArgs args)
     {
         // Ensure UI updates run on UI thread
         _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
