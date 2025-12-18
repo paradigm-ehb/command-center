@@ -48,7 +48,7 @@ public sealed partial class Home_ServerOverview : UserControl
             var reply = await agent.Greeter.SayHelloAsync(new HelloRequest { Name = "Command Center" });
             Debug.WriteLine("Greeting: " + reply.Message);
         }
-        catch (Grpc.Core.RpcException ex)
+        catch (Grpc.Core.RpcException)
         {
             setupStatus(2);
         }
@@ -84,7 +84,6 @@ public sealed partial class Home_ServerOverview : UserControl
         get => (ServerInfo)GetValue(ServerObjProperty);
         set => SetValue(ServerObjProperty, value);
     }
-
 
     public static readonly DependencyProperty ServerObjProperty =
     DependencyProperty.Register(

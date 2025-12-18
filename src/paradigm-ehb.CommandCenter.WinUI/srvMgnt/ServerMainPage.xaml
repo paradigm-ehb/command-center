@@ -9,9 +9,42 @@
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock x:Name="ServerInfo"
-           HorizontalAlignment="Center" 
-           VerticalAlignment="Center"
-           FontSize="24"/>
+        <StackPanel Orientation="Vertical" Margin="25, 15">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock x:Name="serverName"
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Top"
+                       FontSize="24" FontWeight="Bold"/>
+
+                    <TextBlock x:Name="serverIP"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top"
+                        FontSize="16" FontWeight="Light"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" Content="Edit" />
+            </Grid>
+
+            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
+                <SelectorBarItem x:Name="SelectorBarItemRecent" 
+                     Text="Overview" Icon="Clock">
+                </SelectorBarItem>
+                <SelectorBarItem x:Name="SelectorBarItemShared" 
+                     Text="Services" Icon="Share"/>
+                <SelectorBarItem x:Name="SelectorBarItemFavorites" 
+                     Text="Processes" Icon="Favorite"/>
+            </SelectorBar>
+
+        </StackPanel>
+
+        <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" />
     </Grid>
 </Page>
