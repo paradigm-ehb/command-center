@@ -52,8 +52,7 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             _timer.Period = interval ?? _timer.Period; // Modify the timer period if a new interval is provided
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                List<AgentEndpoint> agentEndpoints = new() { agentEndpoint };
-                await ProbeServersAsync(agentEndpoints, _cts.Token);
+                await ProbeServersAsync(agentEndpoint, _cts.Token);
             }
         }
 
@@ -97,6 +96,31 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             });
 
             await Task.WhenAll(tasks);
+        }
+
+        private async Task ProbeServersAsync(AgentEndpoint agentEndpoint, CancellationToken cancellationToken)
+        {
+            using SemaphoreSlim semaphore = new SemaphoreSlim(_maxConcurrency);
+
+                await semaphore.WaitAsync(cancellationToken);
+                try
+                {
+                    bool online = await TcpProbeAsync(agentEndpoint.IpAddress, agentEndpoint.Port, cancellationToken);
+                    if (online)
+                    {
+                        agentEndpoint.Reachability = AgentReachability.Online;
+                        agentEndpoint.LastSeen = DateTimeOffset.UtcNow;
+                    }
+                    else
+                    {
+                        agentEndpoint.Reachability = AgentReachability.Offline;
+                    }
+                    // Consumers can subscribe to AgentEndpoint.HealthStatusChanged directly.
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
         }
 
         /// <summary>
