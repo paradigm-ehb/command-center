@@ -115,7 +115,7 @@ public sealed partial class ServerCreation : Page
         }
 
         // Add the server
-        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port);
+        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port, ServerUseTLS.IsChecked ?? true);
 
         SendNotification("Server added successfully!");
 
@@ -182,7 +182,7 @@ public sealed partial class ServerCreation : Page
         return true;
     }
 
-    public async Task addServer(string folderName, string name, string ip, int port)
+    public async Task addServer(string folderName, string name, string ip, int port, bool tls)
     {
         var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -205,6 +205,7 @@ public sealed partial class ServerCreation : Page
         server["name"] = name;
         server["ip"] = ip;
         server["port"] = port;
+        server["tls"] = tls;
 
         // Save it inside the folder
         folder.Values[nextIndex.ToString()] = server;
@@ -224,7 +225,7 @@ public sealed partial class ServerCreation : Page
             AgentEndpoint endpoint = endpointFactory.Create(
                 ipAddress: string.IsNullOrWhiteSpace(ip) ? "localhost" : ip,
                 port: port > 0 ? port : 50051,
-                useTls: false,  // TODO: make TLS configurable in UI
+                useTls: tls,
                 displayName: string.IsNullOrWhiteSpace(name) ? null : name,
                 metadata: metadata
             );

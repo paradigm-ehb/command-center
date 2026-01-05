@@ -21,7 +21,7 @@
             <TextBox x:Name="ServerNameTextBox"
                      Header="Server Name"
                      PlaceholderText="iMad's Server"/>
-            
+
             <TextBox x:Name="ServerIpTextBox"
                      Header="Server IP"
                      PlaceholderText="192.168.1.100"/>
@@ -30,6 +30,10 @@
                      Header="Server Port"
                      PlaceholderText="8080"
                      InputScope="Number"/>
+
+            <CheckBox x:Name="ServerUseTLS"
+                        Content="Use TLS (SSL) Connection"
+                      IsChecked="True"/>
         </StackPanel>
     </Grid>
 </Page>
