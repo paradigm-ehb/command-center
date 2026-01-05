@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.WinUI.Components;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -31,8 +32,6 @@ namespace paradigm_ehb.CommandCenter.WinUI
         /// </summary>
         public App()
         {
-            InitializeComponent();
-
             // Setup Dependency Injection
             IServiceCollection services = new ServiceCollection();
 
@@ -41,10 +40,13 @@ namespace paradigm_ehb.CommandCenter.WinUI
             // Register CommandCenter Core services
             services.AddCommandCenterCore();
 
+            services.AddSingleton<ICoreMethods, CoreMethods>();
 
             // TODO: Use MVVM pattern - register ViewModels and other services here
 
             _serviceProvider = services.BuildServiceProvider();
+
+            InitializeComponent();
         }
 
         /// <summary>
@@ -59,6 +61,11 @@ namespace paradigm_ehb.CommandCenter.WinUI
 
             IAgentClientRegistry agentClientRegistry = _serviceProvider.GetRequiredService<IAgentClientRegistry>();
             IAgentClientFactory grpcClientFactory = _serviceProvider.GetRequiredService<IAgentClientFactory>();
+
+            ICoreMethods coreMethods = _serviceProvider.GetRequiredService<ICoreMethods>();
+
+            // Load the saved server registry
+            coreMethods.LoadRegistryAsync();
 
             _window = new MainWindow();
             _window.Activate();
