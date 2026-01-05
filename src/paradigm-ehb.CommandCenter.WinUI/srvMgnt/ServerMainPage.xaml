@@ -30,16 +30,16 @@
                         FontSize="16" FontWeight="Light"/>
                 </StackPanel>
 
-                <Button Grid.Column="2" Content="Edit" />
+                <Button Click="Button_Click" Grid.Column="2" Content="Edit" />
             </Grid>
 
-            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
-                <SelectorBarItem x:Name="SelectorBarItemRecent" 
+            <SelectorBar Loaded="SelectorBar_Loaded" SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
+                <SelectorBarItem x:Name="SelectorBarItemOverview" 
                      Text="Overview" Icon="Clock">
                 </SelectorBarItem>
-                <SelectorBarItem x:Name="SelectorBarItemShared" 
+                <SelectorBarItem x:Name="SelectorBarItemServices" 
                      Text="Services" Icon="Share"/>
-                <SelectorBarItem x:Name="SelectorBarItemFavorites" 
+                <SelectorBarItem x:Name="SelectorBarItemProcesses" 
                      Text="Processes" Icon="Favorite"/>
             </SelectorBar>
 
