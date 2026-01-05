@@ -122,6 +122,23 @@ namespace paradigm_ehb.CommandCenter.Core.Services
             return Task.FromResult<AgentClient?>(null);
         }
 
+        public Task<bool> IsRegisteredAsync(Guid endpointId, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNotDisposed();
+            bool exists = _clients.ContainsKey(endpointId);
+            return Task.FromResult(exists);
+        }
+
+        public Task<bool> IsRegisteredAsync(AgentClient client, CancellationToken cancellationToken = default)
+        {
+            if (client is null) throw new ArgumentNullException(nameof(client));
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureNotDisposed();
+            bool exists = _clients.TryGetValue(client.Endpoint.Id, out var stored) && ReferenceEquals(stored, client);
+            return Task.FromResult(exists);
+        }
+
         public void Dispose()
         {
             // Ensure disposal only happens once (atomic).
