@@ -73,7 +73,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                         };
 
                         // Use the injected factory to create a properly-initialized AgentEndpoint
-                        AgentEndpoint endpoint = _endpointFactory.Create(ipAddress: ip, port: portToUse, useTls: false, displayName: string.IsNullOrWhiteSpace(name) ? null : name, metadata: metadata);
+                        AgentEndpoint endpoint = _endpointFactory.Create(ipAddress: ip, port: portToUse, useTls: false, displayName: string.IsNullOrWhiteSpace(name) ? null : name, metadata: metadata);    // TODO implement correct TLS selection in UI and parse
 
                         // Register the endpoint in the registry
                         AgentEndpointRegistrationResult result = await _agentEndpointRegistry.RegisterAsync(endpoint);

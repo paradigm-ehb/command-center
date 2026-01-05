@@ -224,7 +224,7 @@ public sealed partial class ServerCreation : Page
             AgentEndpoint endpoint = endpointFactory.Create(
                 ipAddress: string.IsNullOrWhiteSpace(ip) ? "localhost" : ip,
                 port: port > 0 ? port : 50051,
-                useTls: false,
+                useTls: false,  // TODO: make TLS configurable in UI
                 displayName: string.IsNullOrWhiteSpace(name) ? null : name,
                 metadata: metadata
             );
