@@ -43,8 +43,8 @@
                      Text="Processes" Icon="Favorite"/>
             </SelectorBar>
 
+            <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" />
+            
         </StackPanel>
-
-        <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" />
     </Grid>
 </Page>

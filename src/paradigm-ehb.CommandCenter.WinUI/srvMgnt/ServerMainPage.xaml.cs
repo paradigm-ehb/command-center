@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
@@ -16,6 +17,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
     {
         private readonly IAgentClientFactory _agentClientFactory;
         private readonly IAgentClientRegistry _agentClientRegistry;
+        private int previousSelectedIndex = 0;
 
         public ServerMainPage()
         {
@@ -77,7 +79,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             typeof(ServerMainPage),
             new PropertyMetadata(null));
 
-        private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        // Make the handler async so we can await client resolution/creation before navigating.
+        private async void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
         {
             SelectorBarItem selectedItem = sender.SelectedItem;
             int currentSelectedIndex = sender.Items.IndexOf(selectedItem);
@@ -88,11 +91,53 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 case 0:
                     pageType = typeof(srvOverview);
                     break;
+                case 1:
+                    pageType = typeof(ServicesPage);
+                    break;
                 default:
                     pageType = typeof(srvOverview);
                     break;
             }
 
+            // Determine navigation parameter. Prefer passing the AgentClient if available.
+            object? navigationParameter = null;
+
+            try
+            {
+                if (pageType == typeof(ServicesPage) && serverObj != null)
+                {
+                    // Try to get an existing AgentClient
+                    AgentClient? client = await _agentClientRegistry.GetAsync(serverObj.Id).ConfigureAwait(false);
+
+                    // Create & register when missing
+                    if (client == null)
+                    {
+                        client = await _agentClientFactory.CreateAndRegisterClientAsync(serverObj).ConfigureAwait(false);
+                    }
+
+                    // Pass the AgentClient object to the ServicesPage so it can use the gRPC clients directly
+                    navigationParameter = client;
+                }
+                else
+                {
+                    // default: pass the AgentEndpoint so other pages that expect it still work
+                    navigationParameter = serverObj;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log resolution/creation errors but still attempt navigation with server endpoint fallback
+                ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
+                logger.LogWarning(ex, "Failed to obtain AgentClient for navigation; falling back to AgentEndpoint.");
+                navigationParameter = serverObj;
+            }
+
+            SlideNavigationTransitionEffect slideNavigationTransitionEffect = currentSelectedIndex - previousSelectedIndex > 0 ? SlideNavigationTransitionEffect.FromRight : SlideNavigationTransitionEffect.FromLeft;
+
+            // Navigate with the resolved parameter
+            ContentFrame.Navigate(pageType, navigationParameter, new SlideNavigationTransitionInfo() { Effect = slideNavigationTransitionEffect });
+
+            previousSelectedIndex = currentSelectedIndex;
         }
     }
 

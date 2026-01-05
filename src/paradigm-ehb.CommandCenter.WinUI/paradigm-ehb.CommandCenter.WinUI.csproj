@@ -28,7 +28,7 @@
 	  <None Remove="ServerCreation.xaml" />
 	  <None Remove="SettingsPage.xaml" />
 	  <None Remove="srvMgnt\ServerMainPage.xaml" />
-	  <None Remove="srvMgnt\Views\srvOverview.xaml" />
+	  <None Remove="srvMgnt\Views\ServicesPage.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -115,7 +115,7 @@
 	  <Folder Include="Components\Extensions\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Page Update="srvMgnt\Views\srvOverview.xaml">
+	  <Page Update="srvMgnt\Views\ServicesPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
 	</ItemGroup>
