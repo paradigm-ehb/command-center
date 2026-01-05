@@ -16,6 +16,9 @@ using System.Xml.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -203,5 +206,34 @@ public sealed partial class ServerCreation : Page
 
         // Save it inside the folder
         folder.Values[nextIndex.ToString()] = server;
+
+        // Also register the server in the AgentEndpointRegistry
+        try
+        {
+            // Resolve required services from the global service provider
+            IAgentEndpointFactory endpointFactory = App.Services.GetRequiredService<IAgentEndpointFactory>();
+            IAgentEndpointRegistry endpointRegistry = App.Services.GetRequiredService<IAgentEndpointRegistry>();
+
+            Dictionary<string, string> metadata = new Dictionary<string, string>
+            {
+                { "folder", folderName }
+            };
+
+            AgentEndpoint endpoint = endpointFactory.Create(
+                ipAddress: string.IsNullOrWhiteSpace(ip) ? "localhost" : ip,
+                port: port > 0 ? port : 50051,
+                useTls: false,
+                displayName: string.IsNullOrWhiteSpace(name) ? null : name,
+                metadata: metadata
+            );
+
+            // Register synchronously to ensure subsequent UI refreshes see the new endpoint
+            endpointRegistry.RegisterAsync(endpoint).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Defensive: swallow exceptions so storing still succeeds even if registry registration fails.
+            // Logging can be added here later.
+        }
     }
 }
