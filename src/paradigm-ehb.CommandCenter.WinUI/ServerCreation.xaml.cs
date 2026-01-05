@@ -19,6 +19,8 @@ using Windows.Storage;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -180,7 +182,7 @@ public sealed partial class ServerCreation : Page
         return true;
     }
 
-    public void addServer(string folderName, string name, string ip, int port)
+    public async Task addServer(string folderName, string name, string ip, int port)
     {
         var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -228,12 +230,12 @@ public sealed partial class ServerCreation : Page
             );
 
             // Register synchronously to ensure subsequent UI refreshes see the new endpoint
-            endpointRegistry.RegisterAsync(endpoint).GetAwaiter().GetResult();
+            await endpointRegistry.RegisterAsync(endpoint);
         }
         catch
         {
-            // Defensive: swallow exceptions so storing still succeeds even if registry registration fails.
-            // Logging can be added here later.
+            ILogger<ServerCreation> logger = App.Services.GetRequiredService<ILogger<ServerCreation>>();
+            logger.LogError("Failed to register new AgentEndpoint in AgentEndpointRegistry.");
         }
     }
 }
