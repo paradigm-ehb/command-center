@@ -16,19 +16,57 @@ public sealed partial class Home_ServerOverview : UserControl
     {
         InitializeComponent();
 
-        rootBorder.PointerEntered += (s, e) =>
-        {
-            VisualStateManager.GoToState(this, "PointerOver", true); //Starts the animation
-        };
+        // Defer attaching pointer handlers to Loaded so we can re-attach when the control is re-used.
+        this.Loaded += Home_ServerOverview_Loaded;
+        this.Unloaded += Home_ServerOverview_Unloaded;
+    }
 
-        rootBorder.PointerExited += (s, e) =>
+    private void Home_ServerOverview_Loaded(object? sender, RoutedEventArgs e)
+    {
+        // Attach pointer handlers (idempotent — SubscribeToServer defensively avoids double-subscription)
+        rootBorder.PointerEntered += RootBorder_PointerEntered;
+        rootBorder.PointerExited += RootBorder_PointerExited;
+
+        // If a ServerObject is already set (property set before load), subscribe to its events and update UI.
+        if (ServerObject != null)
         {
-            VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
-        };
+            SubscribeToServer(ServerObject);
+            ServerNameText.Text = ServerObject.DisplayName;
+            getServerStatus();
+        }
+    }
+
+    private void RootBorder_PointerEntered(object? sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        VisualStateManager.GoToState(this, "PointerOver", true); // Starts the animation
+    }
+
+    private void RootBorder_PointerExited(object? sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        VisualStateManager.GoToState(this, "Normal", true); // Ends the animation
+    }
+
+    private void Home_ServerOverview_Unloaded(object? sender, RoutedEventArgs e)
+    {
+        // Unsubscribe from any server events to break references that prevent GC
+        UnsubscribeFromServer(this.ServerObject);
+
+        // Detach UI event handlers (will be re-attached on Loaded)
+        rootBorder.PointerEntered -= RootBorder_PointerEntered;
+        rootBorder.PointerExited -= RootBorder_PointerExited;
+
+        // Note: do NOT detach the Unloaded/Loaded handlers themselves here.
+        // They must remain attached so the control can re-subscribe when re-loaded.
     }
 
     private async void getServerStatus()
     {
+        if (ServerObject == null)
+        {
+            setupStatus(2);
+            return;
+        }
+
         ServerNameText.Text = ServerObject.DisplayName;
 
         AgentEndpoint agentEndpoint = ServerObject;
@@ -113,15 +151,7 @@ public sealed partial class Home_ServerOverview : UserControl
         // Unsubscribe from previous server events
         if (oldServer != null)
         {
-            try
-            {
-                oldServer.ReachabilityChanged -= control.OnAgentReachabilityChanged;
-                oldServer.HealthStatusChanged -= control.OnAgentHealthStatusChanged;
-            }
-            catch
-            {
-                // swallow - defensive
-            }
+            control.UnsubscribeFromServer(oldServer);
         }
 
         // Subscribe to new server events and update UI immediately
@@ -132,14 +162,47 @@ public sealed partial class Home_ServerOverview : UserControl
 
             // Subscribe so the control updates when the endpoint reports changes.
             // The AgentEndpoint events may fire from background threads, so handlers marshal to the UI thread.
-            newServer.ReachabilityChanged += control.OnAgentReachabilityChanged;
-            newServer.HealthStatusChanged += control.OnAgentHealthStatusChanged;
+            control.SubscribeToServer(newServer);
         }
         else
         {
             // Clear UI when null
             control.ServerNameText.Text = string.Empty;
             control.setupStatus(2);
+        }
+    }
+
+    private void SubscribeToServer(AgentEndpoint server)
+    {
+        if (server == null) return;
+
+        // Avoid double-subscription
+        try
+        {
+            server.ReachabilityChanged -= OnAgentReachabilityChanged;
+            server.HealthStatusChanged -= OnAgentHealthStatusChanged;
+        }
+        catch
+        {
+            // defensive - ignore if not subscribed
+        }
+
+        server.ReachabilityChanged += OnAgentReachabilityChanged;
+        server.HealthStatusChanged += OnAgentHealthStatusChanged;
+    }
+
+    private void UnsubscribeFromServer(AgentEndpoint? server)
+    {
+        if (server == null) return;
+
+        try
+        {
+            server.ReachabilityChanged -= OnAgentReachabilityChanged;
+            server.HealthStatusChanged -= OnAgentHealthStatusChanged;
+        }
+        catch
+        {
+            // swallow - defensive
         }
     }
 
