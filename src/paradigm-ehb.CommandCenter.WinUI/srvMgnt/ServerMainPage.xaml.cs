@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -6,6 +7,8 @@ using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views;
+using System;
+using System.Threading.Tasks;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
@@ -27,16 +30,37 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
         {
             base.OnNavigatedTo(e);
 
+            // Fire-and-forget the async initialization. Exceptions are observed inside the task.
+            _ = InitializeForNavigationAsync(e);
+        }
 
-            if (e.Parameter is AgentEndpoint ip)
+        private async Task InitializeForNavigationAsync(NavigationEventArgs e)
+        {
+            try
             {
-                // Ensure the agent client is created and registered
-                if (!_agentClientRegistry.IsRegisteredAsync(ip.Id).Result)
-                    _agentClientFactory.CreateAndRegisterClientAsync(ip);
+                if (e.Parameter is AgentEndpoint ip)
+                {
+                    // Ensure the agent client is created and registered (use await instead of blocking)
+                    bool registered = await _agentClientRegistry.IsRegisteredAsync(ip.Id).ConfigureAwait(false);
+                    if (!registered)
+                    {
+                        await _agentClientFactory.CreateAndRegisterClientAsync(ip).ConfigureAwait(false);
+                    }
 
-                serverObj = ip;
-                serverName.Text = ip.DisplayName;
-                serverIP.Text = ip.IpAddress + ":" + ip.Port.ToString();
+                    // UI updates must run on the UI thread — marshal back if needed.
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        serverObj = ip;
+                        serverName.Text = ip.DisplayName;
+                        serverIP.Text = ip.IpAddress + ":" + ip.Port.ToString();
+                    }).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception using the logging framework
+                ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
+                logger.LogError(ex, "Error during ServerMainPage initialization.");
             }
         }
 
@@ -69,6 +93,34 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                     break;
             }
 
+        }
+    }
+
+    internal static class DispatcherQueueExtensions
+    {
+        // Small helper to marshal an action to the UI thread as a Task.
+        public static Task EnqueueAsync(this Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue, Action action)
+        {
+            var tcs = new TaskCompletionSource<object?>();
+            bool posted = dispatcherQueue.TryEnqueue(() =>
+            {
+                try
+                {
+                    action();
+                    tcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            });
+
+            if (!posted)
+            {
+                tcs.SetException(new InvalidOperationException("Failed to post to DispatcherQueue."));
+            }
+
+            return tcs.Task;
         }
     }
 }
