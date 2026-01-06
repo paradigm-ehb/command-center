@@ -113,9 +113,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 CloseButtonText = "Cancel"
             };
 
-            confirmationDialog.PrimaryButtonClick += delegate
+            confirmationDialog.PrimaryButtonClick += async (s, args) =>
             {
-                var content = CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName);
+                var content = await CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName, serverObj.Id);
+
+                if(content == (true, "Server Deleted"))
+                {
+                    MainWindow.Instance.LoadServerMenu();
+                    HomePage.Instance.LoadServers();
+                }
             };
 
             confirmationDialog.XamlRoot = this.Content.XamlRoot;
