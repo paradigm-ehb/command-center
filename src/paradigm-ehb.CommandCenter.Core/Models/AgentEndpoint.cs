@@ -55,7 +55,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         /// <remarks>Subscribe to this event to be notified when the specified agent endpoint becomes
         /// reachable or unreachable. The event provides the affected endpoint and its new reachability state.</remarks>
-        public event EventHandler<AgentEndpoint, ReachabilityChangedEventArgs>? ReachabilityChanged;
+        public event EventHandler<ReachabilityChangedEventArgs>? ReachabilityChanged;
 
         /// <summary>
         /// Latest transport-level reachability (Online/Offline). Independent from <see cref="HealthStatus"/>.
@@ -84,7 +84,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         /// <remarks>Subscribers are notified whenever the agent's health status is updated. The event
         /// provides the new health status as an argument.</remarks>
-        public event EventHandler<AgentEndpoint, HealthStatusChangedEventArgs>? HealthStatusChanged;
+        public event EventHandler<HealthStatusChangedEventArgs>? HealthStatusChanged;
 
         /// <summary>
         /// Latest health flag maintained by health-checker.

@@ -51,5 +51,23 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// cref="AgentClient"/> associated with the specified endpoint if found; otherwise, <see
         /// langword="null"/>.</returns>
         Task<AgentClient?> GetAsync(Guid endpointId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Determines asynchronously whether the specified endpoint is currently registered.
+        /// </summary>
+        /// <param name="endpointId">The unique identifier of the endpoint to check for registration.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if the
+        /// endpoint is registered; otherwise, <see langword="false"/>.</returns>
+        Task<bool> IsRegisteredAsync(Guid endpointId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Determines asynchronously whether the specified agent client is registered.
+        /// </summary>
+        /// <param name="agentClient">The agent client to check for registration status. Cannot be null.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if the
+        /// agent client is registered; otherwise, <see langword="false"/>.</returns>
+        Task<bool> IsRegisteredAsync(AgentClient agentClient, CancellationToken cancellationToken = default);
     }
 }
