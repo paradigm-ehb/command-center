@@ -47,12 +47,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 UnitAction = ServiceActionRequest.Types.UnitAction.Start
             });
 
-            AppNotificationBuilder appNotificationBuilder = new();
-            appNotificationBuilder.AddText("Service Action Result");
-            appNotificationBuilder.AddText(response.Success ? $"Successfully started the service!" : $"Error: {response.ErrorMessage}");
+            InfoBar infoBar = new();
 
-            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
-            AppNotificationManager.Default.Show(toastNotification);
+            infoBar.Title = "Service Action Result";
+            infoBar.Message = response.Success ? $"Successfully started the service!" : $"Error: {response.ErrorMessage}";
+            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+
+            infoBar.IsOpen = true;
         }
 
         private async void ServiceStopMenuItem_Click(object sender, RoutedEventArgs e)
@@ -63,12 +64,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 UnitAction = ServiceActionRequest.Types.UnitAction.Stop
             });
 
-            AppNotificationBuilder appNotificationBuilder = new();
-            appNotificationBuilder.AddText("Service Action Result");
-            appNotificationBuilder.AddText(response.Success ? $"Successfully stopped the service!" : $"Error: {response.ErrorMessage}");
+            InfoBar infoBar = new();
 
-            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
-            AppNotificationManager.Default.Show(toastNotification);
+            infoBar.Title = "Service Action Result";
+            infoBar.Message = response.Success ? $"Successfully stopped the service!" : $"Error: {response.ErrorMessage}";
+            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+
+            infoBar.IsOpen = true;
         }
 
         private async void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
@@ -79,12 +81,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 UnitAction = ServiceActionRequest.Types.UnitAction.Restart
             });
 
-            AppNotificationBuilder appNotificationBuilder = new();
-            appNotificationBuilder.AddText("Service Action Result");
-            appNotificationBuilder.AddText(response.Success ? $"Successfully restarted the service!" : $"Error: {response.ErrorMessage}");
+            InfoBar infoBar = new();
 
-            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
-            AppNotificationManager.Default.Show(toastNotification);
+            infoBar.Title = "Service Action Result";
+            infoBar.Message = response.Success ? $"Successfully restarted the service!" : $"Error: {response.ErrorMessage}";
+            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+
+            infoBar.IsOpen = true;
         }
 
         private async void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
@@ -95,12 +98,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Enable
             });
 
-            AppNotificationBuilder appNotificationBuilder = new();
-            appNotificationBuilder.AddText("Service Action Result");
-            appNotificationBuilder.AddText(response.Success ? $"Successfully enabled the service!" : $"Error: {response.ErrorMessage}");
+            InfoBar infoBar = new();
 
-            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
-            AppNotificationManager.Default.Show(toastNotification);
+            infoBar.Title = "Service Action Result";
+            infoBar.Message = response.Success ? $"Successfully enabled the service!" : $"Error: {response.ErrorMessage}";
+            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+
+            infoBar.IsOpen = true;
         }
 
         private async void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
@@ -111,12 +115,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Disable
             });
 
-            AppNotificationBuilder appNotificationBuilder = new();
-            appNotificationBuilder.AddText("Service Action Result");
-            appNotificationBuilder.AddText(response.Success ? $"Successfully disabled the service!" : $"Error: {response.ErrorMessage}");
+            InfoBar infoBar = new();
 
-            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
-            AppNotificationManager.Default.Show(toastNotification);
+            infoBar.Title = "Service Action Result";
+            infoBar.Message = response.Success ? $"Successfully disabled the service!" : $"Error: {response.ErrorMessage}";
+            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+
+            infoBar.IsOpen = true;
         }
 
         private void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
