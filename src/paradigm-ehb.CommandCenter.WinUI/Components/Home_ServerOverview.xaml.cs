@@ -16,29 +16,57 @@ public sealed partial class Home_ServerOverview : UserControl
     {
         InitializeComponent();
 
-        rootBorder.PointerEntered += (s, e) =>
-        {
-            VisualStateManager.GoToState(this, "PointerOver", true); //Starts the animation
-        };
+        // Defer attaching pointer handlers to Loaded so we can re-attach when the control is re-used.
+        this.Loaded += Home_ServerOverview_Loaded;
+        this.Unloaded += Home_ServerOverview_Unloaded;
+    }
 
-        rootBorder.PointerExited += (s, e) =>
-        {
-            VisualStateManager.GoToState(this, "Normal", true); //Ends the animation
-        };
+    private void Home_ServerOverview_Loaded(object? sender, RoutedEventArgs e)
+    {
+        // Attach pointer handlers (idempotent — SubscribeToServer defensively avoids double-subscription)
+        rootBorder.PointerEntered += RootBorder_PointerEntered;
+        rootBorder.PointerExited += RootBorder_PointerExited;
 
-        // Ensure we unsubscribe when the control is unloaded to avoid leaks
-        this.Unloaded += (s, e) =>
+        // If a ServerObject is already set (property set before load), subscribe to its events and update UI.
+        if (ServerObject != null)
         {
-            if (ServerObject != null)
-            {
-                ServerObject.ReachabilityChanged -= OnAgentReachabilityChanged;
-                ServerObject.HealthStatusChanged -= OnAgentHealthStatusChanged;
-            }
-        };
+            SubscribeToServer(ServerObject);
+            ServerNameText.Text = ServerObject.DisplayName;
+            getServerStatus();
+        }
+    }
+
+    private void RootBorder_PointerEntered(object? sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        VisualStateManager.GoToState(this, "PointerOver", true); // Starts the animation
+    }
+
+    private void RootBorder_PointerExited(object? sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        VisualStateManager.GoToState(this, "Normal", true); // Ends the animation
+    }
+
+    private void Home_ServerOverview_Unloaded(object? sender, RoutedEventArgs e)
+    {
+        // Unsubscribe from any server events to break references that prevent GC
+        UnsubscribeFromServer(this.ServerObject);
+
+        // Detach UI event handlers (will be re-attached on Loaded)
+        rootBorder.PointerEntered -= RootBorder_PointerEntered;
+        rootBorder.PointerExited -= RootBorder_PointerExited;
+
+        // Note: do NOT detach the Unloaded/Loaded handlers themselves here.
+        // They must remain attached so the control can re-subscribe when re-loaded.
     }
 
     private async void getServerStatus()
     {
+        if (ServerObject == null)
+        {
+            setupStatus(2);
+            return;
+        }
+
         ServerNameText.Text = ServerObject.DisplayName;
 
         AgentEndpoint agentEndpoint = ServerObject;
@@ -78,26 +106,26 @@ public sealed partial class Home_ServerOverview : UserControl
         switch(Status)
         {
             case 0:
-                SetText(Windows.UI.Color.FromArgb(255, 184, 6, 6), "Offline");
+                SetText(Windows.UI.Color.FromArgb(255, 255, 153, 164), "Offline");
                 break;
             case 1:
-                SetText(Windows.UI.Color.FromArgb(255, 255, 111, 0), "Degraded");
+                SetText(Windows.UI.Color.FromArgb(255, 252, 225, 0), "Degraded");
                 break;
             case 2:
-                SetText(Windows.UI.Color.FromArgb(255, 138, 138, 138), "Unknown");
+                SetText(Windows.UI.Color.FromArgb(255, 154, 154, 154), "Unknown");
                 break;
             case 3:
-                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Online");
+                SetText(Windows.UI.Color.FromArgb(255, 76, 194, 255), "Online");
                 break;
             case 4:
-                SetText(Windows.UI.Color.FromArgb(255, 105, 168, 54), "Healthy");
+                SetText(Windows.UI.Color.FromArgb(255, 108, 203, 95), "Healthy");
                 break;
         }
     }
 
     private void SetText(Windows.UI.Color kleur, String text)
     {
-        StatusColor.Fill = new SolidColorBrush(kleur);
+        StatusColor.Fill = new SolidColorBrush(kleur);  // TODO: use ThemeResource!
         StatusText.Text = text;
     }
 
@@ -123,15 +151,7 @@ public sealed partial class Home_ServerOverview : UserControl
         // Unsubscribe from previous server events
         if (oldServer != null)
         {
-            try
-            {
-                oldServer.ReachabilityChanged -= control.OnAgentReachabilityChanged;
-                oldServer.HealthStatusChanged -= control.OnAgentHealthStatusChanged;
-            }
-            catch
-            {
-                // swallow - defensive
-            }
+            control.UnsubscribeFromServer(oldServer);
         }
 
         // Subscribe to new server events and update UI immediately
@@ -142,8 +162,7 @@ public sealed partial class Home_ServerOverview : UserControl
 
             // Subscribe so the control updates when the endpoint reports changes.
             // The AgentEndpoint events may fire from background threads, so handlers marshal to the UI thread.
-            newServer.ReachabilityChanged += control.OnAgentReachabilityChanged;
-            newServer.HealthStatusChanged += control.OnAgentHealthStatusChanged;
+            control.SubscribeToServer(newServer);
         }
         else
         {
@@ -153,15 +172,49 @@ public sealed partial class Home_ServerOverview : UserControl
         }
     }
 
+    private void SubscribeToServer(AgentEndpoint server)
+    {
+        if (server == null) return;
+
+        // Avoid double-subscription
+        try
+        {
+            server.ReachabilityChanged -= OnAgentReachabilityChanged;
+            server.HealthStatusChanged -= OnAgentHealthStatusChanged;
+        }
+        catch
+        {
+            // defensive - ignore if not subscribed
+        }
+
+        server.ReachabilityChanged += OnAgentReachabilityChanged;
+        server.HealthStatusChanged += OnAgentHealthStatusChanged;
+    }
+
+    private void UnsubscribeFromServer(AgentEndpoint? server)
+    {
+        if (server == null) return;
+
+        try
+        {
+            server.ReachabilityChanged -= OnAgentReachabilityChanged;
+            server.HealthStatusChanged -= OnAgentHealthStatusChanged;
+        }
+        catch
+        {
+            // swallow - defensive
+        }
+    }
+
     // Event handlers invoked by AgentEndpoint. Match the signatures used elsewhere in the codebase:
     // (AgentEndpoint sender, ReachabilityChangedEventArgs args)
-    private void OnAgentReachabilityChanged(AgentEndpoint sender, ReachabilityChangedEventArgs args)
+    private void OnAgentReachabilityChanged(object? sender, ReachabilityChangedEventArgs args)
     {
         // Ensure UI updates run on UI thread
         _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());
     }
 
-    private void OnAgentHealthStatusChanged(AgentEndpoint sender, HealthStatusChangedEventArgs args)
+    private void OnAgentHealthStatusChanged(object? sender, HealthStatusChangedEventArgs args)
     {
         // Ensure UI updates run on UI thread
         _ = this.DispatcherQueue.TryEnqueue(() => getServerStatus());

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace paradigm_ehb.CommandCenter.Core.Services
 {
@@ -40,9 +42,13 @@ namespace paradigm_ehb.CommandCenter.Core.Services
         {
             _timer.Period = interval ?? _timer.Period; // Modify the timer period if a new interval is provided
 
+            // Initial probe before entering the periodic loop
+            IReadOnlyCollection<AgentEndpoint> agentEndpoints = await agentEndpointRegistry.ListMonitoringEnabledAsync(_cts.Token);
+            await ProbeServersAsync(agentEndpoints, _cts.Token);
+
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                IReadOnlyCollection<AgentEndpoint> agentEndpoints = await agentEndpointRegistry.ListMonitoringEnabledAsync(_cts.Token);
+                agentEndpoints = await agentEndpointRegistry.ListMonitoringEnabledAsync(_cts.Token);
                 await ProbeServersAsync(agentEndpoints, _cts.Token);
             }
         }

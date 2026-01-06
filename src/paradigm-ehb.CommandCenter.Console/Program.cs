@@ -1,12 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Grpc.Core;
 using Grpc.Health.V1;
+using Journal.V1;
 using Microsoft.Extensions.DependencyInjection;
 using paradigm_ehb.CommandCenter.Core.Enums;
 using paradigm_ehb.CommandCenter.Core.Factories;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
+using Services.V1;
 
 Console.WriteLine("Hello, World!");
 
@@ -25,7 +27,7 @@ IAgentClientRegistry agentClientRegistry = provider.GetRequiredService<IAgentCli
 
 IAgentEndpointRegistry agentEndpointRegistry = provider.GetRequiredService<IAgentEndpointRegistry>();
 
-AgentEndpoint agentEndpoint = agentEndpointFactory.Create("localhost", 50051, false);
+AgentEndpoint agentEndpoint = agentEndpointFactory.Create("62.84.183.50", 5000, false);
 
 AgentEndpoint agentEndpoint2 = agentEndpointFactory.Create("localhost", 50051, false);
 
@@ -46,14 +48,28 @@ await agentClientRegistry.RegisterAsync(agentClient2);
 agentEndpoint.HealthStatusChanged += ChangedHealthStatus;
 agentEndpoint.ReachabilityChanged += ChangedReachabilityStatus;
 
-static void ChangedHealthStatus(AgentEndpoint sender, HealthStatusChangedEventArgs eventArgs)
+AsyncServerStreamingCall<JournalChunk> call = agentClient.Journal.Action(new Journal.V1.JournalRequest() { NumFromTail=20, Field=Journal.V1.JournalRequest.Types.Field.Systemd, Value="systemd-journald.service" });
+
+
+await foreach (var response in call.ResponseStream.ReadAllAsync())
 {
-    Console.WriteLine($"Health status of {sender.DisplayName} to: {eventArgs.HealthStatus}");
+    Console.WriteLine(response.Reply.ToStringUtf8());
 }
 
-static void ChangedReachabilityStatus(AgentEndpoint sender, ReachabilityChangedEventArgs eventArgs)
+static void ChangedHealthStatus(object? sender, HealthStatusChangedEventArgs eventArgs)
 {
-    Console.WriteLine($"Reachability status of {sender.DisplayName} to: {eventArgs.AgentReachability}");
+    if (sender is AgentEndpoint endpoint)
+    {
+    Console.WriteLine($"Health status of {endpoint.DisplayName} to: {eventArgs.HealthStatus}\n");
+    }
+}
+
+static void ChangedReachabilityStatus(object? sender, ReachabilityChangedEventArgs eventArgs)
+{
+    if (sender is AgentEndpoint endpoint)
+    {
+    Console.WriteLine($"Reachability status of {endpoint.DisplayName} to: {eventArgs.AgentReachability}");
+    }
 }
 
 Console.ReadKey();

@@ -16,6 +16,11 @@ using System.Xml.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using paradigm_ehb.CommandCenter.Core.Interfaces;
+using paradigm_ehb.CommandCenter.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -110,7 +115,7 @@ public sealed partial class ServerCreation : Page
         }
 
         // Add the server
-        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port);
+        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port, ServerUseTLS.IsChecked ?? true);
 
         SendNotification("Server added successfully!");
 
@@ -177,7 +182,7 @@ public sealed partial class ServerCreation : Page
         return true;
     }
 
-    public void addServer(string folderName, string name, string ip, int port)
+    public async Task addServer(string folderName, string name, string ip, int port, bool tls)
     {
         var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -200,8 +205,38 @@ public sealed partial class ServerCreation : Page
         server["name"] = name;
         server["ip"] = ip;
         server["port"] = port;
+        server["tls"] = tls;
 
         // Save it inside the folder
         folder.Values[nextIndex.ToString()] = server;
+
+        // Also register the server in the AgentEndpointRegistry
+        try
+        {
+            // Resolve required services from the global service provider
+            IAgentEndpointFactory endpointFactory = App.Services.GetRequiredService<IAgentEndpointFactory>();
+            IAgentEndpointRegistry endpointRegistry = App.Services.GetRequiredService<IAgentEndpointRegistry>();
+
+            Dictionary<string, string> metadata = new Dictionary<string, string>
+            {
+                { "folder", folderName }
+            };
+
+            AgentEndpoint endpoint = endpointFactory.Create(
+                ipAddress: string.IsNullOrWhiteSpace(ip) ? "localhost" : ip,
+                port: port > 0 ? port : 50051,
+                useTls: tls,
+                displayName: string.IsNullOrWhiteSpace(name) ? null : name,
+                metadata: metadata
+            );
+
+            // Register synchronously to ensure subsequent UI refreshes see the new endpoint
+            await endpointRegistry.RegisterAsync(endpoint);
+        }
+        catch
+        {
+            ILogger<ServerCreation> logger = App.Services.GetRequiredService<ILogger<ServerCreation>>();
+            logger.LogError("Failed to register new AgentEndpoint in AgentEndpointRegistry.");
+        }
     }
 }
