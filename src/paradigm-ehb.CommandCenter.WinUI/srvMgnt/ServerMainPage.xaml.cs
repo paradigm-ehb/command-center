@@ -12,6 +12,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
         public ServerMainPage()
         {
             InitializeComponent();
+            
+            SelectorBar.SelectedItem = SelectorBar.Items[0];
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -21,8 +23,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             if (e.Parameter is AgentEndpoint ip)
             {
                 serverObj = ip;
-                serverName.Text = ip.Name;
-                serverIP.Text = ip.Ip + ":" + ip.Port.ToString();
+                serverName.Text = serverObj.DisplayName;
+                serverIP.Text = serverObj.IpAddress + ":" + serverObj.Port.ToString();
+                
+                ContentFrame.Navigate(typeof(srvOverview), serverObj);
             }
         }
 
@@ -50,10 +54,22 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 case 0:
                     pageType = typeof(srvOverview);
                     break;
+                case 1:
+                    pageType = typeof(srvServices);
+                    break;
+                case 2:
+                    pageType = typeof(srvProcesses);
+                    break;
                 default:
                     pageType = typeof(srvOverview);
                     break;
             }
+            
+            ContentFrame.Navigate(pageType, serverObj);
+        }
+
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
 
         }
     }
