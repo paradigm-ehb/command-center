@@ -19,6 +19,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.ApplicationModel.VoiceCommands;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -44,6 +45,11 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             // Fire-and-forget; exceptions observed inside the task
             _ = InitializeAsync(e);
+        }
+
+        private void OnFilterChanged(object sender, RoutedEventArgs args)
+        {
+
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
