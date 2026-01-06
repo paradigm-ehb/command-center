@@ -30,6 +30,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
     /// </summary>
     public sealed partial class ProcessesPage : Page
     {
+        AgentClient? client = null;
+
         public ObservableCollection<ProcessInfo> processes { get; } = new();
 
         public ProcessesPage()
@@ -69,7 +71,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             try
             {
                 // Determine the AgentClient to use based on navigation parameter
-                AgentClient? client = null;
 
                 if (e.Parameter is AgentClient passedClient)
                 {

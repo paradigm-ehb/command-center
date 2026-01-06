@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="8">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -32,8 +32,9 @@
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
             Grid.Row="1"
-            IsItemClickEnabled="False"
-            Margin="0">
+            Margin="0"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch">
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:ProcessInfo">
@@ -44,6 +45,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
                             <Grid.ContextFlyout>
                                 <MenuFlyout>
@@ -59,7 +63,7 @@
 
                             <!-- Main info -->
                             <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind ProcessName}" Style="{ThemeResource TitleTextBlockStyle}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{x:Bind ProcessName}" Style="{ThemeResource BodyLargeTextBlockStyle}" TextTrimming="CharacterEllipsis"/>
                                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="PID:" FontWeight="SemiBold" />
