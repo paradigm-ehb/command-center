@@ -19,14 +19,13 @@
 	</ItemGroup>
 
 	<!-- Global Includes -->
-	<ItemGroup>
-	</ItemGroup>
 
 	<!-- Include all the *.proto files, with config for Client -->
 	<ItemGroup>
 		<Protobuf Include="Protos\Greet\V1\greet.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Health\V1\health.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Journal\V1\journal.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\Resources\V1\resources.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Services\V1\services.proto" GrpcServices="Client" />
 	</ItemGroup>
 

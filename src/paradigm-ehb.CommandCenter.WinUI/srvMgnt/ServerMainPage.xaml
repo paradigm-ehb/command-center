@@ -9,7 +9,12 @@
     mc:Ignorable="d">
 
     <Grid>
-        <StackPanel Orientation="Vertical" Margin="25, 15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="25, 15" Grid.Row="0">
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -30,21 +35,24 @@
                         FontSize="16" FontWeight="Light"/>
                 </StackPanel>
 
-                <Button Grid.Column="2" Content="Edit" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Click="Delete_Click" Background="Red" Grid.Column="2" Content="Delete" />
+                    <Button Click="Edit_Click" Grid.Column="2" Content="Edit" />
+                </StackPanel>
             </Grid>
 
             <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
-                <SelectorBarItem x:Name="SelectorBarItemRecent" 
+                <SelectorBarItem x:Name="SelectorBarItemOverview" 
                      Text="Overview" Icon="Clock">
                 </SelectorBarItem>
-                <SelectorBarItem x:Name="SelectorBarItemShared" 
+                <SelectorBarItem x:Name="SelectorBarItemServices" 
                      Text="Services" Icon="Share"/>
-                <SelectorBarItem x:Name="SelectorBarItemFavorites" 
+                <SelectorBarItem x:Name="SelectorBarItemProcesses" 
                      Text="Processes" Icon="Favorite"/>
             </SelectorBar>
-
-            <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" />
-            
         </StackPanel>
+
+        <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" Grid.Row="1" />
     </Grid>
 </Page>

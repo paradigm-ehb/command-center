@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Windows.Storage;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.WinUI;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Windows.Storage;
 
 namespace paradigm_ehb.CommandCenter.WinUI.Components
 {
@@ -116,6 +117,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                             endpoint.Metadata.ContainsKey("folder") &&
                             endpoint.Metadata["folder"] == folderName)
                         {
+                            endpoint.FolderName = folderName;
                             serverFolder.Servers.Add(endpoint);
                         }
                     }
@@ -125,6 +127,68 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
             }
 
             return folderList;
+        }
+
+        public bool modifyServerConfig(string Folder, string ServeName)
+        {
+
+            return false;
+        }
+
+        public (bool success, string reason) modifyServer(string folderName, string name, string ip, int port)
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            var serverStorage = localSettings.CreateContainer(
+                "serverStorage",
+                ApplicationDataCreateDisposition.Always
+            );
+
+            if (!serverStorage.Containers.TryGetValue(folderName, out var folder))
+            {
+                return (false, "Folder does not exist.");
+            }
+
+            foreach (var kvp in folder.Values)
+            {
+                if (kvp.Value is ApplicationDataCompositeValue server && server.TryGetValue("name", out object storedName) && storedName is string s && s.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    server["ip"] = ip;
+                    server["port"] = port;
+
+                    folder.Values[kvp.Key] = server;
+
+                    return (true, "Server modified");
+                }
+            }
+
+            return (false, "Server not found");
+        }
+
+        public static (bool success, string reason) deleteServer(string folderName, string Name)
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            var serverStorage = localSettings.CreateContainer(
+                "serverStorage",
+                ApplicationDataCreateDisposition.Always
+            );
+
+            if (!serverStorage.Containers.TryGetValue(folderName, out var folder))
+            {
+                return (false, "Folder does not exist.");
+            }
+
+            foreach (var kvp in folder.Values)
+            {
+                if (kvp.Value is ApplicationDataCompositeValue server && server.TryGetValue("name", out object storedName) && storedName is string s && s.Equals(Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    folder.Values.Remove(kvp.Key);
+                    return (true, "Server Deleted");
+                }
+            }
+
+            return (false, "Server not found");
         }
 
         // Backwards-compatible static wrapper that resolves the service from the global App service provider.

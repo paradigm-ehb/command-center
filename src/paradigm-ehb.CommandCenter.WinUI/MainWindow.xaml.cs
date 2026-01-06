@@ -132,7 +132,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
                 nvSample.SelectedItem = navItem;
             }
         }
-
+        
         private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
 
@@ -182,11 +182,9 @@ namespace paradigm_ehb.CommandCenter.WinUI
             contentFrame.Navigate(typeof(HomePage));
 
         }
-
-        private async void CtrlN_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        
+        private async void AddServerButton_Clicked(object sender, RoutedEventArgs args)
         {
-            args.Handled = true;
-
             var serverCreation = new ServerCreation();
 
             ContentDialog serverCreationDialog = new ContentDialog
