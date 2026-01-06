@@ -46,9 +46,24 @@
                 <NavigationViewItem Content="Settings" Tag="SettingsPage" Icon="Setting" />
             </NavigationView.MenuItems>
 
+            <NavigationView.PaneFooter>
+                <Grid Margin="12,8,12,12">
+                    <Button
+                        x:Name="addServerButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Content="Add a New Server"
+                        Click="AddServerButton_Clicked"
+                        HorizontalAlignment="Stretch"
+                        Height="36"
+                        Padding="8,6" />
+                </Grid>
+            </NavigationView.PaneFooter>
+
+
             <NavigationView.Content>
                 <Frame x:Name="contentFrame" />
             </NavigationView.Content>
+
 
             <NavigationView.KeyboardAccelerators>
                 <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="CtrlN_Invoked"/>
