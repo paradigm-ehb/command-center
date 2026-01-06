@@ -55,7 +55,11 @@
                         Click="AddServerButton_Clicked"
                         HorizontalAlignment="Stretch"
                         Height="32"
-                        Padding="8,4" />
+                        Padding="8,4">
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="N" Modifiers="Control" />
+                        </Button.KeyboardAccelerators>
+                    </Button>
                 </Grid>
             </NavigationView.PaneFooter>
 
@@ -65,9 +69,6 @@
             </NavigationView.Content>
 
 
-            <NavigationView.KeyboardAccelerators>
-                <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="CtrlN_Invoked"/>
-            </NavigationView.KeyboardAccelerators>
         </NavigationView>
     </Grid>
 </Window>

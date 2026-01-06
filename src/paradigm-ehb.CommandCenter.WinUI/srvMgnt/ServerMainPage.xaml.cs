@@ -26,6 +26,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
 
             InitializeComponent();
+            
+            SelectorBar.SelectedItem = SelectorBar.Items[0];
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -49,7 +51,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                         await _agentClientFactory.CreateAndRegisterClientAsync(ip).ConfigureAwait(false);
                     }
 
-                    // UI updates must run on the UI thread — marshal back if needed.
+                    // UI updates must run on the UI thread â€” marshal back if needed.
                     await DispatcherQueue.EnqueueAsync(() =>
                     {
                         serverObj = ip;
@@ -141,6 +143,24 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             ContentFrame.Navigate(pageType, navigationParameter, new SlideNavigationTransitionInfo() { Effect = slideNavigationTransitionEffect });
 
             previousSelectedIndex = currentSelectedIndex;
+        private async void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            ContentDialog confirmationDialog = new ContentDialog()
+            {
+                Title = "Are you sure you want to delete this server?",
+                Content = "This server will be removed from the app and cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+
+            confirmationDialog.PrimaryButtonClick += delegate
+            {
+                var content = CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName);
+            };
+
+            confirmationDialog.XamlRoot = this.Content.XamlRoot;
+
+            await confirmationDialog.ShowAsync();
         }
     }
 
