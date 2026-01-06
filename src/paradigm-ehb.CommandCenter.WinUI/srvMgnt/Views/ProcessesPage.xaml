@@ -8,20 +8,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Toolbar with refresh -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8" Grid.Row="0">
             <Button x:Name="RefreshButton"
                     Content="Refresh"
                     Click="RefreshButton_Click"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"
-                    Margin="0,0,4,0"/>
+                    Margin="0,0,4,0"
+                    Padding="12,6"/>
         </StackPanel>
 
         <ListView
@@ -30,52 +31,64 @@
             ShowsScrollingPlaceholders="True"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
-            Grid.Row="1">
+            Grid.Row="1"
+            IsItemClickEnabled="False"
+            Margin="0">
+
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:ProcessInfo">
-                    <Grid>
-                        <Grid.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Start Service" Click="ServiceStartMenuItem_Click" />
-                                <MenuFlyoutItem Text="Stop Service" Click="ServiceStopMenuItem_Click" />
-                                <MenuFlyoutItem Text="Restart Service" Click="ServiceRestartMenuItem_Click" />
-                                <MenuFlyoutItem Text="Enable Service" Click="ServiceEnableMenuItem_Click" />
-                                <MenuFlyoutItem Text="Disable Service" Click="ServiceDisableMenuItem_Click" />
-                                <MenuFlyoutItem Text="View Properties" Click="ServiceViewMenuItem_Click" />
-                            </MenuFlyout>
-                        </Grid.ContextFlyout>
+                    <Border Margin="6" Padding="10" CornerRadius="8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                                <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Start" Click="ServiceStartMenuItem_Click" />
+                                    <MenuFlyoutItem Text="Stop" Click="ServiceStopMenuItem_Click" />
+                                    <MenuFlyoutItem Text="Restart" Click="ServiceRestartMenuItem_Click" />
+                                    <MenuFlyoutItem Text="View Properties" Click="ServiceViewMenuItem_Click" />
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
 
-                        <Ellipse
-                            Grid.RowSpan="2"
-                            Width="32"
-                            Height="32"
-                            Margin="6"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            Fill="{ThemeResource ControlStrongFillColorDefaultBrush}"/>
+                            <!-- Icon -->
+                            <Ellipse Width="16" Height="16" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 
-                        <TextBlock Grid.Column="1"
-                                   Text="{x:Bind ProcessId}"
-                                   x:Phase="1"
-                                   Style="{ThemeResource BaseTextBlockStyle}"
-                                   Margin="12,6,0,0"/>
+                            <!-- Main info -->
+                            <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ProcessName}" Style="{ThemeResource TitleTextBlockStyle}" TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="PID:" FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind ProcessId}" />
+                                    </StackPanel>
 
-                        <TextBlock Grid.Column="1"
-                                   Grid.Row="1"
-                                   Text="{x:Bind ProcessName}"
-                                   x:Phase="2"
-                                   Style="{ThemeResource BodyTextBlockStyle}"
-                                   Margin="12,0,0,6"/>
-                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="State:" FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind State}" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="Threads:" FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind NumThreads}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <TextBlock Text="{x:Bind Uptime}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <!-- Action buttons -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                                <Button Content="Start" Click="ServiceStartMenuItem_Click" Padding="12,8" />
+                                <Button Content="Stop" Click="ServiceStopMenuItem_Click" Padding="12,8" />
+                                <Button Content="Restart" Click="ServiceRestartMenuItem_Click" Padding="12,8" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

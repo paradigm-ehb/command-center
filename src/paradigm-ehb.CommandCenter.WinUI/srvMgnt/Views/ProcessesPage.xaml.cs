@@ -60,14 +60,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
         }
 
-        private void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
         private void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
         {
         }
@@ -99,6 +91,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                         {
                             ProcessId = 0,
                             ProcessName = "(no client)",
+                            State = ProcessState.Unspecified,
+                            Uptime = 0,
+                            NumThreads = 0
                         });
                     }).ConfigureAwait(false);
                     return;
@@ -114,6 +109,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                         {
                             ProcessId = (int)process.Pid,
                             ProcessName = process.Name,
+                            State = process.State,
+                            Uptime = process.Utime,
+                            NumThreads = (int)process.NumThreads
                         });
                     }).ConfigureAwait(false);
                 }
@@ -124,7 +122,14 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     processes.Clear();
-                    processes.Add(new ProcessInfo { ProcessId = 0, ProcessName = ex.Message });
+                    processes.Add(new ProcessInfo
+                    {
+                        ProcessId = 0,
+                        ProcessName = ex.Message,
+                        State = ProcessState.Unspecified,
+                        Uptime = 0,
+                        NumThreads = 0
+                    });
                 }).ConfigureAwait(false);
             }
         }
@@ -132,8 +137,22 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
     public class ProcessInfo
     {
+        // PID
         public int ProcessId { get; set; }
+
+        // Process display name
         public string ProcessName { get; set; }
+
+        // Process state as defined in the proto (Resources.V1.ProcessState)
+        public ProcessState State { get; set; }
+
+        // Uptime / user-time as provided by the agent (proto: utime). Kept as ulong to match proto uint64
+        public ulong Uptime { get; set; }
+
+        // Number of threads for the process
+        public int NumThreads { get; set; }
+
+        // Existing fields kept for compatibility with UI that may bind to them
         public double CpuUsage { get; set; }
         public long MemoryUsage { get; set; }
     }
