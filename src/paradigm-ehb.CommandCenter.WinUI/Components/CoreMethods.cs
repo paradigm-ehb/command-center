@@ -137,7 +137,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
             return false;
         }
 
-        public (bool success, string reason) modifyServer(string folderName, string name, string ip, int port)
+        public static async Task<(bool success, string reason)> modifyServer(string folderName, string name, string ip, int port, string newName = null)
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -157,6 +157,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                 {
                     server["ip"] = ip;
                     server["port"] = port;
+                    if(newName != null)
+                    { 
+                        server["name"] = newName;
+                    }
 
                     folder.Values[kvp.Key] = server;
 

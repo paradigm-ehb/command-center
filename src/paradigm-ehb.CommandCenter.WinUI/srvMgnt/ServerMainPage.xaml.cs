@@ -90,12 +90,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 case 0:
                     pageType = typeof(srvOverview);
                     break;
-                case 1:
-                    pageType = typeof(srvServices);
-                    break;
-                case 2:
-                    pageType = typeof(srvProcesses);
-                    break;
                 default:
                     pageType = typeof(srvOverview);
                     break;
@@ -104,9 +98,22 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             ContentFrame.Navigate(pageType, serverObj);
         }
 
-        private void Edit_Click(object sender, RoutedEventArgs e)
+        private async void Edit_Click(object sender, RoutedEventArgs e)
         {
+            var content = await CoreMethods.modifyServer("Hacked", "Working Prod", "62.84.183.50", 5001, "Namechange test");
 
+            if(content == (true, "Server modified"))
+            {
+                ContentDialog confirmationDialog = new ContentDialog()
+                {
+                    Title = "Server name change",
+                    Content = "Config changed successfully :)",
+                    PrimaryButtonText = "OK"
+                };
+
+                confirmationDialog.XamlRoot = this.Content.XamlRoot;
+                await confirmationDialog.ShowAsync();
+            }
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -127,6 +134,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 {
                     MainWindow.Instance.LoadServerMenu();
                     HomePage.Instance.LoadServers();
+                }
+                else
+                {
+                    ContentDialog confirmationDialog = new ContentDialog()
+                    {
+                        Title = "Unable to delete the server.",
+                        Content = "Rason: Unknown",
+                        PrimaryButtonText = "OK",
+                    };
                 }
             };
 
