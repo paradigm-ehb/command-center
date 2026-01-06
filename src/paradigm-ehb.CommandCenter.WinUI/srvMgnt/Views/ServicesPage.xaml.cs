@@ -9,12 +9,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Services.V1;
+using Services.V2;
+using Microsoft.Windows.AppNotifications.Builder;
+using Microsoft.Windows.AppNotifications;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 {
     public sealed partial class ServicesPage : Page
     {
+        AgentClient? client = null;
+
         // Observable collection used by x:Bind in XAML
         public ObservableCollection<ServiceInfo> services { get; } = new();
 
@@ -35,24 +39,84 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
         }
 
-        private void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            {
+                ServiceName = "mariadb.service",
+                UnitAction = ServiceActionRequest.Types.UnitAction.Start
+            });
+
+            AppNotificationBuilder appNotificationBuilder = new();
+            appNotificationBuilder.AddText("Service Action Result");
+            appNotificationBuilder.AddText(response.Success ? $"Successfully started the service!" : $"Error: {response.ErrorMessage}");
+
+            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
+            AppNotificationManager.Default.Show(toastNotification);
         }
 
-        private void ServiceStopMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ServiceStopMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            {
+                ServiceName = "mariadb.service",
+                UnitAction = ServiceActionRequest.Types.UnitAction.Stop
+            });
+
+            AppNotificationBuilder appNotificationBuilder = new();
+            appNotificationBuilder.AddText("Service Action Result");
+            appNotificationBuilder.AddText(response.Success ? $"Successfully stopped the service!" : $"Error: {response.ErrorMessage}");
+
+            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
+            AppNotificationManager.Default.Show(toastNotification);
         }
 
-        private void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            {
+                ServiceName = "mariadb.service",
+                UnitAction = ServiceActionRequest.Types.UnitAction.Restart
+            });
+
+            AppNotificationBuilder appNotificationBuilder = new();
+            appNotificationBuilder.AddText("Service Action Result");
+            appNotificationBuilder.AddText(response.Success ? $"Successfully restarted the service!" : $"Error: {response.ErrorMessage}");
+
+            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
+            AppNotificationManager.Default.Show(toastNotification);
         }
 
-        private void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            {
+                ServiceName = "mariadb.service",
+                UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Enable
+            });
+
+            AppNotificationBuilder appNotificationBuilder = new();
+            appNotificationBuilder.AddText("Service Action Result");
+            appNotificationBuilder.AddText(response.Success ? $"Successfully enabled the service!" : $"Error: {response.ErrorMessage}");
+
+            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
+            AppNotificationManager.Default.Show(toastNotification);
         }
 
-        private void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            {
+                ServiceName = "mariadb.service",
+                UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Disable
+            });
+
+            AppNotificationBuilder appNotificationBuilder = new();
+            appNotificationBuilder.AddText("Service Action Result");
+            appNotificationBuilder.AddText(response.Success ? $"Successfully disabled the service!" : $"Error: {response.ErrorMessage}");
+
+            AppNotification toastNotification = appNotificationBuilder.BuildNotification();
+            AppNotificationManager.Default.Show(toastNotification);
         }
 
         private void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
@@ -64,7 +128,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             try
             {
                 // Determine the AgentClient to use based on navigation parameter
-                AgentClient? client = null;
 
                 if (e.Parameter is AgentClient passedClient)
                 {
@@ -92,7 +155,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }
 
                 // Example unary call using the passed client (keep as example; adapt to your RPCs).
-                ServiceActionReply response = await client.Service.ActionAsync(new ServiceActionRequest { ServiceName = "systemd" }, deadline: DateTime.UtcNow.AddSeconds(5));
+                GetUnitsReply? response = await client.Service.GetAllUnitsAsync(new GetUnitsRequest());
 
                 if (response is null)
                 {
@@ -104,7 +167,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     services.Add(new ServiceInfo
                     {
                         Name = "Response!",
-                        Description = $"Status: {response.Status}"
+                        Description = $"Status: {response.UnitsData.ToStringUtf8()}"
                     });
                 }).ConfigureAwait(false);
             }

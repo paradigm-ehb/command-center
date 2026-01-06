@@ -46,23 +46,18 @@
                             </MenuFlyout>
                         </Grid.ContextFlyout>
 
-                                <Grid.RowDefinitions>
+                        <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Ellipse
-                            Grid.RowSpan="2"
-                            Width="32"
-                            Height="32"
-                            Margin="6"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            Fill="{ThemeResource ControlStrongFillColorDefaultBrush}"/>
+                        <!-- Icon -->
+                        <Ellipse Width="16" Height="16" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 
                         <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
                             <TextBlock Grid.Column="1"
@@ -79,14 +74,18 @@
                                    Margin="12,0,0,6"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                            <Button Content="Start" Click="ServiceStartMenuItem_Click" Padding="12,8"/>
-                            <Button Content="Stop" Click="ServiceStopMenuItem_Click" Padding="12,8"/>
-                            <Button Content="Restart" Click="ServiceRestartMenuItem_Click" Padding="12,8"/>
-                            <Button Content="Enable" Click="ServiceEnableMenuItem_Click" Padding="12,8"/>
-                            <Button Content="Disable" Click="ServiceDisableMenuItem_Click" Padding="12,8"/>
-                            <Button Content="View" Click="ServiceViewMenuItem_Click" Padding="12,8"/>
-                        </StackPanel>
+                        <DropDownButton Content="Actions" Grid.Column="2" VerticalAlignment="Center">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Text="Start" Click="ServiceStartMenuItem_Click" Padding="12,8"/>
+                                    <MenuFlyoutItem Text="Stop" Click="ServiceStopMenuItem_Click" Padding="12,8"/>
+                                    <MenuFlyoutItem Text="Restart" Click="ServiceRestartMenuItem_Click" Padding="12,8"/>
+                                    <MenuFlyoutItem Text="Enable" Click="ServiceEnableMenuItem_Click" Padding="12,8"/>
+                                    <MenuFlyoutItem Text="Disable" Click="ServiceDisableMenuItem_Click" Padding="12,8"/>
+                                    <MenuFlyoutItem Text="View" Click="ServiceViewMenuItem_Click" Padding="12,8"/>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
 
                     </Grid>
                 </DataTemplate>
