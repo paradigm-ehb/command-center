@@ -30,8 +30,6 @@
 	  <None Remove="srvMgnt\ServerMainPage.xaml" />
 	  <None Remove="srvMgnt\Views\ServerModification.xaml" />
 	  <None Remove="srvMgnt\Views\srvOverview.xaml" />
-	  <None Remove="srvMgnt\Views\srvProcesses.xaml" />
-	  <None Remove="srvMgnt\Views\srvServices.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -116,16 +114,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Components\Extensions\" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Page Update="srvMgnt\Views\srvProcesses.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </Page>
-	</ItemGroup>
-	<ItemGroup>
-	  <Page Update="srvMgnt\Views\srvServices.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </Page>
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="srvMgnt\Views\ServerModification.xaml">
