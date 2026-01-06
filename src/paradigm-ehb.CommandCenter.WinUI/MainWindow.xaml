@@ -54,8 +54,8 @@
                         Content="Add a New Server"
                         Click="AddServerButton_Clicked"
                         HorizontalAlignment="Stretch"
-                        Height="36"
-                        Padding="8,6" />
+                        Height="32"
+                        Padding="8,4" />
                 </Grid>
             </NavigationView.PaneFooter>
 
