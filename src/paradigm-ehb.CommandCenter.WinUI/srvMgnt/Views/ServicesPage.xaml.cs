@@ -92,7 +92,12 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }
 
                 // Example unary call using the passed client (keep as example; adapt to your RPCs).
-                ServiceActionReply response = await client.Service.ActionAsync(new ServiceActionRequest { ServiceName = "systemd" });
+                ServiceActionReply response = await client.Service.ActionAsync(new ServiceActionRequest { ServiceName = "systemd" }, deadline: DateTime.UtcNow.AddSeconds(5));
+
+                if (response is null)
+                {
+                    throw new InvalidOperationException("Received null response from ActionAsync.");
+                }
 
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
