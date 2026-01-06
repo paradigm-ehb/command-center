@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.Core.Services;
 using paradigm_ehb.CommandCenter.WinUI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -163,7 +165,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
             return (false, "Server not found");
         }
 
-        public static (bool success, string reason) deleteServer(string folderName, string Name)
+        public async static Task<(bool success, string reason)> deleteServer(string folderName, string Name, Guid serverGUID)
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -182,6 +184,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                 if (kvp.Value is ApplicationDataCompositeValue server && server.TryGetValue("name", out object storedName) && storedName is string s && s.Equals(Name, StringComparison.OrdinalIgnoreCase))
                 {
                     folder.Values.Remove(kvp.Key);
+
+                    IAgentEndpointRegistry AgentEndpointRegistry = App.Services.GetRequiredService<IAgentEndpointRegistry>();
+                    await AgentEndpointRegistry.DeregisterAsync(serverGUID);
+
                     return (true, "Server Deleted");
                 }
             }
