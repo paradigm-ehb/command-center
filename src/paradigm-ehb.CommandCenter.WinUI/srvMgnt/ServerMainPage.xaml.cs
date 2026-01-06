@@ -90,12 +90,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 case 0:
                     pageType = typeof(srvOverview);
                     break;
-                case 1:
-                    pageType = typeof(srvServices);
-                    break;
-                case 2:
-                    pageType = typeof(srvProcesses);
-                    break;
                 default:
                     pageType = typeof(srvOverview);
                     break;
