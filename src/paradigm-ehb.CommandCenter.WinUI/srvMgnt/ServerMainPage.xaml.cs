@@ -143,6 +143,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             ContentFrame.Navigate(pageType, navigationParameter, new SlideNavigationTransitionInfo() { Effect = slideNavigationTransitionEffect });
 
             previousSelectedIndex = currentSelectedIndex;
+        }
+
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
             ContentDialog confirmationDialog = new ContentDialog()
