@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Navigation;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views;
+using System;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
@@ -71,6 +72,26 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private async void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            ContentDialog confirmationDialog = new ContentDialog()
+            {
+                Title = "Are you sure you want to delete this server?",
+                Content = "This server will be removed from the app and cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+
+            confirmationDialog.PrimaryButtonClick += delegate
+            {
+                var content = CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName);
+            };
+
+            confirmationDialog.XamlRoot = this.Content.XamlRoot;
+
+            await confirmationDialog.ShowAsync();
         }
     }
 }

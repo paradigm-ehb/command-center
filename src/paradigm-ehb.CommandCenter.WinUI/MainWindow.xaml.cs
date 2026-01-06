@@ -132,7 +132,7 @@ namespace paradigm_ehb.CommandCenter.WinUI
                 nvSample.SelectedItem = navItem;
             }
         }
-
+        
         private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
 

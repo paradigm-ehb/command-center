@@ -36,6 +36,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         public string DisplayName { get; set; } = string.Empty;
 
+        public string? FolderName { get; set; }
+
         /// <summary>
         /// Optional arbitrary metadata (os, version, tags).
         /// </summary>

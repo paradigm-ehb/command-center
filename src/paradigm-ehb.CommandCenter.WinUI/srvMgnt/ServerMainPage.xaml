@@ -32,7 +32,7 @@
 
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                    <Button Click="Edit_Click" Background="Red" Grid.Column="2" Content="Delete" />
+                    <Button Click="Delete_Click" Background="Red" Grid.Column="2" Content="Delete" />
                     <Button Click="Edit_Click" Grid.Column="2" Content="Edit" />
                 </StackPanel>
             </Grid>

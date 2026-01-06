@@ -115,6 +115,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                             endpoint.Metadata.ContainsKey("folder") &&
                             endpoint.Metadata["folder"] == folderName)
                         {
+                            endpoint.FolderName = folderName;
                             serverFolder.Servers.Add(endpoint);
                         }
                     }
@@ -162,7 +163,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
             return (false, "Server not found");
         }
 
-        public (bool success, string reason) deleteServer(string folderName, string Name)
+        public static (bool success, string reason) deleteServer(string folderName, string Name)
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
