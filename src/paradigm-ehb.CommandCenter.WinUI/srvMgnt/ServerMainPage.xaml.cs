@@ -100,20 +100,37 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 
         private async void Edit_Click(object sender, RoutedEventArgs e)
         {
-            var content = await CoreMethods.modifyServer("Hacked", "Working Prod", "62.84.183.50", 5001, "Namechange test");
+            var serverCreation = new EditServerPanel(serverObj);
 
-            if(content == (true, "Server modified"))
+            ContentDialog serverCreationDialog = new ContentDialog
             {
-                ContentDialog confirmationDialog = new ContentDialog()
-                {
-                    Title = "Server name change",
-                    Content = "Config changed successfully :)",
-                    PrimaryButtonText = "OK"
-                };
+                Title = "Edit this server",
+                Content = serverCreation,
+                CloseButtonText = "OK",
+                PrimaryButtonText = "Cancel",
+                XamlRoot = this.Content.XamlRoot
+            };
 
-                confirmationDialog.XamlRoot = this.Content.XamlRoot;
-                await confirmationDialog.ShowAsync();
-            }
+            serverCreationDialog.Closing += async (dialog, closingArgs) => {
+                if (closingArgs.Result == ContentDialogResult.None)
+                {
+                    bool isValid = await serverCreation.ValidateAndApplyChangesAsync();
+
+                    // Cancel the close if validation fails
+                    if (!isValid)
+                    {
+                        closingArgs.Cancel = true;
+                    }
+                    else
+                    {
+                        MainWindow.Instance.LoadServerMenu();
+                        HomePage.Instance.LoadServers();
+                    }
+                }
+            };
+
+            ContentDialogResult result = await serverCreationDialog.ShowAsync();
+
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
