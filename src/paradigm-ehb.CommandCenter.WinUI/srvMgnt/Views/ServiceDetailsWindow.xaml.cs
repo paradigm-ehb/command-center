@@ -15,39 +15,121 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// Service details window with non-blocking streaming log reader.
     /// </summary>
     public sealed partial class ServiceDetailsWindow : Window
     {
         public AgentClient Agent { get; }
         public ServiceInfo Service { get; }
 
+        private CancellationTokenSource? _cts;
+        private Task? _logsTask;
+
         public ServiceDetailsWindow(AgentClient agentClient, ServiceInfo serviceInfo)
         {
             InitializeComponent();
             Agent = agentClient;
             Service = serviceInfo;
+
             ExtendsContentIntoTitleBar = true;
-            _ = GetLogs();
+
+            // Create a cancellation source and run the streaming reader on a background thread.
+            _cts = new CancellationTokenSource();
+            _logsTask = Task.Run(() => GetLogsAsync(_cts.Token));
+
+            // Cancel streaming when the window closes
+            this.Closed += (_, _) => _cts?.Cancel();
         }
 
-        private async Task GetLogs()
+        private async Task GetLogsAsync(CancellationToken cancellationToken)
         {
-            AsyncServerStreamingCall<JournalChunk> call = Agent.Journal.Action(new Journal.V1.JournalRequest() { NumFromTail = 20, Field = Journal.V1.JournalRequest.Types.Field.Systemd, Value = Service.Name });
+            if (Agent == null) return;
 
-            await foreach (JournalChunk? response in call.ResponseStream.ReadAllAsync())
+            AsyncServerStreamingCall<JournalChunk>? call = null;
+
+            try
             {
-                ServiceLogs.Text += response.Reply.ToStringUtf8() + Environment.NewLine;
+                call = Agent.Journal.Action(new Journal.V1.JournalRequest()
+                {
+                    NumFromTail = 50,
+                    Field = Journal.V1.JournalRequest.Types.Field.Systemd,
+                    Value = Service.Name
+                });
+
+                var sb = new StringBuilder();
+                int bufferedItems = 0;
+                const int FlushThreshold = 10;
+
+                // Read on background thread; cancellationToken is passed into ReadAllAsync so it stops promptly.
+                await foreach (JournalChunk? response in call.ResponseStream.ReadAllAsync(cancellationToken))
+                {
+                    if (response is null) continue;
+
+                    sb.AppendLine(response.Reply.ToStringUtf8());
+                    bufferedItems++;
+
+                    // Flush in batches to avoid UI churn
+                    if (bufferedItems >= FlushThreshold)
+                    {
+                        string batch = sb.ToString();
+                        sb.Clear();
+                        bufferedItems = 0;
+
+                        // Fast UI update without awaiting; TryEnqueue is synchronous and cheap.
+                        _ = DispatcherQueue.TryEnqueue(() =>
+                        {
+                            ServiceLogs.Text += batch;
+                        });
+                    }
+
+                    if (cancellationToken.IsCancellationRequested) break;
+                }
+
+                // flush remaining
+                if (sb.Length > 0 && !cancellationToken.IsCancellationRequested)
+                {
+                    string rest = sb.ToString();
+                    _ = DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ServiceLogs.Text += rest;
+                    });
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // expected on close/cancel - ignore
+            }
+            catch (Exception ex)
+            {
+                // Surface a concise error message to the UI
+                try
+                {
+                    _ = DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ServiceLogs.Text += $"[Logs error] {ex.Message}{Environment.NewLine}";
+                    });
+                }
+                catch
+                {
+                    // swallow any UI-thread issues
+                }
+            }
+            finally
+            {
+                try
+                {
+                    call?.Dispose();
+                }
+                catch { /* best-effort cleanup */ }
             }
         }
     }
