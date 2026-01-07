@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views.EditServerPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Width="400">
+        <StackPanel Orientation="Vertical" Spacing="16">
+            <ComboBox x:Name="FolderComboBox"
+                  Header="Server Folder"
+                  PlaceholderText="Select or create a folder"
+                  IsEditable="True"
+                  HorizontalAlignment="Stretch"
+                  IsEnabled="False"
+                    />
+
+            <TextBox x:Name="ServerNameTextBox"
+                 Header="Server Name"
+                 PlaceholderText="iMad's Server"/>
+
+            <TextBox x:Name="ServerIpTextBox"
+                 Header="Server IP"
+                 PlaceholderText="192.168.1.100"/>
+
+            <TextBox x:Name="ServerPortTextBox"
+                 Header="Server Port"
+                 PlaceholderText="8080"
+                 InputScope="Number"/>
+
+            <CheckBox x:Name="ServerUseTLS"
+                    Content="Use TLS (SSL) Connection"
+                  IsChecked="True"/>
+        </StackPanel>
+    </Grid>
+</Page>

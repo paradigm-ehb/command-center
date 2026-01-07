@@ -50,8 +50,7 @@
                 <Grid Margin="12,8,12,12">
                     <Button
                         x:Name="addServerButton"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Content="Add a New Server"
+                        Content="Add new server"
                         Click="AddServerButton_Clicked"
                         HorizontalAlignment="Stretch"
                         Height="36"

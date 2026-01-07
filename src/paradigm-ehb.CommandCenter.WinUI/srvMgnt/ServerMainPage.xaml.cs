@@ -98,8 +98,38 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             ContentFrame.Navigate(pageType, serverObj);
         }
 
-        private void Edit_Click(object sender, RoutedEventArgs e)
+        private async void Edit_Click(object sender, RoutedEventArgs e)
         {
+            var serverCreation = new EditServerPanel(serverObj);
+
+            ContentDialog serverCreationDialog = new ContentDialog
+            {
+                Title = "Edit this server",
+                Content = serverCreation,
+                CloseButtonText = "OK",
+                PrimaryButtonText = "Cancel",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            serverCreationDialog.Closing += async (dialog, closingArgs) => {
+                if (closingArgs.Result == ContentDialogResult.None)
+                {
+                    bool isValid = await serverCreation.ValidateAndApplyChangesAsync();
+
+                    // Cancel the close if validation fails
+                    if (!isValid)
+                    {
+                        closingArgs.Cancel = true;
+                    }
+                    else
+                    {
+                        MainWindow.Instance.LoadServerMenu();
+                        HomePage.Instance.LoadServers();
+                    }
+                }
+            };
+
+            ContentDialogResult result = await serverCreationDialog.ShowAsync();
 
         }
 
@@ -121,6 +151,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 {
                     MainWindow.Instance.LoadServerMenu();
                     HomePage.Instance.LoadServers();
+                }
+                else
+                {
+                    ContentDialog confirmationDialog = new ContentDialog()
+                    {
+                        Title = "Unable to delete the server.",
+                        Content = "Rason: Unknown",
+                        PrimaryButtonText = "OK",
+                    };
                 }
             };
 
