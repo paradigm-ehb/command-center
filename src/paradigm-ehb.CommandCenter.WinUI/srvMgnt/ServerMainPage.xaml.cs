@@ -145,8 +145,38 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             previousSelectedIndex = currentSelectedIndex;
         }
 
-        private void Edit_Click(object sender, RoutedEventArgs e)
+        private async void Edit_Click(object sender, RoutedEventArgs e)
         {
+            var serverCreation = new EditServerPanel(serverObj);
+
+            ContentDialog serverCreationDialog = new ContentDialog
+            {
+                Title = "Edit this server",
+                Content = serverCreation,
+                CloseButtonText = "OK",
+                PrimaryButtonText = "Cancel",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            serverCreationDialog.Closing += async (dialog, closingArgs) => {
+                if (closingArgs.Result == ContentDialogResult.None)
+                {
+                    bool isValid = await serverCreation.ValidateAndApplyChangesAsync();
+
+                    // Cancel the close if validation fails
+                    if (!isValid)
+                    {
+                        closingArgs.Cancel = true;
+                    }
+                    else
+                    {
+                        MainWindow.Instance.LoadServerMenu();
+                        HomePage.Instance.LoadServers();
+                    }
+                }
+            };
+
+            ContentDialogResult result = await serverCreationDialog.ShowAsync();
 
         }
 
@@ -160,9 +190,24 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 CloseButtonText = "Cancel"
             };
 
-            confirmationDialog.PrimaryButtonClick += delegate
+            confirmationDialog.PrimaryButtonClick += async (s, args) =>
             {
-                var content = CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName);
+                var content = await CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName, serverObj.Id);
+
+                if(content == (true, "Server Deleted"))
+                {
+                    MainWindow.Instance.LoadServerMenu();
+                    HomePage.Instance.LoadServers();
+                }
+                else
+                {
+                    ContentDialog confirmationDialog = new ContentDialog()
+                    {
+                        Title = "Unable to delete the server.",
+                        Content = "Rason: Unknown",
+                        PrimaryButtonText = "OK",
+                    };
+                }
             };
 
             confirmationDialog.XamlRoot = this.Content.XamlRoot;
