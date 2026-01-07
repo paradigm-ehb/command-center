@@ -9,13 +9,18 @@
     mc:Ignorable="d"
     NavigationCacheMode="Enabled">
 
-    <Grid>
+    <Grid x:Name="GridRoot" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            
         </Grid.RowDefinitions>
 
         <!-- Toolbar with refresh -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="20,0,8,8" Grid.Row="0">
+            <TextBox x:Name="FilterByName" Width="150" Header="Name"
+	            HorizontalAlignment="Left" TextChanged="OnFilterChanged"/>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
             <Button x:Name="RefreshButton"
                     Content="Refresh"
@@ -57,18 +62,18 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Icon -->
-                        <Ellipse Width="16" Height="16" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <Ellipse Width="16" Height="16" Fill="{x:Bind Fill, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 
                         <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
                             <TextBlock Grid.Column="1"
-                                   Text="{x:Bind Name}"
+                                   Text="{x:Bind Name, Mode=OneWay}"
                                    x:Phase="1"
                                    Style="{ThemeResource BaseTextBlockStyle}"
                                    Margin="12,6,0,0"/>
 
                             <TextBlock Grid.Column="1"
                                    Grid.Row="1"
-                                   Text="{x:Bind Description}"
+                                   Text="{x:Bind Description, Mode=OneWay}"
                                    x:Phase="2"
                                    Style="{ThemeResource BodyTextBlockStyle}"
                                    Margin="12,0,0,6"/>

@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 using Services.V2;
 using Microsoft.Windows.AppNotifications.Builder;
 using Microsoft.Windows.AppNotifications;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 {
@@ -21,6 +25,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         // Observable collection used by x:Bind in XAML
         public ObservableCollection<ServiceInfo> services { get; } = new();
+
+        private Collection<ServiceInfo> allServices { get; } = new();
 
         public ServicesPage()
         {
@@ -41,87 +47,157 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private async void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
+
+            ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
+
+            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
             {
-                ServiceName = "mariadb.service",
-                UnitAction = ServiceActionRequest.Types.UnitAction.Start
+                UnitName = serviceInfo.Name,
+                Action = UnitActionRequest.Types.UnitAction.Start
             });
 
-            InfoBar infoBar = new();
+            if (response.Success)
+            {
+                InfoBar infoBar = new();
 
-            infoBar.Title = "Service Action Result";
-            infoBar.Message = response.Success ? $"Successfully started the service!" : $"Error: {response.ErrorMessage}";
-            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+                infoBar.XamlRoot = this.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Successfully started the service!";
+                infoBar.Severity = InfoBarSeverity.Success;
 
-            infoBar.IsOpen = true;
+                infoBar.IsOpen = true;
+
+                await UpdateServiceVisualStateAsync(serviceInfo, "started");
+            }
+            else
+            {
+                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+            }
         }
 
         private async void ServiceStopMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
+
+            ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
+
+            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
             {
-                ServiceName = "mariadb.service",
-                UnitAction = ServiceActionRequest.Types.UnitAction.Stop
+                UnitName = serviceInfo.Name,
+                Action = UnitActionRequest.Types.UnitAction.Stop
             });
 
-            InfoBar infoBar = new();
+            if (response.Success)
+            {
+                InfoBar infoBar = new();
 
-            infoBar.Title = "Service Action Result";
-            infoBar.Message = response.Success ? $"Successfully stopped the service!" : $"Error: {response.ErrorMessage}";
-            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+                infoBar.XamlRoot = this.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Successfully stopped the service!";
+                infoBar.Severity = InfoBarSeverity.Success;
 
-            infoBar.IsOpen = true;
+                infoBar.IsOpen = true;
+
+                await UpdateServiceVisualStateAsync(serviceInfo, "stopped");
+            }
+            else
+            {
+                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+            }
         }
 
         private async void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
+
+            ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
+
+            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
             {
-                ServiceName = "mariadb.service",
-                UnitAction = ServiceActionRequest.Types.UnitAction.Restart
+                UnitName = serviceInfo.Name,
+                Action = UnitActionRequest.Types.UnitAction.Restart
             });
 
-            InfoBar infoBar = new();
+            if (response.Success)
+            {
+                InfoBar infoBar = new();
 
-            infoBar.Title = "Service Action Result";
-            infoBar.Message = response.Success ? $"Successfully restarted the service!" : $"Error: {response.ErrorMessage}";
-            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+                infoBar.XamlRoot = this.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Successfully restarted the service!";
+                infoBar.Severity = InfoBarSeverity.Success;
 
-            infoBar.IsOpen = true;
+                infoBar.IsOpen = true;
+
+                await UpdateServiceVisualStateAsync(serviceInfo, "restarted");
+            }
+            else
+            {
+                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+            }
         }
 
         private async void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
+
+            ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
+
+            UnitFileActionReply response = await client.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
             {
-                ServiceName = "mariadb.service",
-                UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Enable
+                UnitName = serviceInfo.Name,
+                Action = UnitFileActionRequest.Types.UnitFileAction.Enable
             });
 
-            InfoBar infoBar = new();
+            if (response.Success)
+            {
+                InfoBar infoBar = new();
 
-            infoBar.Title = "Service Action Result";
-            infoBar.Message = response.Success ? $"Successfully enabled the service!" : $"Error: {response.ErrorMessage}";
-            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+                infoBar.XamlRoot = GridRoot.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Successfully enabled the service!";
+                infoBar.Severity = InfoBarSeverity.Success;
 
-            infoBar.IsOpen = true;
+                infoBar.IsOpen = true;
+
+                await UpdateServiceVisualStateAsync(serviceInfo, "enabled");
+            }
+            else
+            {
+                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+            }
         }
 
         private async void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ServiceActionReply response = await client.Service.PerformActionAsync(new ServiceActionRequest
+            MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
+
+            ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
+
+            UnitFileActionReply response = await client.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
             {
-                ServiceName = "mariadb.service",
-                UnitFileAction = ServiceActionRequest.Types.UnitFileAction.Disable
+                UnitName = serviceInfo.Name,
+                Action = UnitFileActionRequest.Types.UnitFileAction.Disable
             });
 
-            InfoBar infoBar = new();
+            if (response.Success)
+            {
+                InfoBar infoBar = new();
 
-            infoBar.Title = "Service Action Result";
-            infoBar.Message = response.Success ? $"Successfully disabled the service!" : $"Error: {response.ErrorMessage}";
-            infoBar.Severity = response.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+                infoBar.XamlRoot = GridRoot.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Successfully disabled the service!";
+                infoBar.Severity = InfoBarSeverity.Success;
 
-            infoBar.IsOpen = true;
+                infoBar.IsOpen = true;
+
+                await UpdateServiceVisualStateAsync(serviceInfo, "disabled");
+            }
+            else
+            {
+                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+            }
         }
 
         private void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
@@ -153,7 +229,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                         services.Add(new ServiceInfo
                         {
                             Name = "(no client)",
-                            Description = "No AgentClient was passed and no registered client exists. Navigate with an AgentClient instance."
+                            Description = "No AgentClient was passed and no registered client exists. Navigate with an AgentClient instance.",
+                            Fill = new SolidColorBrush(Colors.Gray)
                         });
                     }).ConfigureAwait(false);
                     return;
@@ -167,14 +244,35 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     throw new InvalidOperationException("Received null response from ActionAsync.");
                 }
 
-                await DispatcherQueue.EnqueueAsync(() =>
+                foreach (LoadedUnit? unit in response.Units)
                 {
-                    services.Add(new ServiceInfo
+                    string unitName = ExtractShortUnitName(unit.Name);
+
+                    // Choose a color/brush based on unit state
+                    string state = (unit.LoadState ?? string.Empty).ToLowerInvariant();
+                    SolidColorBrush brush = state switch
                     {
-                        Name = "Response!",
-                        Description = $"Status: {response.UnitsData.ToStringUtf8()}"
+                        "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                        "static" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                        "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                        _ => new SolidColorBrush(Colors.Goldenrod)
+                    };
+
+                    ServiceInfo serviceInfo = new ServiceInfo
+                    {
+                        Name = unitName,
+                        Description = $"State: {unit.LoadState}",
+                        Fill = brush
+                    };
+                    allServices.Add(serviceInfo);
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        services.Add(serviceInfo);
                     });
-                }).ConfigureAwait(false);
+                }
+
+
+
             }
             catch (Exception ex)
             {
@@ -182,16 +280,150 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     services.Clear();
-                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message });
+                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
                 }).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Returns only the last path segment from a unit name.
+        /// Handles both '/' and '\' as separators and null/empty inputs.
+        /// Examples:
+        ///  - "/path/to/foo.service" -> "foo.service"
+        ///  - "C:\path\to\bar.service" -> "bar.service"
+        ///  - "simple.service" -> "simple.service"
+        /// </summary>
+        private static string ExtractShortUnitName(string? fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return string.Empty;
+
+            int lastSlash = fullName.LastIndexOf('/');
+            int lastBackslash = fullName.LastIndexOf('\\');
+            int lastSep = Math.Max(lastSlash, lastBackslash);
+
+            return lastSep >= 0 && lastSep < fullName.Length - 1
+                ? fullName.Substring(lastSep + 1)
+                : fullName;
+        }
+
+        private void OnFilterChanged(object sender, TextChangedEventArgs args)
+        {
+            IEnumerable<ServiceInfo> filtered = allServices.Where(service => Filter(service));
+            Remove_NonMatching(filtered);
+            AddBack_Services(filtered);
+        }
+
+        private bool Filter(ServiceInfo serviceInfo)
+        {
+            return serviceInfo.Name.Contains(FilterByName.Text, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private void Remove_NonMatching(IEnumerable<ServiceInfo> filteredData)
+        {
+            for (int i = services.Count - 1; i >= 0; i--)
+            {
+                ServiceInfo item = services[i];
+                if (!filteredData.Contains(item)) services.Remove(item);
+            }
+        }
+
+        private void AddBack_Services(IEnumerable<ServiceInfo> filteredData)
+        {
+            foreach (ServiceInfo item in filteredData)
+            {
+                if (!services.Contains(item)) services.Add(item);
+            }
+        }
+
+        private async Task UpdateServiceVisualStateAsync(ServiceInfo serviceInfo, string action)
+        {
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                string desc = action switch
+                {
+                    "started" => "State: running",
+                    "stopped" => "State: stopped",
+                    "restarted" => "State: running",
+                    "enabled" => "State: enabled",
+                    "disabled" => "State: disabled",
+                    _ => serviceInfo.Description
+                };
+
+                SolidColorBrush brush = action switch
+                {
+                    "started" => new SolidColorBrush(Colors.Green),
+                    "stopped" => new SolidColorBrush(Colors.Gray),
+                    "restarted" => new SolidColorBrush(Colors.Green),
+                    "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                    "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                    _ => serviceInfo.Fill
+                };
+
+                serviceInfo.Description = desc;
+                serviceInfo.Fill = brush;
+            });
+        }
+
+        private async Task ShowErrorInfoBarAsync(string message)
+        {
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                InfoBar infoBar = new();
+
+                infoBar.XamlRoot = this.XamlRoot;
+                infoBar.Title = "Service Action Result";
+                infoBar.Message = $"Error: {message}";
+                infoBar.Severity = InfoBarSeverity.Error;
+                infoBar.IsOpen = true;
+            });
         }
     }
 
     // Small view-model used by the DataTemplate in XAML.
-    public sealed class ServiceInfo
+    public sealed class ServiceInfo : INotifyPropertyChanged
     {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        private string _name = string.Empty;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+                }
+            }
+        }
+
+        private string _description = string.Empty;
+        public string Description
+        {
+            get => _description;
+            set
+            {
+                if (_description != value)
+                {
+                    _description = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
+                }
+            }
+        }
+
+        private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush Fill
+        {
+            get => _fill;
+            set
+            {
+                if (_fill != value)
+                {
+                    _fill = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Fill)));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
