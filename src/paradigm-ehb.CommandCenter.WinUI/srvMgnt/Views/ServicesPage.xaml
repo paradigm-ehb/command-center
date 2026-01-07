@@ -39,7 +39,7 @@
             Grid.Row="1">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:ServiceInfo">
-                    <Grid>
+                    <Grid DoubleTapped="ServiceItem_DoubleTapped">
                         <Grid.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem Text="Start Service" Click="ServiceStartMenuItem_Click" />

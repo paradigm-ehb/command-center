@@ -1,21 +1,22 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using Services.V2;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Services.V2;
-using Microsoft.Windows.AppNotifications.Builder;
-using Microsoft.Windows.AppNotifications;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 {
@@ -47,7 +48,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             await LoadAllServices();
         }
 
-        
+
 
         private async void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -101,20 +102,34 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
+            try
             {
-                UnitName = serviceInfo.Name,
-                Action = UnitActionRequest.Types.UnitAction.Restart
-            });
+                UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
+                {
+                    UnitName = serviceInfo.Name,
+                    Action = UnitActionRequest.Types.UnitAction.Restart
+                });
 
-            if (response.Success)
-            {
-                await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the service!", InfoBarSeverity.Success);
-                await UpdateServiceVisualStateAsync(serviceInfo, "restarted");
+                if (response.Success)
+                {
+                    await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the service!", InfoBarSeverity.Success);
+                    await UpdateServiceVisualStateAsync(serviceInfo, "restarted");
+                }
+                else
+                {
+                    await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+                if (ex is Grpc.Core.RpcException && serviceInfo.Name == "agent.service")
+                {
+                    await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the Agent!", InfoBarSeverity.Success);
+                } else
+                {
+                    await ShowErrorInfoBarAsync($"Exception during restart: {ex.Message}");
+                }
+                return;
             }
         }
 
@@ -166,6 +181,36 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private async void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                if (sender is not ListView listView) return;
+
+                // Find the ListViewItem that was double-clicked
+                DependencyObject original = (DependencyObject)e.OriginalSource;
+                ListViewItem? container = listView.ContainerFromItem(original) as ListViewItem;
+
+                if (container?.Content is not ServiceInfo serviceInfo)
+                {
+                    return;
+                }
+
+                // Prefer the stored endpoint, fallback to client endpoint
+                AgentClient? clientToPass = client;
+
+                if (clientToPass == null)
+                {
+                    await ShowErrorInfoBarAsync("Unable to open details: no agent endpoint available.");
+                    return;
+                }
+
+                // Create and show the details window
+                var detailsWindow = new ServiceDetailsWindow(clientToPass, serviceInfo);
+                detailsWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorInfoBarAsync($"Failed to open service details: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -216,7 +261,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 allServices.Clear();
             });
         }
-        
+
         /// <summary>
         /// Asynchronously loads all available services from the connected agent client and updates the internal service
         /// collections.
@@ -245,6 +290,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 SolidColorBrush brush = state switch
                 {
                     "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                    "loaded" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
                     "static" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                     "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                     _ => new SolidColorBrush(Colors.Goldenrod)
@@ -409,6 +455,30 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         private async Task ShowErrorInfoBarAsync(string message)
         {
             await ShowInfoBarAsync("Service Action Result", $"Error: {message}", InfoBarSeverity.Error);
+        }
+
+        // Double-click handler for the ListView
+        private async void ServiceItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is FrameworkElement fe && fe.DataContext is ServiceInfo serviceInfo)
+                {
+                    AgentClient agentClient = client;
+                    if (agentClient == null)
+                    {
+                        await ShowErrorInfoBarAsync("Unable to open details: no agent endpoint available.");
+                        return;
+                    }
+
+                    var detailsWindow = new ServiceDetailsWindow(agentClient, serviceInfo);
+                    detailsWindow.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorInfoBarAsync($"Failed to open service details: {ex.Message}");
+            }
         }
     }
 
