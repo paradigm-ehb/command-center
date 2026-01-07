@@ -471,8 +471,12 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                         return;
                     }
 
-                    var detailsWindow = new ServiceDetailsWindow(agentClient, serviceInfo);
-                    detailsWindow.Activate();
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        // Create and show the details window
+                        var detailsWindow = new ServiceDetailsWindow(agentClient, serviceInfo);
+                        detailsWindow.Activate();
+                    });
                 }
             }
             catch (Exception ex)
