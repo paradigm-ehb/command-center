@@ -6,8 +6,10 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using paradigm_ehb.CommandCenter.Core.Factories;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using paradigm_ehb.CommandCenter.Core.Services;
 using paradigm_ehb.CommandCenter.WinUI.Components;
 using System;
 using System.Collections.Generic;
@@ -58,6 +60,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 name: serverObj.DisplayName,  // Original name to find the server
                 ip: ServerIpTextBox.Text,
                 port: Int32.Parse(ServerPortTextBox.Text),
+                SSL: ServerUseTLS.IsChecked ?? false,
                 newName: ServerNameTextBox.Text  // New name
             );
 
@@ -66,7 +69,14 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             endpoint.DisplayName = ServerNameTextBox.Text;
             endpoint.IpAddress = ServerIpTextBox.Text;
             endpoint.Port = Int32.Parse(ServerPortTextBox.Text);
+            endpoint.UseTls = ServerUseTLS.IsChecked ?? false;
 
+            IAgentClientRegistry clientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
+            await clientRegistry.DeregisterAsync(endpoint.Id);
+
+            IAgentClientFactory agentClientFactory = App.Services.GetRequiredService<IAgentClientFactory>();
+            AgentClient agentClient = await agentClientFactory.CreateClientAsync(endpoint);
+            await clientRegistry.RegisterAsync(agentClient);
 
             return result.success;
         }
