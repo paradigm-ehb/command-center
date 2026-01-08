@@ -130,6 +130,26 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     call?.Dispose();
                 }
                 catch { /* best-effort cleanup */ }
+
+                // If no logs were produced, show a centered placeholder message.
+                try
+                {
+                    _ = DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (string.IsNullOrWhiteSpace(ServiceLogs.Text))
+                        {
+                            ServiceLogs.Text = "No logs available";
+                            // Center the message within the control/window as best-effort.
+                            ServiceLogs.TextAlignment = global::Microsoft.UI.Xaml.TextAlignment.Center;
+                            ServiceLogs.HorizontalAlignment = global::Microsoft.UI.Xaml.HorizontalAlignment.Center;
+                            ServiceLogs.VerticalAlignment = global::Microsoft.UI.Xaml.VerticalAlignment.Center;
+                        }
+                    });
+                }
+                catch
+                {
+                    // swallow any UI-thread issues
+                }
             }
         }
     }
