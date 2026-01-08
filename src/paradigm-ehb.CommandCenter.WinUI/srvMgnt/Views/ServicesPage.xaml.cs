@@ -9,11 +9,13 @@ using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using Resources.V1;
 using Services.V2;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -383,29 +385,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
 
-        private void Order_Services()
-        {
-            // Order: enabled first, then disabled, then the rest. Within each group order by Name (case-insensitive).
-            List<ServiceInfo> ordered = services
-                .OrderBy(s =>
-                {
-                    if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: enabled", StringComparison.InvariantCultureIgnoreCase))
-                        return 0;
-                    if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: disabled", StringComparison.InvariantCultureIgnoreCase))
-                        return 1;
-                    return 2;
-                })
-                .ThenBy(s => s.Description, StringComparer.InvariantCultureIgnoreCase)
-                .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
-                .ToList();
-
-            services.Clear();
-            foreach (ServiceInfo item in ordered)
-            {
-                services.Add(item);
-            }
-        }
-
         private async Task UpdateServiceVisualStateAsync(ServiceInfo serviceInfo, string action)
         {
             await DispatcherQueue.EnqueueAsync(() =>
@@ -435,6 +414,39 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             });
         }
 
+        public void OnOrderChanged(object sender, SelectionChangedEventArgs args)
+        {
+            Order_Services();
+        }
+
+        private void Order_Services()
+        {
+            string order = OrderByCombo?.SelectedValue as string ?? "State";
+
+            List<ServiceInfo> ordered = order switch
+            {
+                "Name" => services.OrderBy(s => s.Name).ThenBy(s => s.Description).ToList(),
+                "State" => services.OrderBy(p => p.Description).ThenBy(s => s.Name).ToList(),
+                _ => services
+                    .OrderBy(s =>
+                    {
+                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: enabled", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: disabled", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(s => s.Description, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToList()
+            };
+
+            services.Clear();
+            foreach (ServiceInfo process in ordered)
+            {
+                services.Add(process);
+            }
+        }
         private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)
         {
             // Ensure UI thread
