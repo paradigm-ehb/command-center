@@ -16,7 +16,7 @@
 
     <Border Height="140" Width="200" CornerRadius="10" BorderBrush="White" BorderThickness="1"
             x:Name="rootBorder">
-        <Border.ContextFlyout>
+        <!-- <Border.ContextFlyout>
             <MenuFlyout>
                 <MenuFlyoutItem Text="Open in CS" Icon="Go"/>
                 <MenuFlyoutSeparator/>
@@ -24,7 +24,7 @@
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Delete" Icon="Delete"/>
             </MenuFlyout>
-        </Border.ContextFlyout>
+        </Border.ContextFlyout> -->
         
         <Grid Tapped="Grid_Tapped">
             <Rectangle x:Name="serverBackground" Fill="White" Opacity="0"/>

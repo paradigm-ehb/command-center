@@ -47,7 +47,7 @@
                      Text="Overview" Icon="Clock">
                 </SelectorBarItem>
                 <SelectorBarItem x:Name="SelectorBarItemServices" 
-                     Text="Services" Icon="Share"/>
+                     Text="Services" Icon="AllApps"/>
                 <SelectorBarItem x:Name="SelectorBarItemProcesses" 
                      Text="Processes" Icon="Favorite"/>
             </SelectorBar>
