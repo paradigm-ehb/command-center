@@ -42,7 +42,7 @@
                 </StackPanel>
             </Grid>
 
-            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
+            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8, 0, -24" x:Name="SelectorBar">
                 <SelectorBarItem x:Name="SelectorBarItemOverview" 
                      Text="Overview" Icon="Clock">
                 </SelectorBarItem>
