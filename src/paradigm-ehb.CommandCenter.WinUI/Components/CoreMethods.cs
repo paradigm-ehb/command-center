@@ -137,7 +137,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
             return false;
         }
 
-        public static async Task<(bool success, string reason)> modifyServer(string folderName, string name, string ip, int port, string newName = null)
+        public static async Task<(bool success, string reason)> modifyServer(string folderName, string name, string ip, int port, bool SSL, string newName = null)
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -161,7 +161,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.Components
                     { 
                         server["name"] = newName;
                     }
-
+                    server["allowSSL"] = SSL;
                     folder.Values[kvp.Key] = server;
 
                     return (true, "Server modified");

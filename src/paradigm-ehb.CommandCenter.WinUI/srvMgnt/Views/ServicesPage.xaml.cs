@@ -50,8 +50,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             LoadingProgressRing.IsActive = false;
         }
 
-
-
         private async void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
