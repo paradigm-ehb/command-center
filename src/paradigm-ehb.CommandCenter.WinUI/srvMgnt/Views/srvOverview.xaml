@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:components="using:paradigm_ehb.CommandCenter.WinUI.Components"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -20,16 +21,8 @@
                     <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="CPU Usage" />
                     <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
                 </Grid>
-                
-                <Grid Grid.Row="1" Margin="5,8,5,0" Height="6">
-                    <Border Background="#20FFFFFF" CornerRadius="3" />
-                    
-                    <Border x:Name="CpuUsageBar" 
-                            Background="#80FFFFFF" 
-                            CornerRadius="3"
-                            HorizontalAlignment="Left"
-                            Width="90" />
-                </Grid>
+
+                <components:ProgressBar x:Name="CpuUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />
             </Grid>
 
             <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
@@ -43,15 +36,8 @@
                     <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
                 </Grid>
 
-                <Grid Grid.Row="1" Margin="5,8,5,0" Height="6">
-                    <Border Background="#20FFFFFF" CornerRadius="3" />
+                <components:ProgressBar x:Name="RamUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />
 
-                    <Border x:Name="RamUsageBar" 
-                 Background="#80FFFFFF" 
-                 CornerRadius="3"
-                 HorizontalAlignment="Left"
-                 Width="30" />
-                </Grid>
             </Grid>
         </StackPanel>
     </Grid>
