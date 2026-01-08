@@ -4,7 +4,7 @@ using System;
 using paradigm_ehb.CommandCenter.Core.Services;
 using Journal.V1;
 using Services.V2;
-using Resources.V1;
+using Resources.V2;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {

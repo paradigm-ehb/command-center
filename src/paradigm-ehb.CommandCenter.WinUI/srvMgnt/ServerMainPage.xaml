@@ -44,7 +44,7 @@
 
             <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Margin="-10, -8" x:Name="SelectorBar">
                 <SelectorBarItem x:Name="SelectorBarItemOverview" 
-                     Text="Overview" Icon="Clock">
+                     Text="Overview" Icon="Clock" IsSelected="True">
                 </SelectorBarItem>
                 <SelectorBarItem x:Name="SelectorBarItemServices" 
                      Text="Services" Icon="AllApps"/>

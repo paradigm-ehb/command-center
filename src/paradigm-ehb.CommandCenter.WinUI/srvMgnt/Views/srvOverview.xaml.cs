@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
-using Resources.V1;
+using Resources.V2;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,8 +30,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         public srvOverview()
         {
             InitializeComponent();
-
-            _ = GetResourcesAsync();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs args)
@@ -76,7 +74,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             {
                 double.TryParse(response.Resources.Memory.Total, out double totalMem);
                 double.TryParse(response.Resources.Memory.Free, out double freeMem);
-                serverResources.MemoryPercent = (freeMem / totalMem);
+                serverResources.MemoryPercent = (freeMem / totalMem) * 100;
                 this.DataContext = serverResources;
             }
         }
@@ -84,7 +82,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
     public sealed class serverResources : INotifyPropertyChanged
     {
-        private double _memoryPercent = 0.42;
+        private double _memoryPercent = 42;
         public double MemoryPercent
         {
             get => _memoryPercent;
@@ -97,8 +95,12 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }
             }
         }
+        public string MemoryUsageText
+        {
+            get => $"{Math.Round(_memoryPercent, 2)}%";
+        }
 
-        private double _cpuPercent = 0.15;
+        private double _cpuPercent = 15;
         public double CpuPercent
         {
             get => _cpuPercent;

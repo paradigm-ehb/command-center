@@ -1,5 +1,3 @@
-using Grpc.Core;
-using Resources.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,6 +18,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.ApplicationModel.VoiceCommands;
+using Resources.V2;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -110,7 +109,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
                 foreach (Process process in response.Resources.Processes)
                 {
-                    await DispatcherQueue.EnqueueAsync(() =>
+                    _ = DispatcherQueue.EnqueueAsync(() =>
                     {
                         processes.Add(new ProcessInfo
                         {

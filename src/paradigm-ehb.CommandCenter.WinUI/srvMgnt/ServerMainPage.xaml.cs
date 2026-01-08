@@ -26,16 +26,14 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
 
             InitializeComponent();
-            
-            SelectorBar.SelectedItem = SelectorBar.Items[0];
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
             // Fire-and-forget the async initialization. Exceptions are observed inside the task.
-            _ = InitializeForNavigationAsync(e);
+            await InitializeForNavigationAsync(e);
         }
 
         private async Task InitializeForNavigationAsync(NavigationEventArgs e)
