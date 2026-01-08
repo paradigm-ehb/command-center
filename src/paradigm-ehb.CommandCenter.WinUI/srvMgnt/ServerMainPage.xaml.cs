@@ -125,6 +125,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                     {
                         MainWindow.Instance.LoadServerMenu();
                         HomePage.Instance.LoadServers();
+
+
+                        IAgentEndpointRegistry registry = App.Services.GetRequiredService<IAgentEndpointRegistry>();
+                        var endpoint = await registry.GetAsync(serverObj.Id);
+
+                        serverIP.Text = endpoint.IpAddress + ":" + endpoint.Port.ToString();
+                        serverName.Text = endpoint.DisplayName;
                     }
                 }
             };
