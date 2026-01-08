@@ -119,6 +119,11 @@
 	  <Folder Include="Components\Extensions\" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Page Update="Components\ProgressBar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
 	  <Page Update="srvMgnt\Views\ServiceDetailsWindow.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
