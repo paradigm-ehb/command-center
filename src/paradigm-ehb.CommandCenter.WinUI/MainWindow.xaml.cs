@@ -82,12 +82,29 @@ namespace paradigm_ehb.CommandCenter.WinUI
 
         public void LoadServerMenu()
         {
+            // Store the expanded state of folders before clearing
+            var expandedFolders = new HashSet<string>();
+            foreach (var item in nvSample.MenuItems.Skip(3))
+            {
+                if (item is NavigationViewItem folderItem && folderItem.IsExpanded)
+                {
+                    expandedFolders.Add(folderItem.Content?.ToString() ?? "");
+                }
+            }
+
+            // Store the currently selected server to restore selection
+            AgentEndpoint selectedServer = null;
+            if (nvSample.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is AgentEndpoint server)
+            {
+                selectedServer = server;
+            }
+
             // Clear existing server items (keep Home and Settings, remove everything after)
             while (nvSample.MenuItems.Count > 2)
             {
                 nvSample.MenuItems.RemoveAt(2);
             }
-            
+
             // Add "Your Servers" header
             var serverHeader = new NavigationViewItemHeader
             {
@@ -104,20 +121,29 @@ namespace paradigm_ehb.CommandCenter.WinUI
                 {
                     Content = folder.FolderName,
                     Icon = new SymbolIcon(Symbol.Folder),
-                    SelectsOnInvoked = false
+                    SelectsOnInvoked = false,
+                    IsExpanded = expandedFolders.Contains(folder.FolderName) // Restore expanded state
                 };
 
-                foreach (var server in folder.Servers)
+                foreach (var agent in folder.Servers)
                 {
                     var serverItem = new NavigationViewItem
                     {
-                        Content = server.DisplayName,
+                        Content = agent.DisplayName,
                         Icon = new SymbolIcon(Symbol.World),
                         SelectsOnInvoked = true,
-                        Tag = server
+                        Tag = agent
                     };
                     serverItem.Tapped += ServerItem_Tapped;
                     folderItem.MenuItems.Add(serverItem);
+
+                    // Restore selection if this was the selected server
+                    if (selectedServer != null && 
+                        agent.DisplayName == selectedServer.DisplayName && 
+                        agent.IpAddress == selectedServer.IpAddress)
+                    {
+                        nvSample.SelectedItem = serverItem;
+                    }
                 }
 
                 nvSample.MenuItems.Add(folderItem);

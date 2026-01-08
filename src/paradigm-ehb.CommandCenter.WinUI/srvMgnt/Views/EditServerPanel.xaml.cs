@@ -79,11 +79,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             ServerIpTextBox.Text = server.IpAddress;
             ServerPortTextBox.Text = server.Port.ToString();
             ServerUseTLS.IsChecked = server.UseTls;
-
-            if (!string.IsNullOrEmpty(server.FolderName))
-            {
-                FolderComboBox.Text = server.FolderName;
-            }
         }
 
         public AgentEndpoint serverObj
