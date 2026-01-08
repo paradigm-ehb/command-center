@@ -9,13 +9,16 @@ using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
+using Resources.V1;
 using Services.V2;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
@@ -25,12 +28,24 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         AgentClient? client = null;
 
         // Observable collection used by x:Bind in XAML
-        public ObservableCollection<ServiceInfo> services { get; set; } = new();
+        public ObservableCollection<ServiceInfo> services { get; set; }
 
-        private Collection<ServiceInfo> allServices { get; } = new();
+        private Collection<ServiceInfo> allServices { get; }
+
+        // Add fields
+        private bool _initialized;
+        private Guid? _lastEndpointId;
+        private System.Threading.CancellationTokenSource? _initCts;
 
         public ServicesPage()
         {
+            // Explicitly enable page caching so behavior is clear when this page is hosted in a frame
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+
+            // Initialize collections when the page instance is created so page caching can work correctly
+            services = new ObservableCollection<ServiceInfo>();
+            allServices = new Collection<ServiceInfo>();
+
             InitializeComponent();
         }
 
@@ -38,22 +53,44 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
             base.OnNavigatedTo(e);
 
-            // Fire-and-forget; exceptions observed inside the task
-            _ = InitializeAsync(e);
+            // Resolve AgentClient quickly (non-blocking) and decide whether we need to init.
+            Guid? incomingId = null;
+            if (e.Parameter is AgentEndpoint ep) incomingId = ep.Id;
+
+            bool shouldInit = !_initialized || (incomingId.HasValue && incomingId != _lastEndpointId);
+
+            if (shouldInit)
+            {
+                // Cancel any previous init, create a fresh token
+                _initCts?.Cancel();
+                _initCts = new System.Threading.CancellationTokenSource();
+
+                // Fire-and-forget; InitializeAsync is cancellable and idempotent
+                _ = InitializeAsync(e, _initCts.Token);
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            // Cancel initialization if leaving the page (optional: release resources)
+            _initCts?.Cancel();
+            _initCts?.Dispose();
+            _initCts = null;
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             await ClearAllServices();
-            LoadingProgressRing.IsActive = true;
+            await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = true);
             await LoadAllServices();
-            LoadingProgressRing.IsActive = false;
+            await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = false);
         }
 
         private async void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
-
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
             UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
@@ -91,7 +128,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             if (result == ContentDialogResult.Primary)
             {
-                UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
+                UnitActionReply response = await client!.Service.PerformUnitActionAsync(request: new UnitActionRequest
                 {
                     UnitName = serviceInfo.Name,
                     Action = UnitActionRequest.Types.UnitAction.Stop
@@ -121,7 +158,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             try
             {
-                UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
+                UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
                 {
                     UnitName = serviceInfo.Name,
                     Action = UnitActionRequest.Types.UnitAction.Restart
@@ -147,17 +184,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 {
                     await ShowErrorInfoBarAsync($"Exception during restart: {ex.Message}");
                 }
-                return;
             }
         }
 
         private async void ServiceEnableMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
-
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            UnitFileActionReply response = await client.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
+            UnitFileActionReply response = await client!.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
             {
                 UnitName = serviceInfo.Name,
                 Action = UnitFileActionRequest.Types.UnitFileAction.Enable
@@ -177,10 +212,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         private async void ServiceDisableMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem menuFlyoutItem = (MenuFlyoutItem)sender;
-
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            UnitFileActionReply response = await client.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
+            UnitFileActionReply response = await client!.Service.PerformUnitFileActionAsync(new UnitFileActionRequest
             {
                 UnitName = serviceInfo.Name,
                 Action = UnitFileActionRequest.Types.UnitFileAction.Disable
@@ -212,7 +246,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     return;
                 }
 
-                // Prefer the stored endpoint, fallback to client endpoint
                 AgentClient? clientToPass = client;
 
                 if (clientToPass == null)
@@ -221,7 +254,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     return;
                 }
 
-                // Create and show the details window
                 var detailsWindow = new ServiceDetailsWindow(clientToPass, serviceInfo);
                 detailsWindow.Activate();
             }
@@ -231,45 +263,72 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
 
-        /// <summary>
-        /// Initializes the view model state based on the specified navigation event arguments. Loads service
-        /// information using the provided AgentClient or AgentEndpoint parameter.
-        /// </summary>
-        /// <remarks>If the navigation parameter is an AgentClient, it is used directly. If it is an
-        /// AgentEndpoint, the method attempts to retrieve a registered AgentClient for that endpoint. If no valid
-        /// client is found, the service list is cleared and an informational message is displayed. Any errors
-        /// encountered during initialization are surfaced in the UI as error messages.</remarks>
-        /// <param name="e">The navigation event arguments containing the parameter used to determine the AgentClient or AgentEndpoint
-        /// for initialization. Must not be null.</param>
-        /// <returns>A task that represents the asynchronous initialization operation.</returns>
-        private async Task InitializeAsync(NavigationEventArgs e)
+        // Make InitializeAsync accept a cancellation token and be idempotent
+        private async Task InitializeAsync(NavigationEventArgs e, System.Threading.CancellationToken ct)
         {
             try
             {
-                // Determine the AgentClient to use based on navigation parameter
-                if (e.Parameter is AgentClient passedClient)
+                await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = true);
+
+                // Clear previous lists (but only if first init or endpoint changed)
+                await ClearAllServices();
+
+                // Resolve client
+                if (e.Parameter is AgentEndpoint endpoint)
+                {
+                    var registry = App.Services.GetRequiredService<IAgentClientRegistry>();
+                    client = await registry.GetAsync(endpoint.Id).ConfigureAwait(false);
+
+                    if (client is null)
+                    {
+                        var factory = App.Services.GetRequiredService<IAgentClientFactory>();
+                        await factory.CreateAndRegisterClientAsync(endpoint).ConfigureAwait(false);
+                        client = await registry.GetAsync(endpoint.Id).ConfigureAwait(false);
+                    }
+
+                    if (client is null)
+                    {
+                        await ShowErrorInfoBarAsync("Unable to resolve AgentClient for the selected server.");
+                        return;
+                    }
+
+                    _lastEndpointId = endpoint.Id;
+                }
+                else if (e.Parameter is AgentClient passedClient)
                 {
                     client = passedClient;
+                    _lastEndpointId = null;
                 }
-                else if (e.Parameter is AgentEndpoint endpoint)
+                else
                 {
-                    // Try to obtain an existing registered client only.
-                    IAgentClientRegistry clientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
-                    client = await clientRegistry.GetAsync(endpoint.Id).ConfigureAwait(false);
+                    await ShowErrorInfoBarAsync("Invalid navigation parameter; expected AgentEndpoint or AgentClient.");
+                    return;
                 }
 
-                await LoadAllServices();
+                // Early cancel check
+                ct.ThrowIfCancellationRequested();
 
-                LoadingProgressRing.IsActive = false;
+                // Do the real work (also pass ct to any long-running calls)
+                await LoadAllServices(ct); // keep LoadAllServices robust for being cancelled if you wire it
+                _initialized = true;
+            }
+            catch (OperationCanceledException)
+            {
+                // initialization was cancelled - safe to ignore
             }
             catch (Exception ex)
             {
-                // best-effort: show error in UI list
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     services.Clear();
                     services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
                 }).ConfigureAwait(false);
+
+                await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
+            }
+            finally
+            {
+                await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = false);
             }
         }
 
@@ -290,18 +349,20 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         /// client or its service is not available, an error message is displayed and no services are loaded.</remarks>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the agent client returns a null response when requesting the list of services.</exception>
-        private async Task LoadAllServices()
+        private async Task LoadAllServices(CancellationToken cancellationToken = default)
         {
             if (client is null || client.Service is null)
             {
                 await ShowErrorInfoBarAsync("No valid AgentClient available for refreshing services.");
                 return;
             }
-            GetUnitsReply? response = await client.Service.GetAllUnitsAsync(new GetUnitsRequest());
+
+            GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
             if (response is null)
             {
                 throw new InvalidOperationException("Received null response from ActionAsync.");
             }
+
             foreach (LoadedUnit? unit in response.Units)
             {
                 string unitName = ExtractShortUnitName(unit.Name);
@@ -315,18 +376,21 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                     _ => new SolidColorBrush(Colors.Goldenrod)
                 };
+
                 ServiceInfo serviceInfo = new ServiceInfo
                 {
                     Name = unitName,
                     Description = $"State: {unit.LoadState}",
                     Fill = brush
                 };
+
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     allServices.Add(serviceInfo);
                     services.Add(serviceInfo);
                 });
             }
+
             Order_Services();
         }
 
@@ -381,29 +445,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
 
-        private void Order_Services()
-        {
-            // Order: enabled first, then disabled, then the rest. Within each group order by Name (case-insensitive).
-            List<ServiceInfo> ordered = services
-                .OrderBy(s =>
-                {
-                    if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: enabled", StringComparison.InvariantCultureIgnoreCase))
-                        return 0;
-                    if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: disabled", StringComparison.InvariantCultureIgnoreCase))
-                        return 1;
-                    return 2;
-                })
-                .ThenBy(s => s.Description, StringComparer.InvariantCultureIgnoreCase)
-                .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
-                .ToList();
-
-            services.Clear();
-            foreach (ServiceInfo item in ordered)
-            {
-                services.Add(item);
-            }
-        }
-
         private async Task UpdateServiceVisualStateAsync(ServiceInfo serviceInfo, string action)
         {
             await DispatcherQueue.EnqueueAsync(() =>
@@ -431,6 +472,40 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 serviceInfo.Description = desc;
                 serviceInfo.Fill = brush;
             });
+        }
+
+        public void OnOrderChanged(object sender, SelectionChangedEventArgs args)
+        {
+            Order_Services();
+        }
+
+        private void Order_Services()
+        {
+            string order = OrderByCombo?.SelectedValue as string ?? "State";
+
+            List<ServiceInfo> ordered = order switch
+            {
+                "Name" => services.OrderBy(s => s.Name).ThenBy(s => s.Description).ToList(),
+                "State" => services.OrderBy(p => p.Description).ThenBy(s => s.Name).ToList(),
+                _ => services
+                    .OrderBy(s =>
+                    {
+                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: enabled", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: disabled", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(s => s.Description, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToList()
+            };
+
+            services.Clear();
+            foreach (ServiceInfo process in ordered)
+            {
+                services.Add(process);
+            }
         }
 
         private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)
@@ -505,52 +580,52 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
     }
-
-    // Small view-model used by the DataTemplate in XAML.
-    public sealed class ServiceInfo : INotifyPropertyChanged
-    {
-        private string _name = string.Empty;
-        public string Name
+    
+        // Small view-model used by the DataTemplate in XAML.
+        public sealed class ServiceInfo : INotifyPropertyChanged
         {
-            get => _name;
-            set
+            private string _name = string.Empty;
+            public string Name
             {
-                if (_name != value)
+                get => _name;
+                set
                 {
-                    _name = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+                    if (_name != value)
+                    {
+                        _name = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+                    }
                 }
             }
-        }
 
-        private string _description = string.Empty;
-        public string Description
-        {
-            get => _description;
-            set
+            private string _description = string.Empty;
+            public string Description
             {
-                if (_description != value)
+                get => _description;
+                set
                 {
-                    _description = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
+                    if (_description != value)
+                    {
+                        _description = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
+                    }
                 }
             }
-        }
 
-        private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
-        public SolidColorBrush Fill
-        {
-            get => _fill;
-            set
+            private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
+            public SolidColorBrush Fill
             {
-                if (_fill != value)
+                get => _fill;
+                set
                 {
-                    _fill = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Fill)));
+                    if (_fill != value)
+                    {
+                        _fill = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Fill)));
+                    }
                 }
             }
-        }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
+        }
     }
-}

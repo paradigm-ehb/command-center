@@ -104,38 +104,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                     break;
             }
 
-            // Determine navigation parameter. Prefer passing the AgentClient if available.
-            object? navigationParameter = null;
-
-            try
-            {
-                if (pageType == typeof(ServicesPage) && serverObj != null)
-                {
-                    // Try to get an existing AgentClient
-                    AgentClient? client = await _agentClientRegistry.GetAsync(serverObj.Id).ConfigureAwait(false);
-
-                    // Create & register when missing
-                    if (client == null)
-                    {
-                        client = await _agentClientFactory.CreateAndRegisterClientAsync(serverObj).ConfigureAwait(false);
-                    }
-
-                    // Pass the AgentClient object to the ServicesPage so it can use the gRPC clients directly
-                    navigationParameter = client;
-                }
-                else
-                {
-                    // default: pass the AgentEndpoint so other pages that expect it still work
-                    navigationParameter = serverObj;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log resolution/creation errors but still attempt navigation with server endpoint fallback
-                ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
-                logger.LogWarning(ex, "Failed to obtain AgentClient for navigation; falling back to AgentEndpoint.");
-                navigationParameter = serverObj;
-            }
+            // Pass serverObj as the navigation parameter
+            AgentEndpoint navigationParameter = serverObj;
 
             SlideNavigationTransitionEffect slideNavigationTransitionEffect = currentSelectedIndex - previousSelectedIndex > 0 ? SlideNavigationTransitionEffect.FromRight : SlideNavigationTransitionEffect.FromLeft;
 
