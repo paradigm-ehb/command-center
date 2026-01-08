@@ -45,7 +45,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             await ClearAllServices();
+            LoadingProgressRing.IsActive = true;
             await LoadAllServices();
+            LoadingProgressRing.IsActive = false;
         }
 
 
@@ -259,6 +261,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }
 
                 await LoadAllServices();
+
+                LoadingProgressRing.IsActive = false;
             }
             catch (Exception ex)
             {
