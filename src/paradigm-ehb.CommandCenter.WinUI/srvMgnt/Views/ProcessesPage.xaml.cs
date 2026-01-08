@@ -56,19 +56,19 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
         }
 
-        private void ServiceStartMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ProcessStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
         }
 
-        private void ServiceStopMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
         {
         }
 
-        private void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ProcessRestartMenuItem_Click(object sender, RoutedEventArgs e)
         {
         }
 
-        private void ServiceViewMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ProcessViewMenuItem_Click(object sender, RoutedEventArgs e)
         {
         }
 
@@ -140,10 +140,65 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }).ConfigureAwait(false);
             }
         }
+
+        private async Task LoadAllProcesses()
+        {
+            if (client is null || client.Service is null)
+            {
+                return;
+            }
+        }
+        
+        private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)
+        {
+            // Ensure UI thread
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                if (GridRoot == null)
+                {
+                    // fallback to page XamlRoot; but InfoBar must be in visual tree to be visible
+                    // if GridRoot is not available the InfoBar won't be shown persistently.
+                    return;
+                }
+
+                InfoBar infoBar = new()
+                {
+                    Title = title,
+                    Message = message,
+                    Severity = severity,
+                    IsOpen = true,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(0, 0, 0, 0)
+                };
+
+                // Add to visual tree so it is visible
+                GridRoot.Children.Add(infoBar);
+
+                // Remove from visual tree when closed
+                void OnClosed(object? s, InfoBarClosedEventArgs args)
+                {
+                    infoBar.Closed -= OnClosed;
+                    if (GridRoot.Children.Contains(infoBar))
+                    {
+                        GridRoot.Children.Remove(infoBar);
+                    }
+                }
+
+                infoBar.Closed += OnClosed;
+            });
+        }
+
+        private async Task ShowErrorInfoBarAsync(string message)
+        {
+            await ShowInfoBarAsync("Service Action Result", $"Error: {message}", InfoBarSeverity.Error);
+        }
     }
 
     public class ProcessInfo
     {
+        // Fill
+        public SolidColorBrush Fill { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+
         // PID
         public int ProcessId { get; set; }
 
