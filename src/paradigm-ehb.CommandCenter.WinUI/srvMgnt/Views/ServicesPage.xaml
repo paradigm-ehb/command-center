@@ -13,13 +13,23 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            
+
         </Grid.RowDefinitions>
 
         <!-- Toolbar with refresh -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="20,0,8,8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" Padding="20,0,8,8" Grid.Row="0">
             <TextBox x:Name="FilterByName" Width="150" Header="Name"
 	            HorizontalAlignment="Left" TextChanged="OnFilterChanged"/>
+            <ComboBox
+                x:Name="OrderByCombo"
+                SelectedValuePath="Tag"
+                SelectionChanged="OnOrderChanged"
+                VerticalAlignment="Bottom"
+                >
+                <ComboBoxItem Tag="Default" IsSelected="True">Default</ComboBoxItem>
+                <ComboBoxItem Tag="Name">Name</ComboBoxItem>
+                <ComboBoxItem Tag="State">State</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
             <Button x:Name="RefreshButton"
