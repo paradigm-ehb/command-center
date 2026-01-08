@@ -23,12 +23,15 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
             <Button x:Name="RefreshButton"
-                    Content="Refresh"
                     Click="RefreshButton_Click"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"
-                    Margin="0,0,4,0"/>
+                    Margin="0,0,4,0">
+                <SymbolIcon Symbol="Refresh"/>
+            </Button>
         </StackPanel>
+
+        <ProgressRing x:Name="LoadingProgressRing" Grid.Row="1" IsActive="True" Width="48" Height="48"/>
 
         <ListView
             ItemsSource="{x:Bind services, Mode=OneWay}"
