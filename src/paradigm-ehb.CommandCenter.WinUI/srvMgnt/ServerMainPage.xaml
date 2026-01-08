@@ -9,7 +9,12 @@
     mc:Ignorable="d">
 
     <Grid>
-        <StackPanel Orientation="Vertical" Margin="25, 15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="25, 15" Grid.Row="0">
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -46,9 +51,8 @@
                 <SelectorBarItem x:Name="SelectorBarItemProcesses" 
                      Text="Processes" Icon="Favorite"/>
             </SelectorBar>
-
         </StackPanel>
 
-        <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" />
+        <Frame x:Name="ContentFrame" IsNavigationStackEnabled="False" Grid.Row="1" />
     </Grid>
 </Page>

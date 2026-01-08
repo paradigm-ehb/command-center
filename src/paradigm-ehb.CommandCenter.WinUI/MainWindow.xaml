@@ -53,8 +53,8 @@
                         Content="Add new server"
                         Click="AddServerButton_Clicked"
                         HorizontalAlignment="Stretch"
-                        Height="36"
-                        Padding="8,6">
+                        Height="32"
+                        Padding="8,4">
                         <Button.KeyboardAccelerators>
                             <KeyboardAccelerator Key="N" Modifiers="Control" />
                         </Button.KeyboardAccelerators>

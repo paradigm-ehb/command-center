@@ -28,8 +28,10 @@
 	  <None Remove="ServerCreation.xaml" />
 	  <None Remove="SettingsPage.xaml" />
 	  <None Remove="srvMgnt\ServerMainPage.xaml" />
+	  <None Remove="srvMgnt\Views\ProcessesPage.xaml" />
 	  <None Remove="srvMgnt\Views\EditServerPanel.xaml" />
 	  <None Remove="srvMgnt\Views\ServerModification.xaml" />
+	  <None Remove="srvMgnt\Views\ServiceDetailsWindow.xaml" />
 	  <None Remove="srvMgnt\Views\srvOverview.xaml" />
 	</ItemGroup>
 
@@ -115,6 +117,16 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Components\Extensions\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="srvMgnt\Views\ServiceDetailsWindow.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="srvMgnt\Views\ProcessesPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="srvMgnt\Views\EditServerPanel.xaml">

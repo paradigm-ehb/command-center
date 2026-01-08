@@ -10,7 +10,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
-using Services.V1;
+using Resources.V1;
+using Services.V2;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
@@ -57,7 +58,8 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 Health = new Health.HealthClient(channel),
                 Greeter = new Greeter.GreeterClient(channel),
                 Journal = new JournalService.JournalServiceClient(channel),
-                Service = new HandlerService.HandlerServiceClient(channel)
+                Service = new HandlerService.HandlerServiceClient(channel),
+                Resources = new ResourcesService.ResourcesServiceClient(channel)
             };
 
             // Start background health monitoring as part of client creation
