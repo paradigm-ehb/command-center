@@ -35,10 +35,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         public ObservableCollection<ProcessInfo> processes { get; } = new();
 
+        private Collection<ProcessInfo> allProcesses { get; } = new();
+
         public ProcessesPage()
         {
             InitializeComponent();
         }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -49,27 +52,61 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private void OnFilterChanged(object sender, RoutedEventArgs args)
         {
+            IEnumerable<ProcessInfo> filtered = allProcesses.Where(process => Filter(process));
+            Remove_NonMatching(filtered);
+            AddBack_Processes(filtered);
+            Order_services();
+        }
+
+        private bool Filter(ProcessInfo process)
+        {
+            if (string.IsNullOrWhiteSpace(FilterByName.Text))
+            {
+                return true;
+            }
+            return process.ProcessName.Contains(FilterByName.Text, StringComparison.OrdinalIgnoreCase)
+                || process.ProcessId.ToString().Contains(FilterByName.Text, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void Remove_NonMatching(IEnumerable<ProcessInfo> filteredData)
+        {
+            for (int i = processes.Count - 1; i >= 0; i--)
+            {
+                ProcessInfo process = processes[i];
+                if (!filteredData.Contains(process))
+                    processes.Remove(process);
+            }
 
         }
 
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private void AddBack_Processes(IEnumerable<ProcessInfo> filteredData)
         {
+            foreach (ProcessInfo process in filteredData)
+            {
+                if (!processes.Contains(process))
+                    processes.Add(process);
+            }
+        }
+
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ClearAllProcesses();
+            await LoadAllProcesses();
         }
 
         private void ProcessStartMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: implement process start
         }
 
         private void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: implement process kill
         }
 
         private void ProcessRestartMenuItem_Click(object sender, RoutedEventArgs e)
         {
-        }
-
-        private void ProcessViewMenuItem_Click(object sender, RoutedEventArgs e)
-        {
+            // TODO: implement process restart
         }
 
         private async Task InitializeAsync(NavigationEventArgs e)
@@ -89,39 +126,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     client = await clientRegistry.GetAsync(endpoint.Id).ConfigureAwait(false);
                 }
 
-                if (client is null || client.Service is null)
-                {
-                    await DispatcherQueue.EnqueueAsync(() =>
-                    {
-                        processes.Clear();
-                        processes.Add(new ProcessInfo
-                        {
-                            ProcessId = 0,
-                            ProcessName = "(no client)",
-                            State = ProcessState.Unspecified,
-                            Uptime = 0,
-                            NumThreads = 0
-                        });
-                    }).ConfigureAwait(false);
-                    return;
-                }
-
-                GetSystemResourcesResponse response = await client.Resources.GetSystemResourcesAsync(new GetSystemResourcesRequest());
-
-                foreach (Process process in response.Resources.Processes)
-                {
-                    await DispatcherQueue.EnqueueAsync(() =>
-                    {
-                        processes.Add(new ProcessInfo
-                        {
-                            ProcessId = (int)process.Pid,
-                            ProcessName = process.Name,
-                            State = process.State,
-                            Uptime = process.Utime,
-                            NumThreads = (int)process.NumThreads
-                        });
-                    }).ConfigureAwait(false);
-                }
+                await LoadAllProcesses();
             }
             catch (Exception ex)
             {
@@ -141,11 +146,77 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
 
+        private async Task ClearAllProcesses()
+        {
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                allProcesses.Clear();
+                processes.Clear();
+            });
+        }
+
         private async Task LoadAllProcesses()
         {
             if (client is null || client.Service is null)
             {
+                await ShowErrorInfoBarAsync("No valid AgentClient available.");
                 return;
+            }
+            GetSystemResourcesResponse? response = await client.Resources.GetSystemResourcesAsync(new GetSystemResourcesRequest());
+            if (response is null)
+            {
+                throw new InvalidOperationException("Received null response from ActionAsync");
+            }
+            foreach (Process? process in response.Resources.Processes)
+            {
+                SolidColorBrush brush = process.State switch
+                {
+                    ProcessState.Unspecified => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
+                    ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                    ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
+                    ProcessState.Stopped => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                    _ => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
+                };
+                ProcessInfo processInfo = new()
+                {
+                    Fill = brush,
+                    ProcessId = (int)process.Pid,
+                    ProcessName = process.Name,
+                    State = process.State,
+                    Uptime = process.Utime,
+                    NumThreads = (int)process.NumThreads
+                };
+                await DispatcherQueue.EnqueueAsync(() =>
+                {
+                    allProcesses.Add(processInfo);
+                    processes.Add(processInfo);
+                });
+            }
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                Order_services();
+            });
+        }
+
+        private void Order_services()
+        {
+            List<ProcessInfo> ordered = processes
+                .OrderBy(p =>
+                {
+                    if (p.State.Equals(ProcessState.Running))
+                        return 0;
+                    if (p.State.Equals(ProcessState.Sleeping))
+                        return 1;
+                    return 2;
+                })
+                .ThenBy(p => p.State)
+                .ThenBy(p => p.ProcessName)
+                .ToList();
+
+            processes.Clear();
+            foreach (ProcessInfo process in ordered)
+            {
+                processes.Add(process);
             }
         }
         

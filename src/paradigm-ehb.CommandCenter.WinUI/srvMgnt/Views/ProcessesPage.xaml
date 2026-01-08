@@ -46,7 +46,6 @@
                                 <MenuFlyoutItem Text="Start" Click="ProcessStartMenuItem_Click" />
                                 <MenuFlyoutItem Text="Kill" Click="ProcessKillMenuItem_Click" />
                                 <MenuFlyoutItem Text="Restart" Click="ProcessRestartMenuItem_Click" />
-                                <MenuFlyoutItem Text="View Properties" Click="ProcessViewMenuItem_Click" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
 
@@ -96,7 +95,6 @@
                                     <MenuFlyoutItem Text="Start" Click="ProcessStartMenuItem_Click" />
                                     <MenuFlyoutItem Text="Kill" Click="ProcessKillMenuItem_Click" />
                                     <MenuFlyoutItem Text="Restart" Click="ProcessRestartMenuItem_Click" />
-                                    <MenuFlyoutItem Text="View Properties" Click="ProcessViewMenuItem_Click" />
                                 </MenuFlyout>
                             </DropDownButton.Flyout>
                         </DropDownButton>
