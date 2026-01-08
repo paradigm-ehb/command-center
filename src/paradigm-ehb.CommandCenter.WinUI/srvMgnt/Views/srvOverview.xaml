@@ -9,6 +9,50 @@
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="This is an overview" />
+        <StackPanel Spacing="10">
+            <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Grid Grid.Row="0">
+                    <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="CPU Usage" />
+                    <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
+                </Grid>
+                
+                <Grid Grid.Row="1" Margin="5,8,5,0" Height="6">
+                    <Border Background="#20FFFFFF" CornerRadius="3" />
+                    
+                    <Border x:Name="CpuUsageBar" 
+                            Background="#80FFFFFF" 
+                            CornerRadius="3"
+                            HorizontalAlignment="Left"
+                            Width="90" />
+                </Grid>
+            </Grid>
+
+            <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="RAM Usage" />
+                    <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="5,8,5,0" Height="6">
+                    <Border Background="#20FFFFFF" CornerRadius="3" />
+
+                    <Border x:Name="RamUsageBar" 
+                 Background="#80FFFFFF" 
+                 CornerRadius="3"
+                 HorizontalAlignment="Left"
+                 Width="30" />
+                </Grid>
+            </Grid>
+        </StackPanel>
     </Grid>
 </Page>
