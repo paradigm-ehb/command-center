@@ -56,7 +56,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
+            UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
             {
                 UnitName = serviceInfo.Name,
                 Action = UnitActionRequest.Types.UnitAction.Start
@@ -79,21 +79,38 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            UnitActionReply response = await client.Service.PerformUnitActionAsync(new UnitActionRequest
+            ContentDialog dialog = new()
             {
-                UnitName = serviceInfo.Name,
-                Action = UnitActionRequest.Types.UnitAction.Stop
-            });
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Stop {serviceInfo.Name} ?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Kill",
+            };
 
-            if (response.Success)
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
             {
-                await ShowInfoBarAsync("Service Action Result", $"Successfully stopped the service!", InfoBarSeverity.Success);
-                await UpdateServiceVisualStateAsync(serviceInfo, "stopped");
-            }
-            else
+                UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
+                {
+                    UnitName = serviceInfo.Name,
+                    Action = UnitActionRequest.Types.UnitAction.Stop
+                });
+
+                if (response.Success)
+                {
+                    await ShowInfoBarAsync("Service Action Result", $"Successfully stopped the service!", InfoBarSeverity.Success);
+                    await UpdateServiceVisualStateAsync(serviceInfo, "stopped");
+                }
+                else
+                {
+                    await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+                }
+            } else
             {
-                await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+                // Cancel, do nothing
             }
+
         }
 
         private async void ServiceRestartMenuItem_Click(object sender, RoutedEventArgs e)
@@ -125,7 +142,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 if (ex is Grpc.Core.RpcException && serviceInfo.Name == "agent.service")
                 {
                     await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the Agent!", InfoBarSeverity.Success);
-                } else
+                }
+                else
                 {
                     await ShowErrorInfoBarAsync($"Exception during restart: {ex.Message}");
                 }
