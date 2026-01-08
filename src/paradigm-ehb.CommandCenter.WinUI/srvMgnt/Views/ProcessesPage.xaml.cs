@@ -99,9 +99,26 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             // TODO: implement process start
         }
 
-        private void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
         {
             // TODO: implement process kill
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = "Are you sure you want to Kill this process?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Kill",
+            };
+
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                // Kill the Process
+            } else
+            {
+                // Cancel, do nothing
+            }
         }
 
         private void ProcessRestartMenuItem_Click(object sender, RoutedEventArgs e)
@@ -198,20 +215,34 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             });
         }
 
+        public void OnOrderChanged(object sender, SelectionChangedEventArgs args)
+        {
+            Order_services();
+        }
+
         private void Order_services()
         {
-            List<ProcessInfo> ordered = processes
-                .OrderBy(p =>
-                {
-                    if (p.State.Equals(ProcessState.Running))
-                        return 0;
-                    if (p.State.Equals(ProcessState.Sleeping))
-                        return 1;
-                    return 2;
-                })
-                .ThenBy(p => p.State)
-                .ThenBy(p => p.ProcessName)
-                .ToList();
+            string order = OrderByCombo?.SelectedValue as string ?? "State";
+
+            List<ProcessInfo> ordered = order switch
+            {
+                "Name" => processes.OrderBy(p => p.ProcessName).ThenBy(p => p.ProcessId).ToList(),
+                "Pid" => processes.OrderBy(p => p.ProcessId).ToList(),
+                "Uptime" => processes.OrderByDescending(p => p.Uptime).ToList(),
+                "State" => processes.OrderBy(p => p.State).ThenBy(p => p.ProcessName).ToList(),
+                _ => processes
+                    .OrderBy(p =>
+                    {
+                        if (p.State.Equals(ProcessState.Running))
+                            return 0;
+                        if (p.State.Equals(ProcessState.Sleeping))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(p => p.State)
+                    .ThenBy(p => p.ProcessName)
+                    .ToList()
+            };
 
             processes.Clear();
             foreach (ProcessInfo process in ordered)

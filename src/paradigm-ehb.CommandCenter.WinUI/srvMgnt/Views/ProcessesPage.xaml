@@ -16,18 +16,31 @@
         </Grid.RowDefinitions>
 
         <!-- Toolbar with refresh -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="20,0,8,8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" Padding="20,0,8,8" Grid.Row="0">
             <TextBox x:Name="FilterByName" Width="150" Header="Name"
 	            HorizontalAlignment="Left" TextChanged="OnFilterChanged"/>
+            <ComboBox
+                x:Name="OrderByCombo"
+                SelectedValuePath="Tag"
+                SelectionChanged="OnOrderChanged"
+                VerticalAlignment="Bottom"
+                >
+                <ComboBoxItem Tag="Default" IsSelected="True">Default</ComboBoxItem>
+                <ComboBoxItem Tag="Name">Name</ComboBoxItem>
+                <ComboBoxItem Tag="Pid">Process ID</ComboBoxItem>
+                <ComboBoxItem Tag="Uptime">Uptime</ComboBoxItem>
+                <ComboBoxItem Tag="State">State</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" Grid.Row="0">
             <Button x:Name="RefreshButton"
                     Content="Refresh"
                     Click="RefreshButton_Click"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"
                     Margin="0,0,4,0"
-                    Padding="12,6"/>
+                    Padding="12,6"
+                    Style="{StaticResource AccentButtonStyle}"/>
         </StackPanel>
 
         <ListView
