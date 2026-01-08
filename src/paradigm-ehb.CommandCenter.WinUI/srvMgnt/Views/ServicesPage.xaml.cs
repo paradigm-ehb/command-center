@@ -32,7 +32,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private Collection<ServiceInfo> allServices { get; }
 
-        // Add fields
         private bool _initialized;
         private Guid? _lastEndpointId;
         private System.Threading.CancellationTokenSource? _initCts;

@@ -43,6 +43,8 @@
                     Style="{StaticResource AccentButtonStyle}"/>
         </StackPanel>
 
+        <ProgressRing x:Name="LoadingProgressRing" Grid.Row="1" IsActive="True" Width="48" Height="48"/>
+
         <ListView
             ItemsSource="{x:Bind processes, Mode=OneWay}"
             SelectionMode="Single"

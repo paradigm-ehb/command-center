@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -33,12 +34,25 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
     {
         AgentClient? client = null;
 
-        public ObservableCollection<ProcessInfo> processes { get; } = new();
+        public ObservableCollection<ProcessInfo> processes { get; }
 
-        private Collection<ProcessInfo> allProcesses { get; } = new();
+        private Collection<ProcessInfo> allProcesses { get; }
+
+        // track initialization to avoid re-running when page is cached
+        private bool _initialized = false;
+        private Guid? _lastEndpointId;
+
+        // Cancellation support for initialization
+        private CancellationTokenSource? _initCts;
 
         public ProcessesPage()
         {
+            // enable page caching so SelectorBar can reuse cached pages
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+
+            processes = new ObservableCollection<ProcessInfo>();
+            allProcesses = new Collection<ProcessInfo>();
+
             InitializeComponent();
         }
 
@@ -46,8 +60,55 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
             base.OnNavigatedTo(e);
 
-            // Fire-and-forget; exceptions observed inside the task
-            _ = InitializeAsync(e);
+            // Expect an AgentEndpoint parameter
+            if (e.Parameter is not AgentEndpoint endpoint)
+            {
+                _ = ShowErrorInfoBarAsync("Invalid navigation parameter; expected AgentEndpoint.");
+                return;
+            }
+
+            bool shouldInit = !_initialized || _lastEndpointId != endpoint.Id;
+
+            // Cancel any previous initialization
+            _initCts?.Cancel();
+            _initCts?.Dispose();
+            _initCts = new CancellationTokenSource();
+            CancellationToken ct = _initCts.Token;
+
+            // Resolve client from registry (parent is expected to have created/registered it)
+            _ = ResolveClientAndMaybeInitAsync(endpoint, shouldInit, ct);
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            // Cancel any in-progress initialization when leaving the page
+            _initCts?.Cancel();
+            _initCts?.Dispose();
+            _initCts = null;
+        }
+
+        private async Task ResolveClientAndMaybeInitAsync(AgentEndpoint endpoint, bool shouldInit, CancellationToken ct)
+        {
+            try
+            {
+                var registry = App.Services.GetRequiredService<IAgentClientRegistry>();
+                client = await registry.GetAsync(endpoint.Id).ConfigureAwait(false);
+
+                if (shouldInit)
+                {
+                    await InitializeAsync(endpoint, ct).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignore
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorInfoBarAsync($"Failed to resolve AgentClient: {ex.Message}");
+            }
         }
 
         private void OnFilterChanged(object sender, RoutedEventArgs args)
@@ -91,7 +152,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             await ClearAllProcesses();
-            await LoadAllProcesses();
+            // Refresh is user-initiated; use non-cancellable token
+            await LoadAllProcesses(CancellationToken.None);
         }
 
         private void ProcessStartMenuItem_Click(object sender, RoutedEventArgs e)
@@ -115,7 +177,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             if (result == ContentDialogResult.Primary)
             {
                 // Kill the Process
-            } else
+            }
+            else
             {
                 // Cancel, do nothing
             }
@@ -126,24 +189,41 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             // TODO: implement process restart
         }
 
-        private async Task InitializeAsync(NavigationEventArgs e)
+        private async Task InitializeAsync(AgentEndpoint endpoint, CancellationToken ct)
         {
             try
             {
-                // Determine the AgentClient to use based on navigation parameter
+                await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = true);
 
-                if (e.Parameter is AgentClient passedClient)
+                // Clear previous state
+                await ClearAllProcesses();
+
+                // If client isn't resolved yet, try to get it now (parent should have registered it)
+                if (client is null)
                 {
-                    client = passedClient;
-                }
-                else if (e.Parameter is AgentEndpoint endpoint)
-                {
-                    // Try to obtain an existing registered client only.
-                    IAgentClientRegistry clientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
-                    client = await clientRegistry.GetAsync(endpoint.Id).ConfigureAwait(false);
+                    IAgentClientRegistry registry = App.Services.GetRequiredService<IAgentClientRegistry>();
+                    client = await registry.GetAsync(endpoint.Id).ConfigureAwait(false);
                 }
 
-                await LoadAllProcesses();
+                if (client is null)
+                {
+                    await ShowErrorInfoBarAsync("No AgentClient available for this server.");
+                    return;
+                }
+
+                ct.ThrowIfCancellationRequested();
+
+                // Load processes using resolved client
+                await LoadAllProcesses(ct);
+
+                // remember endpoint id when initialization successful
+                _lastEndpointId = endpoint.Id;
+
+                _initialized = true;
+            }
+            catch (OperationCanceledException)
+            {
+                // initialization was cancelled
             }
             catch (Exception ex)
             {
@@ -160,6 +240,12 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                         NumThreads = 0
                     });
                 }).ConfigureAwait(false);
+
+                await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
+            }
+            finally
+            {
+                await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = false);
             }
         }
 
@@ -172,39 +258,53 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             });
         }
 
-        private async Task LoadAllProcesses()
+        private async Task LoadAllProcesses(CancellationToken ct)
         {
             if (client is null || client.Service is null)
             {
                 await ShowErrorInfoBarAsync("No valid AgentClient available.");
                 return;
             }
-            GetSystemResourcesResponse? response = await client.Resources.GetSystemResourcesAsync(new GetSystemResourcesRequest());
+
+            ct.ThrowIfCancellationRequested();
+
+            GetSystemResourcesResponse? response;
+            try
+            {
+                response = await client.Resources.GetSystemResourcesAsync(request: new GetSystemResourcesRequest(), cancellationToken: ct).ConfigureAwait(false);
+            }
+            catch (RpcException rpcEx) when (rpcEx.StatusCode == StatusCode.Cancelled || ct.IsCancellationRequested)
+            {
+                // treated as cancellation
+                return;
+            }
+
             if (response is null)
             {
                 throw new InvalidOperationException("Received null response from ActionAsync");
             }
+
             foreach (Process? process in response.Resources.Processes)
             {
-                SolidColorBrush brush = process.State switch
-                {
-                    ProcessState.Unspecified => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
-                    ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                    ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
-                    ProcessState.Stopped => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                    _ => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
-                };
-                ProcessInfo processInfo = new()
-                {
-                    Fill = brush,
-                    ProcessId = (int)process.Pid,
-                    ProcessName = process.Name,
-                    State = process.State,
-                    Uptime = process.Utime,
-                    NumThreads = (int)process.NumThreads
-                };
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
+                    SolidColorBrush brush = process.State switch
+                    {
+                        ProcessState.Unspecified => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
+                        ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                        ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
+                        ProcessState.Stopped => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                        _ => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
+                    };
+                    ProcessInfo processInfo = new()
+                    {
+                        Fill = brush,
+                        ProcessId = (int)process.Pid,
+                        ProcessName = process.Name,
+                        State = process.State,
+                        Uptime = process.Utime,
+                        NumThreads = (int)process.NumThreads
+                    };
                     allProcesses.Add(processInfo);
                     processes.Add(processInfo);
                 });
@@ -250,7 +350,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 processes.Add(process);
             }
         }
-        
+
         private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)
         {
             // Ensure UI thread
