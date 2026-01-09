@@ -5,8 +5,8 @@ package resources.v2;
 service ResourcesService {
     rpc GetSystemResources(GetSystemResourcesRequest)
         returns (GetSystemResourcesResponse);
-    rpc killProcess(KillProcessRequest)
-        returns (KillProcessReply);
+    rpc ProcessAction(ProcessActionRequest)
+        returns (ProcessActionReply);
 }
 
 message GetSystemResourcesRequest {}
@@ -15,11 +15,12 @@ message GetSystemResourcesResponse {
     SystemResources resources = 1;
 }
 
-message KillProcessRequest {
+message ProcessActionRequest {
     int32 pid = 1;
+    int32 sig = 2;
 }
 
-message KillProcessReply {
+message ProcessActionReply {
     bool succes = 1;
 }
 

@@ -21,6 +21,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.ApplicationModel.VoiceCommands;
 using Resources.V2;
+using System.Runtime.InteropServices.ObjectiveC;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -156,8 +157,58 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             await LoadAllProcesses(CancellationToken.None);
         }
 
+        private async void ProcessTerminate_Click(object sender, RoutedEventArgs e)
+        {
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
 
-        private async void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to terminate.");
+                return;
+            }
+
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Terminate {processInfo.ProcessName}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Terminate",
+            };
+
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    ProcessActionReply terminateResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
+                    {
+                        Pid = processInfo.ProcessId,
+                        Sig = 15 // SIGTERM
+                    });
+                    if (terminateResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Terminated", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was terminated successfully.", InfoBarSeverity.Success);
+                        await UpdateProcessVisualStateAsync(processInfo, "killed");
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to terminate process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error terminating process: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Cancel, do nothing
+            }
+        }
+
+        private async void ProcessKill_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
             ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
@@ -168,7 +219,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 return;
             }
 
-            // TODO: implement process kill
             ContentDialog dialog = new()
             {
                 XamlRoot = this.XamlRoot,
@@ -183,9 +233,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             {
                 try
                 {
-                    KillProcessReply killResult = await client!.Resources.killProcessAsync(new KillProcessRequest
+                    ProcessActionReply killResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
-                        Pid = processInfo.ProcessId
+                        Pid = processInfo.ProcessId,
+                        Sig = 9 // SIGKILL
                     });
 
                     if (killResult.Succes)
@@ -210,9 +261,195 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
 
-        private void ProcessRestartMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ProcessReload_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: implement process restart
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
+
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to restart.");
+                return;
+            }
+
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Restart {processInfo.ProcessName}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Restart",
+            };
+
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    ProcessActionReply restartResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
+                    {
+                        Pid = processInfo.ProcessId,
+                        Sig = 1
+                    });
+                    if (restartResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Restarted", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was restarted successfully.", InfoBarSeverity.Success);
+                        await UpdateProcessVisualStateAsync(processInfo, "restarted");
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to restart process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error restarting process: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Cancel, do nothing
+            }
+        }
+
+        private async void ProcessPause_Click(object sender, RoutedEventArgs args)
+        {
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to pause.");
+                return;
+            }
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Pause {processInfo.ProcessName}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Pause",
+            };
+            ContentDialogResult result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    ProcessActionReply pauseResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
+                    {
+                        Pid = processInfo.ProcessId,
+                        Sig = 19 // SIGSTOP
+                    });
+                    if (pauseResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Paused", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was paused successfully.", InfoBarSeverity.Success);
+                        await UpdateProcessVisualStateAsync(processInfo, "paused");
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to pause process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error pausing process: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Cancel, do nothing
+            }
+        }
+
+        private async void ProcessResume_Click(object sender, RoutedEventArgs args)
+        {
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to resume.");
+                return;
+            }
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Resume {processInfo.ProcessName}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Resume",
+            };
+            ContentDialogResult result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    ProcessActionReply resumeResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
+                    {
+                        Pid = processInfo.ProcessId,
+                        Sig = 18 // SIGCONT
+                    });
+                    if (resumeResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Resumed", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was resumed successfully.", InfoBarSeverity.Success);
+                        await UpdateProcessVisualStateAsync(processInfo, "resumed");
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to resume process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error resuming process: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Cancel, do nothing
+            }
+        }
+
+        private async void ProcessCall_Click(object sender, RoutedEventArgs args)
+        {
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to call.");
+                return;
+            }
+            ContentDialog dialog = new()
+            {
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Call {processInfo.ProcessName}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Call",
+            };
+            ContentDialogResult result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    ProcessActionReply callResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
+                    {
+                        Pid = processInfo.ProcessId,
+                        Sig = 10 // SIGUSR1
+                    });
+                    if (callResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Called", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was called successfully.", InfoBarSeverity.Success);
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to call process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error calling process: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Cancel, do nothing
+            }
         }
 
         private async Task InitializeAsync(AgentEndpoint endpoint, CancellationToken ct)

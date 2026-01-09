@@ -58,8 +58,12 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Kill" Click="ProcessKillMenuItem_Click" />
-                                <MenuFlyoutItem Text="Restart" Click="ProcessRestartMenuItem_Click" />
+                                <MenuFlyoutItem Text="Terminate" Click="ProcessTerminate_Click" ToolTipService.ToolTip="Graceful Process Termination" />
+                                <MenuFlyoutItem Text="Kill" Click="ProcessKill_Click" ToolTipService.ToolTip="Forceful Process Kill" />
+                                <MenuFlyoutItem Text="Reload" Click="ProcessReload_Click" ToolTipService.ToolTip="Reload Process Configuration" />
+                                <MenuFlyoutItem Text="Pause" Click="ProcessPause_Click" ToolTipService.ToolTip="Pause Process Execution" />
+                                <MenuFlyoutItem Text="Resume" Click="ProcessResume_Click" ToolTipService.ToolTip="Resume Process Execution if Paused" />
+                                <MenuFlyoutItem Text="Call" Click="ProcessCall_Click" ToolTipService.ToolTip="Invoke Process-Specific Action" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
 
@@ -106,9 +110,12 @@
                         <DropDownButton Content="Actions" Grid.Column="2" VerticalAlignment="Center">
                             <DropDownButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
-                                    <MenuFlyoutItem Text="Start" Click="ProcessStartMenuItem_Click" />
-                                    <MenuFlyoutItem Text="Kill" Click="ProcessKillMenuItem_Click" />
-                                    <MenuFlyoutItem Text="Restart" Click="ProcessRestartMenuItem_Click" />
+                                    <MenuFlyoutItem Text="Terminate" Click="ProcessTerminate_Click" ToolTipService.ToolTip="Graceful Process Termination" />
+                                    <MenuFlyoutItem Text="Kill" Click="ProcessKill_Click" ToolTipService.ToolTip="Forceful Process Kill" />
+                                    <MenuFlyoutItem Text="Reload" Click="ProcessReload_Click" ToolTipService.ToolTip="Reload Process Configuration" />
+                                    <MenuFlyoutItem Text="Pause" Click="ProcessPause_Click" ToolTipService.ToolTip="Pause Process Execution" />
+                                    <MenuFlyoutItem Text="Resume" Click="ProcessResume_Click" ToolTipService.ToolTip="Resume Process Execution if Paused" />
+                                    <MenuFlyoutItem Text="Call" Click="ProcessCall_Click" ToolTipService.ToolTip="Invoke Process-Specific Action" />
                                 </MenuFlyout>
                             </DropDownButton.Flyout>
                         </DropDownButton>
