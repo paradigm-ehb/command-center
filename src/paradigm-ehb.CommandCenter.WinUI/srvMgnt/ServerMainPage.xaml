@@ -49,7 +49,7 @@
                 <SelectorBarItem x:Name="SelectorBarItemServices" 
                      Text="Services" Icon="AllApps"/>
                 <SelectorBarItem x:Name="SelectorBarItemProcesses" 
-                     Text="Processes" Icon="Favorite"/>
+                     Text="Processes" Icon="Component"/>
             </SelectorBar>
         </StackPanel>
 
