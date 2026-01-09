@@ -8,7 +8,7 @@ using Resources.V1;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
-    public sealed class AgentClient : IDisposable
+    public sealed class AgentClient : IDisposable, IAsyncDisposable
     {
         private bool disposedValue;
         private AgentHealthWatcher? _healthWatcher;
@@ -63,6 +63,7 @@ namespace paradigm_ehb.CommandCenter.Core.Models
                     {
                         StopHealthWatch();
                         _healthWatcher?.Dispose();
+                        Channel.ShutdownAsync().Wait();
                         Channel?.Dispose();
                     }
                     catch
@@ -77,7 +78,33 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         public void Dispose()
         {
             Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+        }
+
+        private async Task DisposeAsync(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        StopHealthWatch();
+                        _healthWatcher?.Dispose();
+                        await Channel.ShutdownAsync().ConfigureAwait(false);
+                        Channel?.Dispose();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+                disposedValue = true;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsync(true);
         }
     }
 }
