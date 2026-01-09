@@ -9,11 +9,16 @@
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock
-            x:Name="SettingsText"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="SettingsPage" />
+        <StackPanel Margin="10,0" VerticalAlignment="Center">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Whoops :'(" FontSize="24" FontWeight="Bold"/>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Considering there is a lot more to do, there are currently no settings to change. Please check back here again soon." TextWrapping="Wrap" HorizontalTextAlignment="Center" />
+        </StackPanel>
 
     </Grid>
 </Page>
