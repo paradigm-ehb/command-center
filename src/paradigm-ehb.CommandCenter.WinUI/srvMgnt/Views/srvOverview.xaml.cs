@@ -51,7 +51,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 client = await agentClientFactory.CreateClientAsync(endpoint);
 
                 var data = client.Resources.GetSystemResources(new GetSystemResourcesRequest());
-                OS.Text = data.Resources.Device.OsVersion;
+                    OS.Text = data.Resources.Device.OsVersion;
                 UptimeTime.Text = data.Resources.Device.Uptime;
 
                 var frequencyGHz = Math.Floor(float.Parse(data.Resources.Cpu.Frequency) / 10) / 100;
