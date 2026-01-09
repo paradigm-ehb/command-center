@@ -2,6 +2,7 @@ using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using Resources.V1;
@@ -14,6 +15,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 {
     public sealed partial class srvOverview : Page
     {
+        IAgentClientRegistry _agentClientRegistry;
         AgentClient? client = null;
         private static Timer aTimer;
 
@@ -39,19 +41,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
             try
             {
-                IAgentEndpointFactory agentEndpointFactory = App.Services.GetRequiredService<IAgentEndpointFactory>();
-                IAgentClientFactory agentClientFactory = App.Services.GetRequiredService<IAgentClientFactory>();
-
-                var serveObj = ServerMainPage.Instance.serverObj;
-
-                // Create the endpoint first
-                AgentEndpoint endpoint = agentEndpointFactory.Create(serveObj.IpAddress, serveObj.Port, serveObj.UseTls);
-
-                // Then create the client using that endpoint
-                client = await agentClientFactory.CreateClientAsync(endpoint);
-
-                var data = client.Resources.GetSystemResources(new GetSystemResourcesRequest());
-                    OS.Text = data.Resources.Device.OsVersion;
+                GetSystemResourcesResponse data = client.Resources.GetSystemResources(new GetSystemResourcesRequest());
+                OS.Text = data.Resources.Device.OsVersion;
                 UptimeTime.Text = data.Resources.Device.Uptime;
 
                 var frequencyGHz = Math.Floor(float.Parse(data.Resources.Cpu.Frequency) / 10) / 100;
@@ -72,9 +63,29 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
            
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            AgentEndpoint serverObj = ServerMainPage.Instance.serverObj;
+
+            _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
+
+            client = await _agentClientRegistry.GetAsync(serverObj.Id);
+
             updatePage();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            aTimer.Stop();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            aTimer.Start();
         }
     }
 }
