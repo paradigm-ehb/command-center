@@ -195,8 +195,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     if (killResult.Succes)
                     {
                         await ShowInfoBarAsync("Process Killed", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was killed successfully.", InfoBarSeverity.Success);
-                        await ClearAllProcesses();
-                        await LoadAllProcesses(CancellationToken.None);
+                        await UpdateProcessVisualStateAsync(processInfo, "killed");
                     }
                     else
                     {
@@ -309,6 +308,11 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 // treated as cancellation
                 return;
             }
+            catch (Exception ex)
+            {
+                await ShowErrorInfoBarAsync($"Failed to load processes: {ex.Message}");
+                return;
+            }
 
             if (response is null)
             {
@@ -380,6 +384,30 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             {
                 processes.Add(process);
             }
+        }
+        private async Task UpdateProcessVisualStateAsync(ProcessInfo processInfo, string action)
+        {
+            await DispatcherQueue.EnqueueAsync(() =>
+            {
+                ProcessState state = action switch
+                {
+                    "started" => ProcessState.Running,
+                    "killed" => ProcessState.Stopped,
+                    "restarted" => ProcessState.Running,
+                    _ => processInfo.State
+                };
+
+                SolidColorBrush brush = action switch
+                {
+                    "started" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                    "killed" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                    "restarted" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
+                    _ => processInfo.Fill
+                };
+
+                processInfo.Fill = brush;
+                processInfo.State = state;
+            });
         }
 
         private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)
