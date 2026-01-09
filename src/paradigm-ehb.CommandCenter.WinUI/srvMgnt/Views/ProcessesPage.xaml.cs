@@ -1,5 +1,4 @@
 using Grpc.Core;
-using Resources.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,6 +20,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.ApplicationModel.VoiceCommands;
+using Resources.V2;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -163,11 +163,20 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private async void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            MenuFlyoutItem? menuFlyoutItem = sender as MenuFlyoutItem;
+            ProcessInfo? processInfo = menuFlyoutItem?.DataContext as ProcessInfo;
+
+            if (processInfo is null)
+            {
+                await ShowErrorInfoBarAsync("No process selected to kill.");
+                return;
+            }
+
             // TODO: implement process kill
             ContentDialog dialog = new()
             {
                 XamlRoot = this.XamlRoot,
-                Title = "Are you sure you want to Kill this process?",
+                Title = $"Are you sure you want to Kill {processInfo.ProcessName}?",
                 CloseButtonText = "Cancel",
                 PrimaryButtonText = "Kill",
             };
@@ -176,7 +185,29 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             if (result == ContentDialogResult.Primary)
             {
-                // Kill the Process
+                try
+                {
+                    KillProcessReply killResult = await client!.Resources.killProcessAsync(new KillProcessRequest
+                    {
+                        Pid = processInfo.ProcessId
+                    });
+
+                    if (killResult.Succes)
+                    {
+                        await ShowInfoBarAsync("Process Killed", $"Process {processInfo.ProcessName} (PID {processInfo.ProcessId}) was killed successfully.", InfoBarSeverity.Success);
+                        await ClearAllProcesses();
+                        await LoadAllProcesses(CancellationToken.None);
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Failed to kill process {processInfo.ProcessName} (PID {processInfo.ProcessId})!");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorInfoBarAsync($"Error killing process: {ex.Message}");
+                }
             }
             else
             {
@@ -299,7 +330,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessInfo processInfo = new()
                     {
                         Fill = brush,
-                        ProcessId = (int)process.Pid,
+                        ProcessId = process.Pid,
                         ProcessName = process.Name,
                         State = process.State,
                         Uptime = process.Utime,

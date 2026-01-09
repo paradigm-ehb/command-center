@@ -16,7 +16,7 @@ message GetSystemResourcesResponse {
 }
 
 message KillProcessRequest {
-    uint32 pid = 1;
+    int32 pid = 1;
 }
 
 message KillProcessReply {

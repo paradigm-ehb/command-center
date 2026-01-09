@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
-using Resources.V1;
+using Resources.V2;
 using Services.V2;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
