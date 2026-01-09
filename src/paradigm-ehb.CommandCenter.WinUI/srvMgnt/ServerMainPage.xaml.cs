@@ -29,8 +29,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
 
             InitializeComponent();
-            
-            SelectorBar.SelectedItem = SelectorBar.Items[0];
+
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -52,6 +51,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 
         private async Task InitializeForNavigationAsync(NavigationEventArgs e)
         {
+            bool connected = false;
             try
             {
                 if (e.Parameter is AgentEndpoint ip)
@@ -60,7 +60,32 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                     bool registered = await _agentClientRegistry.IsRegisteredAsync(ip.Id).ConfigureAwait(false);
                     if (!registered)
                     {
-                        await _agentClientFactory.CreateAndRegisterClientAsync(ip).ConfigureAwait(false);
+                        if (ip.Reachability == Core.Enums.AgentReachability.Offline)
+                        {
+                            // Create ContentDialog to warn user that the agent is offline and do not give the ability to change SelectorBar
+                            await DispatcherQueue.EnqueueAsync(async () =>
+                            {
+                                // Disable SelectorBar to prevent navigation
+                                SelectorBar.IsEnabled = false;
+                                ContentDialog contentDialog = new ContentDialog
+                                {
+                                    Title = "Agent Offline",
+                                    Content = "Could not connect to the agent.",
+                                    CloseButtonText = "OK",
+                                    XamlRoot = MainWindow.Instance.Content.XamlRoot // Set the XamlRoot to the main window's XamlRoot
+                                };
+                                ContentDialogResult result = await contentDialog.ShowAsync();
+                            });
+                        }
+                        else
+                        {
+                            await _agentClientFactory.CreateAndRegisterClientAsync(ip).ConfigureAwait(false);
+                            connected = true;
+                        }
+                    }
+                    else
+                    {
+                        connected = true;
                     }
 
                     // UI updates must run on the UI thread — marshal back if needed.
@@ -77,6 +102,17 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 // Log the exception using the logging framework
                 ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
                 logger.LogError(ex, "Error during ServerMainPage initialization.");
+            }
+            finally
+            {
+                if (connected)
+                {
+                    // Navigate to the default page (Overview) after initialization
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        SelectorBar.SelectedItem = SelectorBar.Items[0];
+                    });
+                }
             }
         }
 
@@ -140,7 +176,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                 XamlRoot = this.Content.XamlRoot
             };
 
-            serverCreationDialog.Closing += async (dialog, closingArgs) => {
+            serverCreationDialog.Closing += async (dialog, closingArgs) =>
+            {
                 if (closingArgs.Result == ContentDialogResult.None)
                 {
                     bool isValid = await serverCreation.ValidateAndApplyChangesAsync();
@@ -183,7 +220,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             {
                 var content = await CoreMethods.deleteServer(serverObj.FolderName, serverObj.DisplayName, serverObj.Id);
 
-                if(content == (true, "Server Deleted"))
+                if (content == (true, "Server Deleted"))
                 {
                     MainWindow.Instance.LoadServerMenu();
                     HomePage.Instance.LoadServers();
