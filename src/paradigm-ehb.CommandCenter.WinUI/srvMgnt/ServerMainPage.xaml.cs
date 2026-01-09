@@ -38,6 +38,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
             _ = InitializeForNavigationAsync(e);
         }
 
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            AgentClient? agentClient = await _agentClientRegistry.GetAsync(serverObj.Id);
+            if (agentClient is not null) await agentClient.DisposeAsync();
+            await _agentClientRegistry.DeregisterAsync(serverObj.Id);
+        }
+
         private async Task InitializeForNavigationAsync(NavigationEventArgs e)
         {
             try
