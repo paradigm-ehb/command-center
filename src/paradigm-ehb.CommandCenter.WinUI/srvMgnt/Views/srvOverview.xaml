@@ -7,32 +7,33 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:components="using:paradigm_ehb.CommandCenter.WinUI.Components"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Loaded="Page_Loaded">
 
     <Grid>
         <StackPanel Spacing="10">
 
             <Grid Margin="20, 0">
                 <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="OS" />
-                <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Ubuntu Server" />
+                <TextBlock Margin="5,0" x:Name="OS" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Ubuntu Server" />
             </Grid>
 
             <Grid Margin="20, 0">
                 <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="Uptime" />
-                <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="0:00:00" />
+                <TextBlock Margin="5,0" x:Name="UptimeTime" HorizontalAlignment="Right" VerticalAlignment="Center" Text="0:00:00" />
             </Grid>
 
             <Grid Margin="20, 0">
                 <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="Processes" />
-                <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN" />
+                <TextBlock Margin="5,0" x:Name="Processes" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN" />
             </Grid>
 
             <Grid Margin="20, 0">
                 <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="CPU" />
-                <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Intel Gore Whatever" />
+                <TextBlock Margin="5,0" x:Name="CPU" HorizontalAlignment="Right" VerticalAlignment="Center" Text="N/A" />
             </Grid>
 
-            <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
+            <!-- <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -44,7 +45,7 @@
                 </Grid>
 
                 <components:ProgressBar x:Name="CpuUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />
-            </Grid>
+            </Grid> -->
 
             <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
                 <Grid.RowDefinitions>
@@ -54,7 +55,7 @@
 
                 <Grid Grid.Row="0">
                     <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="RAM Usage" />
-                    <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
+                    <TextBlock Margin="5,0" x:Name="RamUsagePercent" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
                 </Grid>
 
                 <components:ProgressBar x:Name="RamUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />

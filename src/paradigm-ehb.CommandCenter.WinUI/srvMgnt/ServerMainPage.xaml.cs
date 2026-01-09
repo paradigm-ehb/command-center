@@ -15,12 +15,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
     public sealed partial class ServerMainPage : Page
     {
+        public static ServerMainPage Instance;
+
         private readonly IAgentClientFactory _agentClientFactory;
         private readonly IAgentClientRegistry _agentClientRegistry;
         private int previousSelectedIndex = 0;
 
         public ServerMainPage()
         {
+            Instance = this;
             // Dependency Injection
             _agentClientFactory = App.Services.GetRequiredService<IAgentClientFactory>();
             _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
