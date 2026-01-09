@@ -7,6 +7,7 @@ using Grpc.Net.Client;
 using Journal.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using paradigm_ehb.CommandCenter.Core.Enums;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
@@ -43,9 +44,17 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
         /// <returns>A task that represents the asynchronous operation. The task result contains the created client entry for the
         /// specified endpoint.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="endpoint"/> is null.</exception>
-        public Task<AgentClient> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
+        public async Task<AgentClient> CreateClientAsync(AgentEndpoint endpoint, CancellationToken cancellationToken = default)
         {
             if (endpoint is null) throw new ArgumentNullException(nameof(endpoint));
+
+            // Throw if trying to create Client from offline endpoint
+            if (endpoint.Reachability == AgentReachability.Offline)
+            {
+                _logger.LogWarning("Attempted to create AgentClient for offline endpoint {EndpointId}", endpoint.Id);
+                throw new InvalidOperationException($"Cannot create AgentClient for offline endpoint {endpoint.Id}");
+            }
+
             ThrowIfDisposed();
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -66,7 +75,7 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
             if (endpoint.MonitoringEnabled) createdEntry.StartHealthWatch(cancellationToken);
 
             _logger.LogDebug("Created temporary client entry for endpoint {EndpointId}", endpoint.Id);
-            return Task.FromResult(createdEntry);
+            return await Task.FromResult(createdEntry);
         }
 
         /// <summary>
