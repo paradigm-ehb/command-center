@@ -67,6 +67,18 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
                             {
                                 // Disable SelectorBar to prevent navigation
                                 SelectorBar.IsEnabled = false;
+                                TextBlock textBlock = new TextBlock
+                                {
+                                    Text = "The agent is currently offline. Please ensure the agent is online to access its features.",
+                                    TextWrapping = TextWrapping.Wrap,
+                                    Margin = new Thickness(20),
+                                    Style = Application.Current.Resources["TitleTextBlockStyle"] as Style,
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center
+                                };
+
+                                ContentFrame.Content = textBlock;
+
                                 ContentDialog contentDialog = new ContentDialog
                                 {
                                     Title = "Agent Offline",
