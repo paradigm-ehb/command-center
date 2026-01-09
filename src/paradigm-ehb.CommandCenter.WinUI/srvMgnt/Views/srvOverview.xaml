@@ -61,21 +61,6 @@
                 <components:ProgressBar x:Name="RamUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />
 
             </Grid>
-
-            <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0">
-                    <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="Disk Usage" />
-                    <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
-                </Grid>
-
-                <components:ProgressBar Progress="33" Grid.Row="1" Margin="5,8,5,0" />
-
-            </Grid>
         </StackPanel>
     </Grid>
 </Page>
