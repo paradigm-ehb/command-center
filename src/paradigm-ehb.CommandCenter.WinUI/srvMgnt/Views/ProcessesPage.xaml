@@ -58,7 +58,6 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Start" Click="ProcessStartMenuItem_Click" />
                                 <MenuFlyoutItem Text="Kill" Click="ProcessKillMenuItem_Click" />
                                 <MenuFlyoutItem Text="Restart" Click="ProcessRestartMenuItem_Click" />
                             </MenuFlyout>

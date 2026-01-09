@@ -156,10 +156,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             await LoadAllProcesses(CancellationToken.None);
         }
 
-        private void ProcessStartMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: implement process start
-        }
 
         private async void ProcessKillMenuItem_Click(object sender, RoutedEventArgs e)
         {
