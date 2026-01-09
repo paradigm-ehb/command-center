@@ -17,7 +17,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
     {
         IAgentClientRegistry _agentClientRegistry;
         AgentClient? client = null;
-        private static Timer aTimer;
+        private Timer aTimer;
 
         public srvOverview()
         {
@@ -57,7 +57,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 RamUsageBar.Progress = usedRamPercentage;
                 RamUsagePercent.Text = string.Format("{0:F2}%", usedRamPercentage);
             }
-            catch(RpcException ex)
+            catch(Exception ex)
             {
             }
            
@@ -72,6 +72,11 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             client = await _agentClientRegistry.GetAsync(serverObj.Id);
 
             updatePage();
+        }
+
+        private async void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            aTimer.Stop();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
