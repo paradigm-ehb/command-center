@@ -5,6 +5,7 @@ using paradigm_ehb.CommandCenter.Core.Services;
 using Journal.V1;
 using Services.V3;
 using Resources.V2;
+using Actions.V1;
 
 namespace paradigm_ehb.CommandCenter.Core.Models
 {
@@ -29,6 +30,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         public HandlerService.HandlerServiceClient Service { get; init; }
 
         public ResourcesService.ResourcesServiceClient Resources { get; init; }
+
+        public ActionService.ActionServiceClient DeviceActions { get; init; }
 
         public bool HealthWatchEnabled { get; set; } = true;
 

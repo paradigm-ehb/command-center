@@ -39,6 +39,15 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                     <Button Click="Delete_Click" Background="Red" Grid.Column="2" Content="Delete" />
                     <Button Click="Edit_Click" Grid.Column="2" Content="Edit" />
+                    <DropDownButton x:Name="ActionsButton" Content="Actions" Grid.Column="2">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="Shutdown Server" Click="ShutdownServer_Click"/>
+                                <MenuFlyoutItem Text="Reboot Server" Click="RebootServer_Click"/>
+                                <MenuFlyoutItem Text="Suspend Server" Click="SuspendServer_Click"/>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
                 </StackPanel>
             </Grid>
 
