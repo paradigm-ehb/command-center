@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -357,13 +358,32 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
 
             GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
-            if (response is null)
+            GetUnitsReply? loadedResponse = await client.Service.GetLoadedUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
+            if (response is null || loadedResponse is null)
             {
                 await ShowErrorInfoBarAsync("Failed to retrieve services: received null response from agent.");
                 return;
             }
 
-            foreach (LoadedUnit? unit in response.Units)
+            IEnumerable<LoadedUnit> units = response.Units;
+            IEnumerable<LoadedUnit> loadedUnits = loadedResponse.Units;
+
+            // Returns the union of both, updating LoadState where possible
+            units = units.Join(
+                loadedUnits,
+                unit => ExtractShortUnitName(unit.Name),
+                loadedUnit => loadedUnit.Name,
+                (unit, loadedUnit) =>
+                {
+                    if (loadedUnit is not null)
+                    {
+                        loadedUnit.LoadState = unit.LoadState;
+                        return loadedUnit;
+                    }
+                    return unit;
+                });
+
+            foreach (LoadedUnit? unit in units)
             {
                 string unitName = ExtractShortUnitName(unit.Name);
                 // Choose a color/brush based on unit state
@@ -380,12 +400,12 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 ServiceInfo serviceInfo = new ServiceInfo
                 {
                     Name = unitName,
-                    Description = $"State: {unit.LoadState}",
+                    Description = unit.Description ?? unitName,
+                    State = $"State: {unit.LoadState ?? "Unknown"}",
                     Fill = brush
                 };
 
-                await DispatcherQueue.EnqueueAsync(() =>
-                {
+                await DispatcherQueue.EnqueueAsync(() => {
                     allServices.Add(serviceInfo);
                     services.Add(serviceInfo);
                 });
@@ -612,7 +632,21 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 }
             }
 
-            private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
+            private string _state = string.Empty;
+            public string State
+            {
+                get => _state;
+                set
+                {
+                    if (_state != value)
+                    {
+                        _state = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
+                    }
+                }
+        }
+
+        private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
             public SolidColorBrush Fill
             {
                 get => _fill;

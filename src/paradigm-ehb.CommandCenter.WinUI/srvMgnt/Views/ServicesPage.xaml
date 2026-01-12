@@ -90,6 +90,12 @@
                                    x:Phase="2"
                                    Style="{ThemeResource BodyTextBlockStyle}"
                                    Margin="12,0,0,8"/>
+                            <TextBlock Grid.Column="1"
+                                   Grid.Row="2"
+                                   Text="{x:Bind State, Mode=OneWay}"
+                                   x:Phase="2"
+                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                   Margin="12,0,0,8"/>
                         </StackPanel>
 
                         <DropDownButton Content="Actions" Grid.Column="2" VerticalAlignment="Center">
