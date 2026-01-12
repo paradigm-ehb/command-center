@@ -143,7 +143,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 {
                     await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
                 }
-            } else
+            }
+            else
             {
                 // Cancel, do nothing
             }
@@ -321,7 +322,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     services.Clear();
-                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
+                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, StateFill = new SolidColorBrush(Colors.Red) });
                 }).ConfigureAwait(false);
 
                 await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
@@ -397,15 +398,27 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     _ => new SolidColorBrush(Colors.Goldenrod)
                 };
 
+                SolidColorBrush activeStateFill = unit.ActiveState switch
+                {
+                    "running" => (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"],
+                    "exited" => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
+                    "dead" => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
+                    "failed" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
+                    _ => new SolidColorBrush(Colors.Goldenrod)
+                };
+
                 ServiceInfo serviceInfo = new ServiceInfo
                 {
                     Name = unitName,
                     Description = unit.Description ?? unitName,
-                    State = $"State: {unit.LoadState ?? "Unknown"}",
-                    Fill = brush
+                    State = unit.LoadState ?? "Unknown",
+                    ActiveState = unit.ActiveState ?? "",
+                    StateFill = brush,
+                    ActiveStateFill = activeStateFill
                 };
 
-                await DispatcherQueue.EnqueueAsync(() => {
+                await DispatcherQueue.EnqueueAsync(() =>
+                {
                     allServices.Add(serviceInfo);
                     services.Add(serviceInfo);
                 });
@@ -469,28 +482,13 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
             await DispatcherQueue.EnqueueAsync(() =>
             {
-                string desc = action switch
-                {
-                    "started" => "State: running",
-                    "stopped" => "State: stopped",
-                    "restarted" => "State: running",
-                    "enabled" => "State: enabled",
-                    "disabled" => "State: disabled",
-                    _ => serviceInfo.Description
-                };
-
                 SolidColorBrush brush = action switch
                 {
-                    "started" => new SolidColorBrush(Colors.Green),
-                    "stopped" => new SolidColorBrush(Colors.Gray),
-                    "restarted" => new SolidColorBrush(Colors.Green),
                     "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
                     "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                    _ => serviceInfo.Fill
+                    _ => serviceInfo.StateFill
                 };
-
-                serviceInfo.Description = desc;
-                serviceInfo.Fill = brush;
+                serviceInfo.StateFill = brush;
             });
         }
 
@@ -506,17 +504,17 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             List<ServiceInfo> ordered = order switch
             {
                 "Name" => services.OrderBy(s => s.Name).ThenBy(s => s.Description).ToList(),
-                "State" => services.OrderBy(p => p.Description).ThenBy(s => s.Name).ToList(),
+                "State" => services.OrderBy(p => p.State).ThenBy(s => s.Name).ToList(),
                 _ => services
                     .OrderBy(s =>
                     {
-                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: enabled", StringComparison.InvariantCultureIgnoreCase))
+                        if (!string.IsNullOrEmpty(s.State) && s.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
                             return 0;
-                        if (!string.IsNullOrEmpty(s.Description) && s.Description.Contains("State: disabled", StringComparison.InvariantCultureIgnoreCase))
+                        if (!string.IsNullOrEmpty(s.State) && s.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
                             return 1;
                         return 2;
                     })
-                    .ThenBy(s => s.Description, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s => s.State, StringComparer.InvariantCultureIgnoreCase)
                     .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
                     .ToList()
             };
@@ -600,66 +598,94 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
         }
     }
-    
-        // Small view-model used by the DataTemplate in XAML.
-        public sealed class ServiceInfo : INotifyPropertyChanged
+
+    // Small view-model used by the DataTemplate in XAML.
+    public sealed class ServiceInfo : INotifyPropertyChanged
+    {
+        private string _name = string.Empty;
+        public string Name
         {
-            private string _name = string.Empty;
-            public string Name
+            get => _name;
+            set
             {
-                get => _name;
-                set
+                if (_name != value)
                 {
-                    if (_name != value)
-                    {
-                        _name = value;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
-                    }
+                    _name = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
                 }
             }
-
-            private string _description = string.Empty;
-            public string Description
-            {
-                get => _description;
-                set
-                {
-                    if (_description != value)
-                    {
-                        _description = value;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
-                    }
-                }
-            }
-
-            private string _state = string.Empty;
-            public string State
-            {
-                get => _state;
-                set
-                {
-                    if (_state != value)
-                    {
-                        _state = value;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
-                    }
-                }
         }
 
-        private SolidColorBrush _fill = new SolidColorBrush(Colors.Transparent);
-            public SolidColorBrush Fill
+        private string _description = string.Empty;
+        public string Description
+        {
+            get => _description;
+            set
             {
-                get => _fill;
-                set
+                if (_description != value)
                 {
-                    if (_fill != value)
-                    {
-                        _fill = value;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Fill)));
-                    }
+                    _description = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
                 }
             }
-
-            public event PropertyChangedEventHandler? PropertyChanged;
         }
+
+        private string _state = string.Empty;
+        public string State
+        {
+            get => _state;
+            set
+            {
+                if (_state != value)
+                {
+                    _state = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
+                }
+            }
+        }
+
+        private string _activeState = string.Empty;
+        public string ActiveState
+        {
+            get => _activeState;
+            set
+            {
+                if (_activeState != value)
+                {
+                    _activeState = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActiveState)));
+                }
+            }
+        }
+
+        private SolidColorBrush _stateFill = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush StateFill
+        {
+            get => _stateFill;
+            set
+            {
+                if (_stateFill != value)
+                {
+                    _stateFill = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StateFill)));
+                }
+            }
+        }
+
+        private SolidColorBrush _activeStateFill = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush ActiveStateFill
+        {
+            get => _activeStateFill;
+            set
+            {
+                if (_activeStateFill != value)
+                {
+                    _activeStateFill = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActiveStateFill)));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
+}
