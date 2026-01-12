@@ -549,14 +549,56 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             List<ServiceInfo> ordered = order switch
             {
-                "Name" => services.OrderBy(s => s.Name).ThenBy(s => s.Description).ToList(),
-                "State" => services.OrderBy(p => p.State).ThenBy(s => s.Name).ToList(),
+                "Name" => services.OrderBy(s => s.Name).ThenBy(s =>
+                {
+                    if (!string.IsNullOrEmpty(s.State) && s.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 0;
+                    if (!string.IsNullOrEmpty(s.State) && s.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 1;
+                    return 2;
+                })
+                .ThenBy(s => s.State)
+                .ThenBy(s => s.ActiveState)
+                .ToList(),
+                "State" => services.OrderBy(p =>
+                {
+                    if (!string.IsNullOrEmpty(p.State) && p.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 0;
+                    if (!string.IsNullOrEmpty(p.State) && p.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 1;
+                    return 2;
+
+                })
+                .ThenBy(s => s.State)
+                .ThenBy(s => s.Name)
+                .ToList(),
+                "ActiveState" => services.OrderBy(s => s.ActiveState, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s =>
+                    {
+                        if (!string.IsNullOrEmpty(s.State) && s.State.Contains("running", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.State) && s.State.Contains("sleeping", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(s => s.ActiveState)
+                    .ThenBy(s => s.State, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToList(),
                 _ => services
                     .OrderBy(s =>
                     {
                         if (!string.IsNullOrEmpty(s.State) && s.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
                             return 0;
                         if (!string.IsNullOrEmpty(s.State) && s.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(s =>
+                    {
+                        if(!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("running", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("sleeping", StringComparison.InvariantCultureIgnoreCase))
                             return 1;
                         return 2;
                     })

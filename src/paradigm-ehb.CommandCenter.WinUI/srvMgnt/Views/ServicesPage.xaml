@@ -29,6 +29,7 @@
                 <ComboBoxItem Tag="Default" IsSelected="True">Default</ComboBoxItem>
                 <ComboBoxItem Tag="Name">Name</ComboBoxItem>
                 <ComboBoxItem Tag="State">State</ComboBoxItem>
+                <ComboBoxItem Tag="ActiveState">Active State</ComboBoxItem>
             </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Grid.Row="0">
