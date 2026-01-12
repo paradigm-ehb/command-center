@@ -429,7 +429,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 SolidColorBrush activeStateFill = unit.ActiveState switch
                 {
                     "running" => (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"],
-                    "exited" => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
+                    "exited" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
                     "dead" => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
                     "failed" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
                     _ => new SolidColorBrush(Colors.Goldenrod)
@@ -549,8 +549,41 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             List<ServiceInfo> ordered = order switch
             {
-                "Name" => services.OrderBy(s => s.Name).ThenBy(s => s.Description).ToList(),
-                "State" => services.OrderBy(p => p.State).ThenBy(s => s.Name).ToList(),
+                "Name" => services.OrderBy(s => s.Name).ThenBy(s =>
+                {
+                    if (!string.IsNullOrEmpty(s.State) && s.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 0;
+                    if (!string.IsNullOrEmpty(s.State) && s.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 1;
+                    return 2;
+                })
+                .ThenBy(s => s.State)
+                .ThenBy(s => s.ActiveState)
+                .ToList(),
+                "State" => services.OrderBy(p =>
+                {
+                    if (!string.IsNullOrEmpty(p.State) && p.State.Contains("enabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 0;
+                    if (!string.IsNullOrEmpty(p.State) && p.State.Contains("disabled", StringComparison.InvariantCultureIgnoreCase))
+                        return 1;
+                    return 2;
+
+                })
+                .ThenBy(s => s.State)
+                .ThenBy(s => s.Name)
+                .ToList(),
+                "ActiveState" => services.OrderBy(s =>
+                    {
+                        if (!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("running", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("sleeping", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
+                    .ThenBy(s => s.ActiveState)
+                    .ThenBy(s => s.State, StringComparer.InvariantCultureIgnoreCase)
+                    .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToList(),
                 _ => services
                     .OrderBy(s =>
                     {
@@ -560,16 +593,27 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                             return 1;
                         return 2;
                     })
+                    .ThenBy(s =>
+                    {
+                        if(!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("running", StringComparison.InvariantCultureIgnoreCase))
+                            return 0;
+                        if (!string.IsNullOrEmpty(s.ActiveState) && s.ActiveState.Contains("sleeping", StringComparison.InvariantCultureIgnoreCase))
+                            return 1;
+                        return 2;
+                    })
                     .ThenBy(s => s.State, StringComparer.InvariantCultureIgnoreCase)
                     .ThenBy(s => s.Name, StringComparer.InvariantCultureIgnoreCase)
                     .ToList()
             };
 
-            services.Clear();
-            foreach (ServiceInfo process in ordered)
+            DispatcherQueue.EnqueueAsync(() =>
             {
-                services.Add(process);
-            }
+                services.Clear();
+                foreach (ServiceInfo process in ordered)
+                {
+                    services.Add(process);
+                }
+            });
         }
 
         private async Task ShowInfoBarAsync(string title, string message, InfoBarSeverity severity)

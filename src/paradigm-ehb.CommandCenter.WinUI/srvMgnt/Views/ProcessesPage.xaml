@@ -28,7 +28,7 @@
                 <ComboBoxItem Tag="Default" IsSelected="True">Default</ComboBoxItem>
                 <ComboBoxItem Tag="Name">Name</ComboBoxItem>
                 <ComboBoxItem Tag="Pid">Process ID</ComboBoxItem>
-                <ComboBoxItem Tag="Uptime">Uptime</ComboBoxItem>
+                <!-- <ComboBoxItem Tag="Uptime">Uptime</ComboBoxItem> -->
                 <ComboBoxItem Tag="State">State</ComboBoxItem>
             </ComboBox>
         </StackPanel>
