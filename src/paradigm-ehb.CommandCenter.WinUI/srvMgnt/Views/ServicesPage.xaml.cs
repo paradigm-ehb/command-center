@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -316,6 +317,17 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             {
                 // initialization was cancelled - safe to ignore
             }
+            catch (RpcException ex)
+            {
+                if (ex.StatusCode == StatusCode.Cancelled) return;  // If cancelled, we can ignore
+
+                await DispatcherQueue.EnqueueAsync(() =>
+                {
+                    services.Clear();
+                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
+                }).ConfigureAwait(false);
+                await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 await DispatcherQueue.EnqueueAsync(() =>
@@ -351,49 +363,49 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         /// <exception cref="InvalidOperationException">Thrown if the agent client returns a null response when requesting the list of services.</exception>
         private async Task LoadAllServices(CancellationToken cancellationToken = default)
         {
-            if (client is null || client.Service is null)
-            {
-                await ShowErrorInfoBarAsync("No valid AgentClient available for refreshing services.");
-                return;
-            }
-
-            GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
-            if (response is null)
-            {
-                await ShowErrorInfoBarAsync("Failed to retrieve services: received null response from agent.");
-                return;
-            }
-
-            foreach (LoadedUnit? unit in response.Units)
-            {
-                string unitName = ExtractShortUnitName(unit.Name);
-                // Choose a color/brush based on unit state
-                string state = (unit.LoadState ?? string.Empty).ToLowerInvariant();
-                SolidColorBrush brush = state switch
+                if (client is null || client.Service is null)
                 {
-                    "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                    "loaded" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                    "static" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                    "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                    _ => new SolidColorBrush(Colors.Goldenrod)
-                };
+                    await ShowErrorInfoBarAsync("No valid AgentClient available for refreshing services.");
+                    return;
+                }
 
-                ServiceInfo serviceInfo = new ServiceInfo
+                GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
+                if (response is null)
                 {
-                    Name = unitName,
-                    Description = $"State: {unit.LoadState}",
-                    Fill = brush
-                };
+                    await ShowErrorInfoBarAsync("Failed to retrieve services: received null response from agent.");
+                    return;
+                }
 
-                await DispatcherQueue.EnqueueAsync(() =>
+                foreach (LoadedUnit? unit in response.Units)
                 {
-                    allServices.Add(serviceInfo);
-                    services.Add(serviceInfo);
-                });
+                    string unitName = ExtractShortUnitName(unit.Name);
+                    // Choose a color/brush based on unit state
+                    string state = (unit.LoadState ?? string.Empty).ToLowerInvariant();
+                    SolidColorBrush brush = state switch
+                    {
+                        "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                        "loaded" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
+                        "static" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                        "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                        _ => new SolidColorBrush(Colors.Goldenrod)
+                    };
+
+                    ServiceInfo serviceInfo = new ServiceInfo
+                    {
+                        Name = unitName,
+                        Description = $"State: {unit.LoadState}",
+                        Fill = brush
+                    };
+
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        allServices.Add(serviceInfo);
+                        services.Add(serviceInfo);
+                    });
+                }
+
+                Order_Services();
             }
-
-            Order_Services();
-        }
 
         /// <summary>
         /// Returns only the last path segment from a unit name.
