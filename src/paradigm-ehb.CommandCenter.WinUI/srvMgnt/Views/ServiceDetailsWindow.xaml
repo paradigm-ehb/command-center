@@ -14,15 +14,26 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Padding="12">
+    <Grid Padding="12" x:Name="GridRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{x:Bind Service.Name, Mode=OneWay}" FontSize="18" FontWeight="SemiBold" />
-            <TextBlock Text="{x:Bind Agent.Endpoint.DisplayName, Mode=OneWay}" FontSize="12" Foreground="Gray"/>
-            <TextBlock Text="{x:Bind Service.Description, Mode=OneWay}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+            <TextBlock Text="{x:Bind Service.Name, Mode=OneWay}" FontSize="18" Style="{ThemeResource TitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind Client.Endpoint.DisplayName, Mode=OneWay}" FontSize="12" Style="{ThemeResource CaptionTextBlockStyle}"/>
+            <TextBlock Text="{x:Bind Service.Description, Mode=OneWay}" TextWrapping="Wrap" Margin="0,6,0,0" Style="{ThemeResource BodyTextBlockStyle}"/>
+            <DropDownButton Content="Actions" Grid.Column="2" VerticalAlignment="Center">
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem Text="Start" Click="ServiceStartMenuItem_Click" Padding="12,8"/>
+                        <MenuFlyoutItem Text="Stop" Click="ServiceStopMenuItem_Click" Padding="12,8"/>
+                        <MenuFlyoutItem Text="Restart" Click="ServiceRestartMenuItem_Click" Padding="12,8"/>
+                        <MenuFlyoutItem Text="Enable" Click="ServiceEnableMenuItem_Click" Padding="12,8"/>
+                        <MenuFlyoutItem Text="Disable" Click="ServiceDisableMenuItem_Click" Padding="12,8"/>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
         </StackPanel>
         <ScrollView
             x:Name="LogsScrollView"
