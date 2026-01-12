@@ -34,7 +34,7 @@
                 <TextBlock Margin="5,0" x:Name="CPU" HorizontalAlignment="Right" VerticalAlignment="Center" Text="N/A" />
             </Grid>
 
-            <!-- <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
+            <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -42,11 +42,11 @@
                 
                 <Grid Grid.Row="0">
                     <TextBlock Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="CPU Usage" />
-                    <TextBlock Margin="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
+                    <TextBlock Margin="5,0" x:Name="CpuUsagePercent" HorizontalAlignment="Right" VerticalAlignment="Center" Text="NaN%" />
                 </Grid>
 
                 <components:ProgressBar x:Name="CpuUsageBar" Progress="100" Grid.Row="1" Margin="5,8,5,0" />
-            </Grid> -->
+            </Grid>
 
             <Grid Margin="20, 0" Background="#10FFFFFF" CornerRadius="8" Padding="12">
                 <Grid.RowDefinitions>
