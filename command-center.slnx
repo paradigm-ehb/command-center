@@ -18,8 +18,7 @@
       <Platform Solution="*|Any CPU" Project="x64" />
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
-      <Platform Solution="Debug|x86" Project="x86" />
-      <Platform Solution="Release|x86" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
       <Deploy />
     </Project>
   </Folder>
@@ -33,7 +32,6 @@
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="Debug|Any CPU" Project="x64" />
       <Platform Solution="Debug|x86" Project="x86" />
-      <Build Solution="Release|x64" Project="false" />
     </Project>
   </Folder>
 </Solution>
