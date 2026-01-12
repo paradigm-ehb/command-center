@@ -185,7 +185,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply terminateResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 15 // SIGTERM
+                        Signal = 15 // SIGTERM
                     });
                     if (terminateResult.Succes)
                     {
@@ -236,7 +236,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply killResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 9 // SIGKILL
+                        Signal = 9 // SIGKILL
                     });
 
                     if (killResult.Succes)
@@ -289,7 +289,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply restartResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 1
+                        Signal = 1
                     });
                     if (restartResult.Succes)
                     {
@@ -336,7 +336,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply pauseResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 19 // SIGSTOP
+                        Signal = 19 // SIGSTOP
                     });
                     if (pauseResult.Succes)
                     {
@@ -383,7 +383,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply resumeResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 18 // SIGCONT
+                        Signal = 18 // SIGCONT
                     });
                     if (resumeResult.Succes)
                     {
@@ -430,7 +430,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ProcessActionReply callResult = await client!.Resources.ProcessActionAsync(new ProcessActionRequest
                     {
                         Pid = processInfo.ProcessId,
-                        Sig = 10 // SIGUSR1
+                        Signal = 10 // SIGUSR1
                     });
                     if (callResult.Succes)
                     {
