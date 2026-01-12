@@ -117,7 +117,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             IEnumerable<ProcessInfo> filtered = allProcesses.Where(process => Filter(process));
             Remove_NonMatching(filtered);
             AddBack_Processes(filtered);
-            Order_services();
+            Order_processes();
         }
 
         private bool Filter(ProcessInfo process)
@@ -155,6 +155,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             await ClearAllProcesses();
             // Refresh is user-initiated; use non-cancellable token
             await LoadAllProcesses(CancellationToken.None);
+            IEnumerable<ProcessInfo> filtered = allProcesses.Where(process => Filter(process));
+            Remove_NonMatching(filtered);
+            AddBack_Processes(filtered);
+            Order_processes();
         }
 
         private async void ProcessTerminate_Click(object sender, RoutedEventArgs e)
@@ -560,7 +564,7 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     {
                         ProcessState.Unspecified => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
                         ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                        ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
+                        ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"],
                         ProcessState.Stopped => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                         _ => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
                     };
@@ -579,16 +583,16 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             }
             await DispatcherQueue.EnqueueAsync(() =>
             {
-                Order_services();
+                Order_processes();
             });
         }
 
         public void OnOrderChanged(object sender, SelectionChangedEventArgs args)
         {
-            Order_services();
+            Order_processes();
         }
 
-        private void Order_services()
+        private void Order_processes()
         {
             string order = OrderByCombo?.SelectedValue as string ?? "State";
 

@@ -86,6 +86,10 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             await ClearAllServices();
             await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = true);
             await LoadAllServices();
+            IEnumerable<ServiceInfo> filtered = allServices.Where(service => Filter(service));
+            Remove_NonMatching(filtered);
+            AddBack_Services(filtered);
+            Order_Services();
             await DispatcherQueue.EnqueueAsync(() => LoadingProgressRing.IsActive = false);
         }
 
