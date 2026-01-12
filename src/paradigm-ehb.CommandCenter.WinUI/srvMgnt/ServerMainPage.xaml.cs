@@ -15,12 +15,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 {
     public sealed partial class ServerMainPage : Page
     {
+        public static ServerMainPage Instance;
+
         private readonly IAgentClientFactory _agentClientFactory;
         private readonly IAgentClientRegistry _agentClientRegistry;
         private int previousSelectedIndex = 0;
 
         public ServerMainPage()
         {
+            Instance = this;
             // Dependency Injection
             _agentClientFactory = App.Services.GetRequiredService<IAgentClientFactory>();
             _agentClientRegistry = App.Services.GetRequiredService<IAgentClientRegistry>();
@@ -36,6 +39,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 
             // Fire-and-forget the async initialization. Exceptions are observed inside the task.
             _ = InitializeForNavigationAsync(e);
+        }
+
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            AgentClient? agentClient = await _agentClientRegistry.GetAsync(serverObj.Id);
+            if (agentClient is not null) await agentClient.DisposeAsync();
+            await _agentClientRegistry.DeregisterAsync(serverObj.Id);
         }
 
         private async Task InitializeForNavigationAsync(NavigationEventArgs e)

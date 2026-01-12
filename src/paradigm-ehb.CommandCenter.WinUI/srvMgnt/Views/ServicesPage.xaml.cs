@@ -359,7 +359,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
             if (response is null)
             {
-                throw new InvalidOperationException("Received null response from ActionAsync.");
+                await ShowErrorInfoBarAsync("Failed to retrieve services: received null response from agent.");
+                return;
             }
 
             foreach (LoadedUnit? unit in response.Units)

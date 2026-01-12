@@ -2,6 +2,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Windowing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,16 @@ namespace paradigm_ehb.CommandCenter.WinUI
             appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
             appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
             appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+            // Set minimum window size constraints
+            OverlappedPresenter presenter = appWindow.Presenter as OverlappedPresenter;
+            if (presenter != null)
+            {
+                presenter.PreferredMinimumWidth = 1500;
+                presenter.IsResizable = true;
+                presenter.IsMaximizable = true;
+                presenter.IsMinimizable = true;
+            }
 
             this.SetTitleBar(SimpleTitleBar);
             LoadServerMenu();
