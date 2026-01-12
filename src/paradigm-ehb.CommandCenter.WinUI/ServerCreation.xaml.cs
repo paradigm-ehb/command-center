@@ -21,6 +21,7 @@ using paradigm_ehb.CommandCenter.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Windows.Storage.Pickers;
 
 namespace paradigm_ehb.CommandCenter.WinUI;
 
@@ -89,6 +90,29 @@ public sealed partial class ServerCreation : Page
         }
     }
 
+    private async void CertFilePicker_Click(object sender, RoutedEventArgs e)
+    {
+        // Disable button to prevent multiple clicks
+        CertFilePicker.IsEnabled = false;
+
+        FileOpenPicker openPicker = new FileOpenPicker(CertFilePicker.XamlRoot.ContentIslandEnvironment.AppWindowId);
+
+        openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        openPicker.FileTypeFilter.Add(".crt");
+        openPicker.FileTypeFilter.Add(".pem");
+        openPicker.FileTypeFilter.Add(".der");
+
+        openPicker.CommitButtonText = "Select Certificate File";
+
+        openPicker.ViewMode = PickerViewMode.List;
+
+        PickFileResult certFile = await openPicker.PickSingleFileAsync();
+        SelectedCertFileTextBlock.Text = certFile != null ? certFile.Path : "No file selected";
+
+        // Re-enable button
+        CertFilePicker.IsEnabled = true;
+    }
+
     /// <summary>
     /// Gets all information & validates it.
     /// </summary>
@@ -115,7 +139,7 @@ public sealed partial class ServerCreation : Page
         }
 
         // Add the server
-        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port, ServerUseTLS.IsChecked ?? true);
+        addServer(folderName, ServerNameTextBox.Text, ServerIpTextBox.Text, port, ServerUseTLS.IsChecked ?? true, SelectedCertFileTextBlock.Text);
 
         SendNotification("Server added successfully!");
 
@@ -182,7 +206,7 @@ public sealed partial class ServerCreation : Page
         return true;
     }
 
-    public async Task addServer(string folderName, string name, string ip, int port, bool tls)
+    public async Task addServer(string folderName, string name, string ip, int port, bool tls, string clientCertPath)
     {
         var localSettings = ApplicationData.Current.LocalSettings;
 
@@ -219,7 +243,8 @@ public sealed partial class ServerCreation : Page
 
             Dictionary<string, string> metadata = new Dictionary<string, string>
             {
-                { "folder", folderName }
+                { "folder", folderName },
+                { "clientCertPath", clientCertPath  }
             };
 
             AgentEndpoint endpoint = endpointFactory.Create(

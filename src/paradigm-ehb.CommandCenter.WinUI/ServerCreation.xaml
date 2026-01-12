@@ -34,6 +34,14 @@
             <CheckBox x:Name="ServerUseTLS"
                         Content="Use TLS (SSL) Connection"
                       IsChecked="True"/>
+            
+            <Button x:Name="CertFilePicker"
+                    Content="Select Certificate File"
+                    Click="CertFilePicker_Click"/>
+                    <TextBlock x:Name="SelectedCertFileTextBlock"
+                               Text="No file selected"
+                               TextWrapping="WrapWholeWords"
+                               Margin="0,4,0,0"/>
         </StackPanel>
     </Grid>
 </Page>
