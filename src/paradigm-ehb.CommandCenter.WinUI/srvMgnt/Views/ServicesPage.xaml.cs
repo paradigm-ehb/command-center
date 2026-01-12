@@ -10,8 +10,8 @@ using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
-using Resources.V1;
-using Services.V2;
+using Resources.V2;
+using Services.V3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -33,7 +33,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
         private Collection<ServiceInfo> allServices { get; }
 
-        // Add fields
         private bool _initialized;
         private Guid? _lastEndpointId;
         private System.Threading.CancellationTokenSource? _initCts;

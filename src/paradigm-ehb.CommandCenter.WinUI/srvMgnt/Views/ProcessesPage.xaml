@@ -9,64 +9,85 @@
     mc:Ignorable="d"
     NavigationCacheMode="Enabled">
 
-    <Grid Padding="8">
+    <Grid Padding="8" x:Name="GridRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Toolbar with refresh -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="20,0,8,8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" Padding="20,0,8,8" Grid.Row="0">
             <TextBox x:Name="FilterByName" Width="150" Header="Name"
 	            HorizontalAlignment="Left" TextChanged="OnFilterChanged"/>
+            <ComboBox
+                x:Name="OrderByCombo"
+                SelectedValuePath="Tag"
+                SelectionChanged="OnOrderChanged"
+                VerticalAlignment="Bottom"
+                >
+                <ComboBoxItem Tag="Default" IsSelected="True">Default</ComboBoxItem>
+                <ComboBoxItem Tag="Name">Name</ComboBoxItem>
+                <ComboBoxItem Tag="Pid">Process ID</ComboBoxItem>
+                <ComboBoxItem Tag="Uptime">Uptime</ComboBoxItem>
+                <ComboBoxItem Tag="State">State</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,0,8,8" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" Grid.Row="0">
             <Button x:Name="RefreshButton"
                     Content="Refresh"
                     Click="RefreshButton_Click"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"
                     Margin="0,0,4,0"
-                    Padding="12,6"/>
+                    Padding="12,6"
+                    Style="{StaticResource AccentButtonStyle}"/>
         </StackPanel>
+
+        <ProgressRing x:Name="LoadingProgressRing" Grid.Row="1" IsActive="True" Width="48" Height="48"/>
 
         <ListView
             ItemsSource="{x:Bind processes, Mode=OneWay}"
             SelectionMode="Single"
             ShowsScrollingPlaceholders="True"
             Grid.Row="1"
-            Margin="0"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch">
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:ProcessInfo">
                     <Grid>
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Terminate" Click="ProcessTerminate_Click" ToolTipService.ToolTip="Graceful Process Termination" />
+                                <MenuFlyoutItem Text="Kill" Click="ProcessKill_Click" ToolTipService.ToolTip="Forceful Process Kill" />
+                                <MenuFlyoutItem Text="Reload" Click="ProcessReload_Click" ToolTipService.ToolTip="Reload Process Configuration" />
+                                <MenuFlyoutItem Text="Pause" Click="ProcessPause_Click" ToolTipService.ToolTip="Pause Process Execution" />
+                                <MenuFlyoutItem Text="Resume" Click="ProcessResume_Click" ToolTipService.ToolTip="Resume Process Execution if Paused" />
+                                <MenuFlyoutItem Text="Call" Click="ProcessCall_Click" ToolTipService.ToolTip="Invoke Process-Specific Action" />
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
+
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Grid.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Start" Click="ServiceStartMenuItem_Click" />
-                                <MenuFlyoutItem Text="Stop" Click="ServiceStopMenuItem_Click" />
-                                <MenuFlyoutItem Text="Restart" Click="ServiceRestartMenuItem_Click" />
-                                <MenuFlyoutItem Text="View Properties" Click="ServiceViewMenuItem_Click" />
-                            </MenuFlyout>
-                        </Grid.ContextFlyout>
-
                         <!-- Icon -->
-                        <Ellipse Width="16" Height="16" Fill="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <Ellipse Width="16" Height="16" Fill="{x:Bind Fill, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 
                         <!-- Main info -->
                         <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
-                            <TextBlock Text="{x:Bind ProcessName}" Style="{ThemeResource BodyLargeTextBlockStyle}" TextTrimming="CharacterEllipsis"/>
-                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="12,8,0,0">
+                                <TextBlock Text="{x:Bind ProcessName}" Style="{ThemeResource BodyLargeTextBlockStyle}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{x:Bind Uptime, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="12,0,0,8">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="PID:" FontWeight="SemiBold" />
                                     <TextBlock Text="{x:Bind ProcessId}" />
@@ -74,25 +95,30 @@
 
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="State:" FontWeight="SemiBold" />
-                                    <TextBlock Text="{x:Bind State}" />
+                                    <TextBlock Text="{x:Bind State, Mode=OneWay}" />
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="Threads:" FontWeight="SemiBold" />
-                                    <TextBlock Text="{x:Bind NumThreads}" />
+                                    <TextBlock Text="{x:Bind NumThreads, Mode=OneWay}" />
                                 </StackPanel>
                             </StackPanel>
 
-                            <TextBlock Text="{x:Bind Uptime}" Style="{ThemeResource CaptionTextBlockStyle}"
-                                           Margin="0,4,0,0"/>
                         </StackPanel>
 
                         <!-- Action buttons -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                                <Button Content="Start" Click="ServiceStartMenuItem_Click" Padding="12,8" />
-                                <Button Content="Stop" Click="ServiceStopMenuItem_Click" Padding="12,8" />
-                                <Button Content="Restart" Click="ServiceRestartMenuItem_Click" Padding="12,8" />
-                            </StackPanel>
+                        <DropDownButton Content="Actions" Grid.Column="2" VerticalAlignment="Center">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Text="Terminate" Click="ProcessTerminate_Click" ToolTipService.ToolTip="Graceful Process Termination" />
+                                    <MenuFlyoutItem Text="Kill" Click="ProcessKill_Click" ToolTipService.ToolTip="Forceful Process Kill" />
+                                    <MenuFlyoutItem Text="Reload" Click="ProcessReload_Click" ToolTipService.ToolTip="Reload Process Configuration" />
+                                    <MenuFlyoutItem Text="Pause" Click="ProcessPause_Click" ToolTipService.ToolTip="Pause Process Execution" />
+                                    <MenuFlyoutItem Text="Resume" Click="ProcessResume_Click" ToolTipService.ToolTip="Resume Process Execution if Paused" />
+                                    <MenuFlyoutItem Text="Call" Click="ProcessCall_Click" ToolTipService.ToolTip="Invoke Process-Specific Action" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

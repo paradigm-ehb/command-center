@@ -26,8 +26,10 @@
 		<Protobuf Include="Protos\Health\V1\health.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Journal\V1\journal.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Resources\V1\resources.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\Resources\V2\resources.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Services\V1\services.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Services\V2\services.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\Services\V3\services.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>
