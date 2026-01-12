@@ -120,9 +120,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             ContentDialog dialog = new()
             {
                 XamlRoot = this.XamlRoot,
-                Title = $"Are you sure you want to Stop {serviceInfo.Name} ?",
+                Title = $"Are you sure you want to Stop {serviceInfo.Name}?",
                 CloseButtonText = "Cancel",
-                PrimaryButtonText = "Kill",
+                PrimaryButtonText = "Stop",
             };
 
             ContentDialogResult result = await dialog.ShowAsync();
@@ -158,33 +158,46 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
             ServiceInfo serviceInfo = (ServiceInfo)menuFlyoutItem.DataContext;
 
-            try
+            ContentDialog dialog = new()
             {
-                UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
-                {
-                    UnitName = serviceInfo.Name,
-                    Action = UnitActionRequest.Types.UnitAction.Restart
-                });
+                XamlRoot = this.XamlRoot,
+                Title = $"Are you sure you want to Restart {serviceInfo.Name}?",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Restart",
+            };
 
-                if (response.Success)
-                {
-                    await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the service!", InfoBarSeverity.Success);
-                    await UpdateServiceVisualStateAsync(serviceInfo, "restarted");
-                }
-                else
-                {
-                    await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
-                }
-            }
-            catch (Exception ex)
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
             {
-                if (ex is Grpc.Core.RpcException && serviceInfo.Name == "agent.service")
+                try
                 {
-                    await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the Agent!", InfoBarSeverity.Success);
+                    UnitActionReply response = await client!.Service.PerformUnitActionAsync(new UnitActionRequest
+                    {
+                        UnitName = serviceInfo.Name,
+                        Action = UnitActionRequest.Types.UnitAction.Restart
+                    });
+
+                    if (response.Success)
+                    {
+                        await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the service!", InfoBarSeverity.Success);
+                        await UpdateServiceVisualStateAsync(serviceInfo, "restarted");
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync(response.ErrorMessage ?? "Unknown error");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    await ShowErrorInfoBarAsync($"Exception during restart: {ex.Message}");
+                    if (ex is Grpc.Core.RpcException && serviceInfo.Name == "agent.service")
+                    {
+                        await ShowInfoBarAsync("Service Action Result", $"Successfully restarted the Agent!", InfoBarSeverity.Success);
+                    }
+                    else
+                    {
+                        await ShowErrorInfoBarAsync($"Exception during restart: {ex.Message}");
+                    }
                 }
             }
         }
@@ -325,7 +338,6 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                 await DispatcherQueue.EnqueueAsync(() =>
                 {
                     services.Clear();
-                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
                 }).ConfigureAwait(false);
                 await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
             }
@@ -494,13 +506,31 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         {
             await DispatcherQueue.EnqueueAsync(() =>
             {
-                SolidColorBrush brush = action switch
+                switch(action)
                 {
-                    "enabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                    "disabled" => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                    _ => serviceInfo.StateFill
-                };
-                serviceInfo.StateFill = brush;
+                    case "enabled":
+                        serviceInfo.State = "enabled";
+                        serviceInfo.StateFill = (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"];
+                        break;
+                    case "disabled":
+                        serviceInfo.State = "disabled";
+                        serviceInfo.StateFill = (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                        break;
+                    case "started":
+                        serviceInfo.ActiveState = "started";
+                        serviceInfo.ActiveStateFill = (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"];
+                        break;
+                    case "restarted":
+                        serviceInfo.ActiveState = "restarted";
+                        serviceInfo.ActiveStateFill = (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                        break;
+                    case "stopped":
+                        serviceInfo.ActiveState = "stopped";
+                        serviceInfo.ActiveStateFill = (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                        break;
+                    default:
+                        break;
+                }
             });
         }
 
