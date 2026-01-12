@@ -13,6 +13,7 @@ using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
 using Resources.V2;
 using Services.V3;
+using Actions.V1;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
@@ -68,7 +69,8 @@ namespace paradigm_ehb.CommandCenter.Core.Factories
                 Greeter = new Greeter.GreeterClient(channel),
                 Journal = new JournalService.JournalServiceClient(channel),
                 Service = new HandlerService.HandlerServiceClient(channel),
-                Resources = new ResourcesService.ResourcesServiceClient(channel)
+                Resources = new ResourcesService.ResourcesServiceClient(channel),
+                DeviceActions = new ActionService.ActionServiceClient(channel)
             };
 
             // Start background health monitoring as part of client creation

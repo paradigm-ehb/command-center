@@ -252,6 +252,107 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt
 
             await confirmationDialog.ShowAsync();
         }
+
+        private async void ShutdownServer_Click(object sender, RoutedEventArgs e)
+        {
+            ContentDialog confirmationDialog = new ContentDialog()
+            {
+                Title = "Are you sure you want to shutdown this server?",
+                Content = "This will shutdown the remote server.",
+                PrimaryButtonText = "Shutdown",
+                CloseButtonText = "Cancel"
+            };
+
+            ContentDialogResult result = await confirmationDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                AgentClient? agentClient = await _agentClientRegistry.GetAsync(serverObj.Id);
+                if (agentClient is not null)
+                {
+                    try
+                    {
+                        await agentClient.DeviceActions.ActionAsync(new Actions.V1.ActionRequest()
+                        {
+                            DeviceAction = Actions.V1.DeviceAction.Shutdown
+                        });
+
+                        Frame.Navigate(typeof(HomePage));
+                    }
+                    catch (Exception ex)
+                    {
+                        ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
+                        logger.LogError(ex, "Error shutting down the server.");
+                    }
+                }
+            }
+        }
+
+        private async void RebootServer_Click(object sender, RoutedEventArgs e)
+        {
+            ContentDialog confirmationDialog = new ContentDialog()
+            {
+                Title = "Are you sure you want to restart this server?",
+                Content = "This will restart the remote server.",
+                PrimaryButtonText = "Restart",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult result = await confirmationDialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                AgentClient? agentClient = await _agentClientRegistry.GetAsync(serverObj.Id);
+                if (agentClient is not null)
+                {
+                    try
+                    {
+                        await agentClient.DeviceActions.ActionAsync(new Actions.V1.ActionRequest()
+                        {
+                            DeviceAction = Actions.V1.DeviceAction.Reboot
+                        });
+
+                        Frame.Navigate(typeof(HomePage));
+                    }
+                    catch (Exception ex)
+                    {
+                        ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
+                        logger.LogError(ex, "Error restarting the server.");
+                    }
+                }
+            }
+        }
+
+        private async void SuspendServer_Click(object sender, RoutedEventArgs e)
+        {
+            ContentDialog confirmationDialog = new ContentDialog()
+            {
+                Title = "Are you sure you want to suspend this server?",
+                Content = "This will suspend the remote server.",
+                PrimaryButtonText = "Suspend",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult result = await confirmationDialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                AgentClient? agentClient = await _agentClientRegistry.GetAsync(serverObj.Id);
+                if (agentClient is not null)
+                {
+                    try
+                    {
+                        await agentClient.DeviceActions.ActionAsync(new Actions.V1.ActionRequest()
+                        {
+                            DeviceAction = Actions.V1.DeviceAction.Suspend
+                        });
+
+                        Frame.Navigate(typeof(HomePage));
+                    }
+                    catch (Exception ex)
+                    {
+                        ILogger logger = App.Services.GetRequiredService<ILogger<ServerMainPage>>();
+                        logger.LogError(ex, "Error suspending the server.");
+                    }
+                }
+            }
+        }
     }
 
     internal static class DispatcherQueueExtensions
