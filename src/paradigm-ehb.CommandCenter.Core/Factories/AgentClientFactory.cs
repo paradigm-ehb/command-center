@@ -11,7 +11,7 @@ using paradigm_ehb.CommandCenter.Core.Interfaces;
 using paradigm_ehb.CommandCenter.Core.Models;
 using paradigm_ehb.CommandCenter.Core.Services;
 using Resources.V2;
-using Services.V2;
+using Services.V3;
 
 namespace paradigm_ehb.CommandCenter.Core.Factories
 {
