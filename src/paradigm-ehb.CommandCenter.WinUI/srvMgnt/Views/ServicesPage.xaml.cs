@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI;
@@ -317,6 +318,17 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
             {
                 // initialization was cancelled - safe to ignore
             }
+            catch (RpcException ex)
+            {
+                if (ex.StatusCode == StatusCode.Cancelled) return;  // If cancelled, we can ignore
+
+                await DispatcherQueue.EnqueueAsync(() =>
+                {
+                    services.Clear();
+                    services.Add(new ServiceInfo { Name = "(error)", Description = ex.Message, Fill = new SolidColorBrush(Colors.Red) });
+                }).ConfigureAwait(false);
+                await ShowErrorInfoBarAsync($"Initialization failed: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 await DispatcherQueue.EnqueueAsync(() =>
@@ -352,11 +364,11 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
         /// <exception cref="InvalidOperationException">Thrown if the agent client returns a null response when requesting the list of services.</exception>
         private async Task LoadAllServices(CancellationToken cancellationToken = default)
         {
-            if (client is null || client.Service is null)
-            {
-                await ShowErrorInfoBarAsync("No valid AgentClient available for refreshing services.");
-                return;
-            }
+                if (client is null || client.Service is null)
+                {
+                    await ShowErrorInfoBarAsync("No valid AgentClient available for refreshing services.");
+                    return;
+                }
 
             GetUnitsReply? response = await client.Service.GetAllUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
             GetUnitsReply? loadedResponse = await client.Service.GetLoadedUnitsAsync(request: new GetUnitsRequest(), cancellationToken: cancellationToken);
@@ -417,15 +429,15 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     ActiveStateFill = activeStateFill
                 };
 
-                await DispatcherQueue.EnqueueAsync(() =>
-                {
-                    allServices.Add(serviceInfo);
-                    services.Add(serviceInfo);
-                });
-            }
+                    await DispatcherQueue.EnqueueAsync(() =>
+                    {
+                        allServices.Add(serviceInfo);
+                        services.Add(serviceInfo);
+                    });
+                }
 
-            Order_Services();
-        }
+                Order_Services();
+            }
 
         /// <summary>
         /// Returns only the last path segment from a unit name.

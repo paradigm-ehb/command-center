@@ -8,7 +8,8 @@
     xmlns:components="using:paradigm_ehb.CommandCenter.WinUI.Components"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Loaded="Page_Loaded">
+    Loaded="Page_Loaded"
+    Unloaded="Page_Unloaded">
 
     <Grid>
         <StackPanel Spacing="10">

@@ -151,6 +151,9 @@ namespace paradigm_ehb.CommandCenter.Core.Services
 
                 timeoutCancellationTokenSource.CancelAfter(timeoutMs);
 
+                /// Attempt to connect with the combined cancellation token
+                /// Will throw System.OperationCanceledException on timeout or cancellation
+                /// Will throw SocketException on connection failure
                 await tcpClient.ConnectAsync(ipAddress, port, timeoutCancellationTokenSource.Token);
                 return true;
             }
