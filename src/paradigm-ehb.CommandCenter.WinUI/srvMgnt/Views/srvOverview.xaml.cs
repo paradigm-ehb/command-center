@@ -50,9 +50,9 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
                 Processes.Text = string.Format("{0} running", data.Resources.Processes.Count());
 
-                var totalRamGB = Math.Floor(float.Parse(data.Resources.Memory.Total) / 1024 / 1024);
-                var usedRam = float.Parse(data.Resources.Memory.Total) - float.Parse(data.Resources.Memory.Free);
-                var usedRamPercentage = (usedRam / float.Parse(data.Resources.Memory.Total)) * 100;
+                var totalRamGB = Math.Floor((decimal)data.Resources.Memory.Total / 1024 / 1024);
+                ulong usedRam = data.Resources.Memory.Total - data.Resources.Memory.Free;
+                double usedRamPercentage = ((double)usedRam / (double)data.Resources.Memory.Total) * 100;
 
                 RamUsageBar.Progress = usedRamPercentage;
                 RamUsagePercent.Text = string.Format("{0:F2}%", usedRamPercentage);
