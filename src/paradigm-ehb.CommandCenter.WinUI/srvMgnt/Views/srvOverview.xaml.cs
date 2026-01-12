@@ -50,6 +50,14 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
 
                 Processes.Text = string.Format("{0} running", data.Resources.Processes.Count());
 
+                ulong cpuTotalTime = data.Resources.Cpu.TotalTime;
+                ulong cpuIdleTime = data.Resources.Cpu.IdleTime;
+
+                double cpuUsagePercentage = ((double)(cpuTotalTime - cpuIdleTime) / (double)cpuTotalTime) * 100;
+
+                CpuUsageBar.Progress = cpuUsagePercentage;
+                CpuUsagePercent.Text = string.Format("{0:F2}%", cpuUsagePercentage);
+
                 var totalRamGB = Math.Floor((decimal)data.Resources.Memory.Total / 1024 / 1024);
                 ulong usedRam = data.Resources.Memory.Total - data.Resources.Memory.Free;
                 double usedRamPercentage = ((double)usedRam / (double)data.Resources.Memory.Total) * 100;

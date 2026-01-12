@@ -559,8 +559,8 @@ namespace paradigm_ehb.CommandCenter.WinUI.srvMgnt.Views
                     SolidColorBrush brush = process.State switch
                     {
                         ProcessState.Unspecified => (SolidColorBrush)Application.Current.Resources["SystemFillColorNeutralBrush"],
-                        ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorAttentionBrush"],
-                        ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorCautionBrush"],
+                        ProcessState.Running => (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBrush"],
+                        ProcessState.Sleeping => (SolidColorBrush)Application.Current.Resources["SystemFillColorSuccessBackgroundBrush"],
                         ProcessState.Stopped => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                         _ => (SolidColorBrush)Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],
                     };
