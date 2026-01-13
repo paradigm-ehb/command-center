@@ -9,14 +9,14 @@
 
   <Identity
     Name="b9b2f1e8-3c8a-4409-9d2a-c6647a05d4cd"
-    Publisher="CN=luke-"
+    Publisher="CN=paradigm-ehb"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="b9b2f1e8-3c8a-4409-9d2a-c6647a05d4cd" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>paradigm-ehb.CommandCenter.WinUI</DisplayName>
-    <PublisherDisplayName>luke-</PublisherDisplayName>
+    <PublisherDisplayName>paradigm-ehb</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
