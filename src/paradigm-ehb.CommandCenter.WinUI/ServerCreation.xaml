@@ -10,6 +10,9 @@
     mc:Ignorable="d">
 
     <Grid Width="400">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Spacing="16">
             <ComboBox x:Name="FolderComboBox"
                       Header="Server Folder"
@@ -17,31 +20,38 @@
                       IsEditable="True"
                       HorizontalAlignment="Stretch"
                       TextSubmitted="FolderComboBox_TextSubmitted"/>
-            
+
             <TextBox x:Name="ServerNameTextBox"
                      Header="Server Name"
                      PlaceholderText="iMad's Server"/>
 
-            <TextBox x:Name="ServerIpTextBox"
-                     Header="Server IP"
-                     PlaceholderText="192.168.1.100"/>
-            
-            <TextBox x:Name="ServerPortTextBox"
-                     Header="Server Port"
-                     PlaceholderText="8080"
-                     InputScope="Number"/>
+            <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4">
+                <TextBox x:Name="ServerIpTextBox"
+                         Header="Server IP"
+                         PlaceholderText="192.168.1.100"
+                         Margin="0,0,6,0"
+                         VariableSizedWrapGrid.ColumnSpan="3"/>
+
+                <TextBox x:Name="ServerPortTextBox"
+                         Header="Server Port"
+                         PlaceholderText="8080"
+                         InputScope="Number"
+                         VariableSizedWrapGrid.ColumnSpan="1"/>
+            </VariableSizedWrapGrid>
 
             <CheckBox x:Name="ServerUseTLS"
-                        Content="Use TLS (SSL) Connection"
+                      Content="Use TLS (SSL) Connection"
                       IsChecked="True"/>
-            
+
+            <TextBlock x:Name="SelectedCertFileTextBlock"
+                       Text="No file selected"
+                       TextWrapping="WrapWholeWords"
+                       Margin="0,4,0,0"/>
+
             <Button x:Name="CertFilePicker"
                     Content="Select Certificate File"
-                    Click="CertFilePicker_Click"/>
-                    <TextBlock x:Name="SelectedCertFileTextBlock"
-                               Text="No file selected"
-                               TextWrapping="WrapWholeWords"
-                               Margin="0,4,0,0"/>
+                    Click="CertFilePicker_Click"
+                    />
         </StackPanel>
     </Grid>
 </Page>
