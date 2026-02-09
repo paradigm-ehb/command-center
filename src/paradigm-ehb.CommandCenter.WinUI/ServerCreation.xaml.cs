@@ -39,7 +39,7 @@ public sealed partial class ServerCreation : Page
     private void LoadFolders()
     {
         FolderComboBox.Items.Clear();
-        
+
         string[] folders = fetchFolders();
         foreach (string folder in folders)
         {
@@ -107,7 +107,12 @@ public sealed partial class ServerCreation : Page
         openPicker.ViewMode = PickerViewMode.List;
 
         PickFileResult certFile = await openPicker.PickSingleFileAsync();
-        SelectedCertFileTextBlock.Text = certFile != null ? certFile.Path : "No file selected";
+        if (certFile is not null)
+        {
+            SelectedCertFileTextBlock.Text = certFile.Path;
+            RemoveCert.Visibility = Visibility.Visible;
+            CertFilePassword.Visibility = Visibility.Visible;
+        }
 
         // Re-enable button
         CertFilePicker.IsEnabled = true;
@@ -127,10 +132,10 @@ public sealed partial class ServerCreation : Page
 
         // Get or create folder name
         string folderName = FolderComboBox.SelectedItem?.ToString() ?? FolderComboBox.Text.Trim();
-        
+
         // Ensure folder exists
         createFolder(folderName);
-            
+
         // Parse port from ServerPortTextBox
         int port;
         if (!int.TryParse(ServerPortTextBox.Text, out port))
@@ -168,7 +173,7 @@ public sealed partial class ServerCreation : Page
         if (localSettings.Containers.ContainsKey("serverStorage"))
         {
             serverStorage = localSettings.Containers["serverStorage"];
-            
+
             // Return all folder (container) names
             return serverStorage.Containers.Keys.ToArray();
         }
@@ -244,7 +249,6 @@ public sealed partial class ServerCreation : Page
             Dictionary<string, string> metadata = new Dictionary<string, string>
             {
                 { "folder", folderName },
-                { "clientCertPath", clientCertPath  }
             };
 
             AgentEndpoint endpoint = endpointFactory.Create(
@@ -252,6 +256,7 @@ public sealed partial class ServerCreation : Page
                 port: port > 0 ? port : 50051,
                 useTls: tls,
                 displayName: string.IsNullOrWhiteSpace(name) ? null : name,
+                CertPath: clientCertPath != "No file selected" ? clientCertPath : null,
                 metadata: metadata
             );
 
@@ -263,5 +268,12 @@ public sealed partial class ServerCreation : Page
             ILogger<ServerCreation> logger = App.Services.GetRequiredService<ILogger<ServerCreation>>();
             logger.LogError("Failed to register new AgentEndpoint in AgentEndpointRegistry.");
         }
+    }
+
+    private void RemoveCert_Click(object sender, RoutedEventArgs e)
+    {
+        SelectedCertFileTextBlock.Text = "No file selected";
+        RemoveCert.Visibility = Visibility.Collapsed;
+        CertFilePassword.Visibility = Visibility.Collapsed;
     }
 }

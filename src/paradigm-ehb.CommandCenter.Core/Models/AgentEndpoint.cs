@@ -36,6 +36,8 @@ namespace paradigm_ehb.CommandCenter.Core.Models
         /// </summary>
         public string DisplayName { get; set; } = string.Empty;
 
+        public string? CertPath { get; set; } = string.Empty;
+
         public string? FolderName { get; set; } = string.Empty;
 
         /// <summary>

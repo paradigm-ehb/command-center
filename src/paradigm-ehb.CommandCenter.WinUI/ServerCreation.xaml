@@ -43,15 +43,21 @@
                       Content="Use TLS (SSL) Connection"
                       IsChecked="True"/>
 
-            <TextBlock x:Name="SelectedCertFileTextBlock"
-                       Text="No file selected"
-                       TextWrapping="WrapWholeWords"
-                       Margin="0,4,0,0"/>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock x:Name="SelectedCertFileTextBlock"
+                           Text="No file selected"
+                           TextWrapping="WrapWholeWords"
+                           VerticalAlignment="Center"/>
+
+                <Button Style="{StaticResource SubtleButtonStyle}" x:Name="RemoveCert" Visibility="Collapsed" Height="Auto" VerticalAlignment="Center" Click="RemoveCert_Click">
+                    <SymbolIcon Symbol="Cancel"/>
+                </Button>
+            </StackPanel>
 
             <Button x:Name="CertFilePicker"
                     Content="Select Certificate File"
-                    Click="CertFilePicker_Click"
-                    />
+                    Click="CertFilePicker_Click"/>
+
         </StackPanel>
     </Grid>
 </Page>
