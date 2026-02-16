@@ -2,6 +2,7 @@
 using paradigm_ehb.CommandCenter.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Security;
 using System.Text;
 
 namespace paradigm_ehb.CommandCenter.Core.Interfaces
@@ -16,6 +17,7 @@ namespace paradigm_ehb.CommandCenter.Core.Interfaces
         /// </summary>
         /// <param name="endpoint">The endpoint information for the agent to which the channel will connect. Cannot be null.</param>
         /// <returns>A <see cref="GrpcChannel"/> instance configured to communicate with the specified agent endpoint.</returns>
-        GrpcChannel CreateChannel(AgentEndpoint endpoint);
+        GrpcChannel CreateChannel(AgentEndpoint endpoint, SecureString? certPassword = null);
+        Task<string?> GetServerThumbprintAsync(string ipAddress, int port);
     }
 }

@@ -111,7 +111,6 @@ public sealed partial class ServerCreation : Page
         {
             SelectedCertFileTextBlock.Text = certFile.Path;
             RemoveCert.Visibility = Visibility.Visible;
-            CertFilePassword.Visibility = Visibility.Visible;
         }
 
         // Re-enable button
@@ -274,6 +273,5 @@ public sealed partial class ServerCreation : Page
     {
         SelectedCertFileTextBlock.Text = "No file selected";
         RemoveCert.Visibility = Visibility.Collapsed;
-        CertFilePassword.Visibility = Visibility.Collapsed;
     }
 }
